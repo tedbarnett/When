@@ -88,7 +88,7 @@ export async function onRequestGet(context) {
   return new Response(html, {
     headers: {
       'content-type': 'text/html; charset=utf-8',
-      'cache-control': ev._hidden || ev._edited ? 'no-store' : 'public, max-age=300'
+      'cache-control': ev._hidden || ev._edited || ev._added ? 'no-store' : 'public, max-age=300'
     }
   });
 }

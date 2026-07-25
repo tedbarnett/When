@@ -66,7 +66,7 @@ export async function onRequest(context) {
     lines.push("DTEND;TZID=" + TZID + ":" + end);
     lines.push("SUMMARY:" + escapeText(ev.title));
     lines.push("DESCRIPTION:" + escapeText(descParts.join("\n")));
-    lines.push("LOCATION:" + escapeText(ev.venue + ", " + ev.neighborhood + ", New York"));
+    lines.push("LOCATION:" + escapeText([ev.venue, ev.neighborhood, "New York"].filter(Boolean).join(", ")));
     if (ev.url) lines.push("URL:" + ev.url);
     lines.push("END:VEVENT");
   }

@@ -8,7 +8,9 @@
  *   key "cal:teds-nyc" = {
  *     hidden: { <eventId>: true },
  *     edits:  { <eventId>: { title?, venue?, neighborhood?, price?,
- *                            blurb?, start?, url?, image? } }
+ *                            blurb?, start?, url?, image? } },
+ *     added:  { <eventId>: { full event object — curator-imported events
+ *                            that don't exist in the base JSON } }
  *   }
  *
  * Every consumer (public JSON, ICS feed, per-event pages, admin API) merges
@@ -31,8 +33,11 @@ export function applyOverlay(data, overlay, opts) {
   const includeHidden = !!(opts && opts.includeHidden);
   const hidden = (overlay && overlay.hidden) || {};
   const edits = (overlay && overlay.edits) || {};
+  const added = (overlay && overlay.added) || {};
   const events = [];
+  const baseIds = {};
   for (const base of (data && data.events) || []) {
+    baseIds[base.id] = true;
     const isHidden = !!hidden[base.id];
     if (isHidden && !includeHidden) continue;
     const edit = edits[base.id];
@@ -43,14 +48,31 @@ export function applyOverlay(data, overlay, opts) {
     }
     events.push(ev);
   }
+  // Curator-added events: same hide/edit machinery as base events. A base
+  // event with the same id always wins (add enforces uniqueness anyway).
+  for (const id of Object.keys(added)) {
+    if (baseIds[id]) continue;
+    const src = added[id];
+    if (!src || typeof src !== 'object' || !src.start) continue;
+    const isHidden = !!hidden[id];
+    if (isHidden && !includeHidden) continue;
+    const edit = edits[id];
+    const ev = edit ? { ...src, ...edit, id } : { ...src, id };
+    if (includeHidden) {
+      ev._added = true;
+      if (isHidden) ev._hidden = true;
+      if (edit && Object.keys(edit).length) ev._edited = true;
+    }
+    events.push(ev);
+  }
   // Edits can move start times across days; keep output chronologically sorted.
   events.sort((a, b) => (a.start < b.start ? -1 : a.start > b.start ? 1 : 0));
   return { ...data, events };
 }
 
-/** Read the overlay document from KV. Always returns {hidden, edits}. */
+/** Read the overlay document from KV. Always returns {hidden, edits, added}. */
 export async function loadOverlay(env) {
-  const empty = { hidden: {}, edits: {} };
+  const empty = { hidden: {}, edits: {}, added: {} };
   if (!env || !env.WHEN_CAL) return empty;
   try {
     const raw = await env.WHEN_CAL.get(CAL_KEY);
@@ -59,6 +81,7 @@ export async function loadOverlay(env) {
     return {
       hidden: (o && typeof o.hidden === 'object' && o.hidden) || {},
       edits: (o && typeof o.edits === 'object' && o.edits) || {},
+      added: (o && typeof o.added === 'object' && o.added) || {},
     };
   } catch {
     return empty;
