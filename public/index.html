@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>When · An open calendar of everything happening</title>
+<meta name="description" content="When is the open, subscribable feed layer for local events. Every calendar is a web page, an ICS feed, and an API. Open source. Starting in New York.">
+<link rel="canonical" href="https://when.org/">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://when.org/">
+<meta property="og:site_name" content="When">
+<meta property="og:title" content="When · An open calendar of everything happening">
+<meta property="og:description" content="Open-source event feeds for your city. Subscribe in any calendar app. The curators and hosts behind them get paid. Starting in New York.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="When · An open calendar of everything happening">
+<meta name="twitter:description" content="Open-source event feeds for your city. Subscribe in any calendar app. Starting in New York, New Orleans next.">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "When",
+  "url": "https://when.org/",
+  "description": "The open, subscribable feed layer for local events. Every calendar is a web page, an ICS feed, and an API.",
+  "publisher": {
+    "@type": "Organization",
+    "name": "When",
+    "url": "https://when.org/",
+    "sameAs": ["https://github.com/tedbarnett/When"],
+    "founder": {
+      "@type": "Person",
+      "name": "Ted Barnett",
+      "description": "Founder of When.com (1998), acquired by AOL in 1999."
+    }
+  }
+}
+</script>
+
+<style>
+/* ------------------------------------------------------------------
+   When · when.org
+   Hand-written CSS. No framework, no build step.
+   Shape system: interactive elements = pill, containers = 16px,
+   inputs = 10px. One accent (cobalt), locked across the page.
+------------------------------------------------------------------- */
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/satoshi-500.woff2') format('woff2');
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/satoshi-700.woff2') format('woff2');
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/satoshi-900.woff2') format('woff2');
+  font-weight: 900; font-style: normal; font-display: swap;
+}
+
+:root {
+  --paper: #f6f6f3;
+  --surface: #fdfdfc;
+  --ink: #17191e;
+  --muted: #5b6068;
+  --faint: #8b9098;
+  --hairline: #e0e0da;
+  --accent: #2138d6;
+  --accent-ink: #ffffff;
+  --accent-soft: #eceefb;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: 'Satoshi', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #101115;
+    --surface: #17181d;
+    --ink: #ebebe7;
+    --muted: #a2a6ad;
+    --faint: #71757d;
+    --hairline: #272930;
+    --accent: #7286ff;
+    --accent-ink: #0d1030;
+    --accent-soft: #1c2040;
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  font-family: var(--sans);
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 500;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+a { color: inherit; }
+::selection { background: var(--accent); color: var(--accent-ink); }
+
+.wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+
+/* ---------- nav ---------- */
+header.nav {
+  position: sticky; top: 0; z-index: 10;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--hairline);
+}
+.nav-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 64px;
+}
+.brand {
+  display: flex; align-items: baseline; gap: 1px;
+  font-weight: 900; font-size: 22px; letter-spacing: -0.02em;
+  text-decoration: none;
+}
+.brand .tld { color: var(--faint); font-weight: 700; font-size: 16px; }
+.nav-links { display: flex; align-items: center; gap: 26px; font-size: 15px; font-weight: 700; }
+.nav-links a { text-decoration: none; color: var(--muted); transition: color .18s ease; }
+.nav-links a:hover { color: var(--ink); }
+.nav-links a.cta {
+  color: var(--accent-ink); background: var(--accent);
+  padding: 9px 18px; border-radius: 999px;
+  transition: transform .18s ease, opacity .18s ease;
+}
+.nav-links a.cta:hover { opacity: .92; }
+.nav-links a.cta:active { transform: translateY(1px); }
+@media (max-width: 640px) { .nav-links a.gh, .nav-links a.mani { display: none; } }
+
+/* ---------- hero ---------- */
+.hero { padding: 72px 0 88px; }
+.hero-grid {
+  display: grid; grid-template-columns: 7fr 5fr; gap: 64px;
+  align-items: center;
+}
+h1 {
+  font-size: clamp(40px, 6vw, 68px);
+  font-weight: 900; letter-spacing: -0.035em; line-height: 1.02;
+  max-width: 12ch;
+}
+h1 .accent { color: var(--accent); }
+.hero-sub {
+  margin-top: 22px; font-size: 19px; color: var(--muted);
+  max-width: 44ch; line-height: 1.55;
+}
+.hero-ctas { margin-top: 34px; display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+.btn {
+  display: inline-block; text-decoration: none;
+  background: var(--accent); color: var(--accent-ink);
+  font-weight: 700; font-size: 16px;
+  padding: 14px 28px; border-radius: 999px;
+  border: none; cursor: pointer; font-family: var(--sans);
+  transition: transform .18s ease, opacity .18s ease;
+}
+.btn:hover { opacity: .92; }
+.btn:active { transform: translateY(1px) scale(.99); }
+.link-plain {
+  font-weight: 700; font-size: 16px; color: var(--muted);
+  text-decoration: none; border-bottom: 1.5px solid var(--hairline);
+  padding-bottom: 2px; transition: color .18s ease, border-color .18s ease;
+}
+.link-plain:hover { color: var(--ink); border-color: var(--ink); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .rise { animation: rise .7s cubic-bezier(0.16,1,0.3,1) both; }
+  .rise.d1 { animation-delay: .08s; }
+  .rise.d2 { animation-delay: .16s; }
+  @keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+}
+
+/* ---------- calendar preview card ---------- */
+.cal-card {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  box-shadow: 0 18px 44px -22px color-mix(in srgb, var(--ink) 22%, transparent);
+  overflow: hidden;
+}
+.cal-head { padding: 18px 20px 14px; border-bottom: 1px solid var(--hairline); }
+.cal-url { font-family: var(--mono); font-size: 13px; color: var(--accent); font-weight: 500; }
+.cal-title { font-size: 19px; font-weight: 900; letter-spacing: -0.01em; margin-top: 6px; }
+.cal-byline { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.cal-rows { list-style: none; }
+.cal-rows li {
+  display: grid; grid-template-columns: 52px 1fr auto; gap: 14px;
+  padding: 13px 20px; align-items: center;
+  border-bottom: 1px solid var(--hairline);
+}
+.cal-rows li:last-child { border-bottom: none; }
+.dow {
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
+  color: var(--faint); text-align: center; line-height: 1.3;
+}
+.dow b { display: block; font-size: 15px; color: var(--ink); font-weight: 700; }
+.ev { min-width: 0; }
+.ev-name { font-weight: 700; font-size: 14.5px; line-height: 1.3; }
+.ev-venue { font-size: 12.5px; color: var(--muted); margin-top: 1px; }
+.ev-time { font-family: var(--mono); font-size: 12px; color: var(--faint); white-space: nowrap; }
+.cal-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; background: color-mix(in srgb, var(--paper) 55%, var(--surface));
+}
+.chiprow { display: flex; gap: 8px; }
+.chip {
+  font-family: var(--mono); font-size: 11px; color: var(--muted);
+  border: 1px solid var(--hairline); border-radius: 999px;
+  padding: 4px 10px; background: var(--surface);
+}
+.cal-sub {
+  font-size: 13px; font-weight: 700; color: var(--accent);
+  text-decoration: none;
+}
+.cal-note { font-size: 13px; color: var(--faint); margin-top: 14px; text-align: center; }
+@media (max-width: 880px) {
+  .hero { padding: 48px 0 64px; }
+  .hero-grid { grid-template-columns: 1fr; gap: 44px; }
+  .hero-sub { font-size: 17px; }
+}
+
+/* ---------- city strip ---------- */
+.cities { border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); }
+.cities-inner { padding: 56px 0; }
+.cities h2 {
+  font-size: clamp(26px, 3.6vw, 40px); font-weight: 900;
+  letter-spacing: -0.03em; line-height: 1.15;
+}
+.cities h2 .next { color: var(--faint); }
+.cities p { margin-top: 12px; color: var(--muted); max-width: 62ch; }
+
+/* ---------- manifesto ---------- */
+.manifesto { padding: 96px 0; }
+.manifesto h2 {
+  font-size: clamp(30px, 4.4vw, 48px); font-weight: 900;
+  letter-spacing: -0.03em; line-height: 1.08; max-width: 18ch;
+}
+.manifesto-body {
+  margin-top: 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
+}
+.manifesto-body p { color: var(--muted); font-size: 17px; max-width: 58ch; }
+.manifesto-body p b, .manifesto-body p strong { color: var(--ink); font-weight: 700; }
+@media (max-width: 880px) { .manifesto { padding: 72px 0; } .manifesto-body { grid-template-columns: 1fr; gap: 20px; } }
+
+/* ---------- four things ---------- */
+.four { padding: 0 0 96px; }
+.four h2 { font-size: clamp(26px, 3.4vw, 36px); font-weight: 900; letter-spacing: -0.025em; }
+.four-sub { color: var(--muted); margin-top: 10px; max-width: 60ch; }
+.four-grid {
+  margin-top: 40px;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--hairline);
+}
+.four-grid > div { padding: 26px 26px 30px 0; border-bottom: 1px solid var(--hairline); }
+.four-grid .tag { font-family: var(--mono); font-size: 12px; color: var(--accent); }
+.four-grid h3 { font-size: 18px; font-weight: 700; margin-top: 10px; letter-spacing: -0.01em; }
+.four-grid p { font-size: 14.5px; color: var(--muted); margin-top: 6px; }
+@media (max-width: 880px) {
+  .four { padding-bottom: 72px; }
+  .four-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 540px) { .four-grid { grid-template-columns: 1fr; } }
+
+/* ---------- earn ---------- */
+.earn { background: var(--surface); border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); padding: 96px 0; }
+.earn h2 {
+  font-size: clamp(30px, 4.4vw, 48px); font-weight: 900;
+  letter-spacing: -0.03em; line-height: 1.08; max-width: 20ch;
+}
+.earn-list { margin-top: 48px; display: grid; gap: 0; }
+.earn-row {
+  display: grid; grid-template-columns: 220px 1fr; gap: 32px;
+  padding: 30px 0; border-top: 1px solid var(--hairline);
+}
+.earn-row:last-child { border-bottom: 1px solid var(--hairline); }
+.earn-who { font-size: 21px; font-weight: 900; letter-spacing: -0.015em; }
+.earn-row p { color: var(--muted); max-width: 62ch; }
+.earn-row p b { color: var(--ink); font-weight: 700; }
+.earn-note { margin-top: 28px; color: var(--faint); font-size: 15px; max-width: 62ch; }
+@media (max-width: 720px) {
+  .earn { padding: 72px 0; }
+  .earn-row { grid-template-columns: 1fr; gap: 8px; padding: 24px 0; }
+}
+
+/* ---------- waitlist ---------- */
+.waitlist { padding: 104px 0; }
+.wl-grid { display: grid; grid-template-columns: 5fr 6fr; gap: 72px; align-items: start; }
+.waitlist h2 {
+  font-size: clamp(30px, 4vw, 44px); font-weight: 900;
+  letter-spacing: -0.03em; line-height: 1.08;
+}
+.waitlist .wl-copy { margin-top: 16px; color: var(--muted); max-width: 44ch; }
+form.wl {
+  background: var(--surface); border: 1px solid var(--hairline);
+  border-radius: 16px; padding: 32px;
+}
+.field { display: grid; gap: 8px; margin-bottom: 22px; }
+.field label { font-size: 14px; font-weight: 700; }
+.field input, .field select {
+  font-family: var(--sans); font-size: 16px; font-weight: 500;
+  color: var(--ink); background: var(--paper);
+  border: 1px solid var(--hairline); border-radius: 10px;
+  padding: 12px 14px; width: 100%;
+  transition: border-color .18s ease, box-shadow .18s ease;
+  appearance: none; -webkit-appearance: none;
+}
+.field select {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%238b9098' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center;
+  padding-right: 38px;
+}
+.field input::placeholder { color: var(--faint); }
+.field input:focus, .field select:focus {
+  outline: none; border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.field .hint { font-size: 13px; color: var(--faint); }
+.hp { position: absolute; left: -9999px; opacity: 0; height: 0; overflow: hidden; }
+.wl-status { margin-top: 14px; font-size: 14.5px; font-weight: 700; display: none; }
+.wl-status.ok { display: block; color: var(--accent); }
+.wl-status.err { display: block; color: #c0392b; }
+@media (prefers-color-scheme: dark) { .wl-status.err { color: #ff7a68; } }
+@media (max-width: 880px) {
+  .waitlist { padding: 72px 0; }
+  .wl-grid { grid-template-columns: 1fr; gap: 40px; }
+  form.wl { padding: 24px; }
+}
+
+/* ---------- footer ---------- */
+footer { border-top: 1px solid var(--hairline); padding: 44px 0 56px; }
+.foot-inner { display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; align-items: baseline; }
+.foot-left { font-size: 14.5px; color: var(--muted); max-width: 52ch; line-height: 1.7; }
+.foot-left a { color: var(--ink); font-weight: 700; text-decoration: none; border-bottom: 1.5px solid var(--hairline); }
+.foot-left a:hover { border-color: var(--ink); }
+.foot-right { font-size: 14.5px; color: var(--faint); }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="/">When<span class="tld">.org</span></a>
+    <nav class="nav-links">
+      <a class="mani" href="#manifesto">Manifesto</a>
+      <a class="gh" href="https://github.com/tedbarnett/When" rel="noopener">GitHub</a>
+      <a class="cta" href="#waitlist">Join the waitlist</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <h1 class="rise">An open calendar of <span class="accent">everything happening.</span></h1>
+        <p class="hero-sub rise d1">Open-source event feeds for your city. Subscribe in any calendar app. The curators and hosts behind them get paid.</p>
+        <div class="hero-ctas rise d2">
+          <a class="btn" href="#waitlist">Join the waitlist</a>
+          <a class="link-plain" href="#manifesto">Read the manifesto</a>
+        </div>
+      </div>
+      <div class="rise d2">
+        <div class="cal-card" aria-label="Example of a When calendar">
+          <div class="cal-head">
+            <div class="cal-url">when.org/nyc-jazz</div>
+            <div class="cal-title">NYC Jazz</div>
+            <div class="cal-byline">Curated by someone who is at the club four nights a week</div>
+          </div>
+          <ul class="cal-rows">
+            <li>
+              <span class="dow">MON<b>8P</b></span>
+              <span class="ev"><span class="ev-name">Vanguard Jazz Orchestra</span><span class="ev-venue" style="display:block">Village Vanguard, West Village</span></span>
+              <span class="ev-time">$40</span>
+            </li>
+            <li>
+              <span class="dow">FRI<b>11P</b></span>
+              <span class="ev"><span class="ev-name">Late-Night Jam Session</span><span class="ev-venue" style="display:block">Smalls, Greenwich Village</span></span>
+              <span class="ev-time">$25</span>
+            </li>
+            <li>
+              <span class="dow">SUN<b>3:30P</b></span>
+              <span class="ev"><span class="ev-name">Parlor Jazz at Marjorie Eliot's</span><span class="ev-venue" style="display:block">555 Edgecombe Ave, Harlem</span></span>
+              <span class="ev-time">Free</span>
+            </li>
+          </ul>
+          <div class="cal-foot">
+            <div class="chiprow">
+              <span class="chip">Web</span><span class="chip">ICS</span><span class="chip">JSON</span>
+            </div>
+            <span class="cal-sub">Subscribe</span>
+          </div>
+        </div>
+        <p class="cal-note">Every calendar is a page, a feed, and an API. This one is a preview.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="cities" id="cities">
+    <div class="wrap cities-inner">
+      <h2>Starting in New York. <span class="next">New Orleans next.</span></h2>
+      <p>When launches local-first: a handful of genuinely great, hand-curated NYC calendars with live feeds, before anything else. New Orleans follows. Anywhere else, the code is open: run When for your own town.</p>
+    </div>
+  </section>
+
+  <section class="manifesto" id="manifesto">
+    <div class="wrap">
+      <h2>Events are trapped in silos.</h2>
+      <div class="manifesto-body">
+        <div>
+          <p>What's happening tonight in your city is scattered across Meetup, Facebook, Eventbrite, venue websites, and a hundred Instagram stories. Each one is a closed destination that holds listings hostage to its own growth. None of them answer the simple question: <b>what's going on around here?</b></p>
+          <p style="margin-top:18px">When is the open alternative. The unit isn't an app or an account, it's a <b>calendar with an owner</b>. A person who knows every jazz room in New York publishes a calendar, and you subscribe to it the way you'd subscribe to a newsletter. It shows up in the calendar app you already use, and it stays current.</p>
+        </div>
+        <div>
+          <p><b>Feeds are free forever.</b> Reading is free. Publishing is free. Subscribing your calendar app is free. Data out is sacred: every page carries open standards, so nothing you build here is ever locked in.</p>
+          <p style="margin-top:18px">The platform takes a small cut only when money moves: paid calendar subscriptions, tickets, tips. That's the whole business, and that's the .org promise. Think of it as <b>Substack for calendars</b>: own a calendar the way you own a newsletter.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="four">
+    <div class="wrap">
+      <h2>Every calendar is four things at once</h2>
+      <p class="four-sub">Publish once. It's instantly useful everywhere, with no exporting, no re-posting, no lock-in.</p>
+      <div class="four-grid">
+        <div>
+          <span class="tag">/nyc-jazz</span>
+          <h3>A web page</h3>
+          <p>A clean public page anyone can visit, share, and search. Event markup built in.</p>
+        </div>
+        <div>
+          <span class="tag">.ics</span>
+          <h3>A calendar feed</h3>
+          <p>Subscribe once in Apple or Google Calendar and every update flows in automatically.</p>
+        </div>
+        <div>
+          <span class="tag">.json</span>
+          <h3>An API</h3>
+          <p>Structured, open data for apps, sites, and researchers. No key required to read.</p>
+        </div>
+        <div>
+          <span class="tag">@weekly</span>
+          <h3>An email digest</h3>
+          <p>The week ahead, written by the curator, delivered to subscribers who want it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="earn">
+    <div class="wrap">
+      <h2>The people who make the scene should make money.</h2>
+      <div class="earn-list">
+        <div class="earn-row">
+          <div class="earn-who">Curators</div>
+          <p>Offer a paid tier on your calendar: premium picks, early access, the weekly digest. <b>You keep 90%.</b> Nobody else pays taste-makers for knowing their city.</p>
+        </div>
+        <div class="earn-row">
+          <div class="earn-who">Hosts</div>
+          <p>Sell tickets and paid RSVPs natively for <b>about a 1% platform fee</b> plus card processing. The big ticketing platforms charge six times that. On free events, guests can tip you.</p>
+        </div>
+        <div class="earn-row">
+          <div class="earn-who">Venues</div>
+          <p>Embed your own calendar on your website free, and claim your venue page so every listing points home. Pro tools for branding and analytics come later.</p>
+        </div>
+      </div>
+      <p class="earn-note">When only earns when you do: a small share of payments, never a paywall on the feed itself.</p>
+    </div>
+  </section>
+
+  <section class="waitlist" id="waitlist">
+    <div class="wrap wl-grid">
+      <div>
+        <h2>Be there when it starts.</h2>
+        <p class="wl-copy">Join the waitlist and we'll write when the first New York calendars go live. If you curate, host, or run a room, we want to hear from you first.</p>
+      </div>
+      <form class="wl" id="waitlist-form" method="post" action="/api/waitlist" novalidate>
+        <div class="field">
+          <label for="wl-email">Email</label>
+          <input id="wl-email" name="email" type="email" required autocomplete="email" placeholder="you@example.com">
+        </div>
+        <div class="field">
+          <label for="wl-role">Which are you?</label>
+          <select id="wl-role" name="role">
+            <option value="curious" selected>Just curious</option>
+            <option value="curator">I'm a curator</option>
+            <option value="host">I host events</option>
+            <option value="venue">I run a venue</option>
+          </select>
+          <span class="hint">Optional, but it helps us invite the right people first.</span>
+        </div>
+        <div class="field">
+          <label for="wl-city">Your city</label>
+          <select id="wl-city" name="city">
+            <option value="nyc" selected>New York</option>
+            <option value="nola">New Orleans</option>
+            <option value="other">Somewhere else</option>
+          </select>
+        </div>
+        <div class="hp" aria-hidden="true">
+          <label for="wl-website">Website</label>
+          <input id="wl-website" name="website" type="text" tabindex="-1" autocomplete="off">
+        </div>
+        <button class="btn" type="submit" id="wl-submit">Join the waitlist</button>
+        <p class="wl-status" id="wl-status" role="status"></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot-inner">
+    <p class="foot-left">An open-source project, AGPL-licensed. Read the code, open an issue, or run your own instance: <a href="https://github.com/tedbarnett/When" rel="noopener">github.com/tedbarnett/When</a></p>
+    <p class="foot-right">From the founder of When.com (1998)</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var form = document.getElementById('waitlist-form');
+  var status = document.getElementById('wl-status');
+  var submit = document.getElementById('wl-submit');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var email = document.getElementById('wl-email').value.trim();
+    status.className = 'wl-status';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      status.textContent = 'Enter a valid email address.';
+      status.className = 'wl-status err';
+      return;
+    }
+    submit.disabled = true;
+    submit.textContent = 'Joining\u2026';
+    fetch('/api/waitlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: email,
+        role: document.getElementById('wl-role').value,
+        city: document.getElementById('wl-city').value,
+        website: document.getElementById('wl-website').value
+      })
+    }).then(function (r) { return r.json(); }).then(function (d) {
+      if (d.ok) {
+        status.textContent = d.duplicate ? "You're already on the list. See you in New York." : "You're on the list. See you in New York.";
+        status.className = 'wl-status ok';
+        form.reset();
+      } else {
+        status.textContent = d.error || 'Something went wrong. Try again in a minute.';
+        status.className = 'wl-status err';
+      }
+    }).catch(function () {
+      status.textContent = 'Network hiccup. Try again in a minute.';
+      status.className = 'wl-status err';
+    }).finally(function () {
+      submit.disabled = false;
+      submit.textContent = 'Join the waitlist';
+    });
+  });
+})();
+</script>
+</body>
+</html>

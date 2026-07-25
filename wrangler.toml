@@ -1,0 +1,8 @@
+name = "when-org"
+compatibility_date = "2026-07-24"
+pages_build_output_dir = "public"
+
+# Waitlist storage (KV namespace id is an identifier, not a secret).
+[[kv_namespaces]]
+binding = "WHEN_WAITLIST"
+id = "17ac37c5fa094254b2a4a80cc8241dc5"
