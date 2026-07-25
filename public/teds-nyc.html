@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ted's NYC · When</title>
+<title>Ted's NYC · When.org</title>
 <meta name="description" content="Real New York this week: jazz basements, free lawns, old movies, new food. A calendar curated by Ted. Subscribe in any calendar app.">
 <link rel="canonical" href="https://when.org/teds-nyc">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -11,12 +11,12 @@
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://when.org/teds-nyc">
-<meta property="og:site_name" content="When">
-<meta property="og:title" content="Ted's NYC · a When calendar">
+<meta property="og:site_name" content="When.org">
+<meta property="og:title" content="Ted's NYC · a When.org calendar">
 <meta property="og:description" content="Real New York for the week ahead, curated by Ted. Jazz, free lawns, old movies, new food. Subscribe in any calendar app.">
 <meta property="og:image" content="https://bricartsmedia.org/wp-content/uploads/2026/04/CBS-Photo%C2%A9Jimmy-Bruch-scaled-1.jpg">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Ted's NYC · a When calendar">
+<meta name="twitter:title" content="Ted's NYC · a When.org calendar">
 <meta name="twitter:description" content="Real New York for the week ahead, curated by Ted. Subscribe in any calendar app.">
 
 <style>
@@ -116,6 +116,75 @@ header.nav {
 .nav-links a.cta:hover { opacity: .92; }
 .nav-links a.cta:active { transform: translateY(1px); }
 @media (max-width: 640px) { .nav-links a.about { display: none; } }
+
+/* ---------- menu ---------- */
+.nav-inner { position: relative; }
+.menu-btn {
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  width: 40px; height: 40px; flex: none; margin-left: 18px;
+  background: var(--surface); border: 1px solid var(--hairline); border-radius: 999px;
+  cursor: pointer; transition: border-color .18s ease;
+}
+.menu-btn:hover { border-color: var(--faint); }
+.menu-btn .bar { display: block; width: 15px; height: 2px; background: var(--ink); border-radius: 2px; transition: transform .22s ease; }
+.menu-btn[aria-expanded="true"] .bar:first-child { transform: translateY(3px) rotate(45deg); }
+.menu-btn[aria-expanded="true"] .bar:last-child { transform: translateY(-3px) rotate(-45deg); }
+.menu-panel {
+  position: absolute; top: 56px; right: 0; z-index: 40;
+  width: min(320px, calc(100vw - 48px));
+  background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px;
+  box-shadow: 0 24px 56px -20px color-mix(in srgb, var(--ink) 32%, transparent);
+  padding: 10px;
+}
+.menu-panel[hidden] { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .menu-panel { animation: menuIn .18s cubic-bezier(0.16,1,0.3,1); }
+  @keyframes menuIn { from { opacity: 0; transform: translateY(-6px); } }
+}
+.menu-panel .mi {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  padding: 11px 14px; border-radius: 10px; text-decoration: none;
+  font-weight: 700; font-size: 15px; color: var(--ink);
+  transition: background .15s ease, color .15s ease;
+}
+.menu-panel .mi:hover { background: var(--accent-soft); color: var(--accent); }
+.menu-panel .mi .hint { font-family: var(--mono); font-size: 11px; color: var(--faint); font-weight: 500; }
+.menu-div { height: 1px; background: var(--hairline); margin: 8px 4px; }
+.menu-auth { padding: 4px 4px 6px; }
+.menu-auth .btn-google {
+  display: block; text-align: center; text-decoration: none;
+  font-weight: 700; font-size: 14.5px; color: var(--ink); font-family: var(--sans);
+  background: var(--paper); border: 1px solid var(--hairline); border-radius: 999px;
+  padding: 10px 16px; cursor: pointer; transition: border-color .18s ease;
+}
+.menu-auth .btn-google:hover { border-color: var(--faint); }
+.menu-auth .or { text-align: center; font-family: var(--mono); font-size: 11px; color: var(--faint); margin: 10px 0; }
+.menu-auth .magic { display: grid; gap: 8px; }
+.menu-auth .magic input {
+  font-family: var(--sans); font-size: 14.5px; font-weight: 500; color: var(--ink);
+  background: var(--paper); border: 1px solid var(--hairline); border-radius: 10px;
+  padding: 10px 12px; width: 100%;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+.menu-auth .magic input::placeholder { color: var(--faint); }
+.menu-auth .magic input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+.menu-auth .magic button {
+  font-family: var(--sans); font-weight: 700; font-size: 14.5px;
+  color: var(--accent-ink); background: var(--accent); border: none; border-radius: 999px;
+  padding: 10px 16px; cursor: pointer; transition: opacity .18s ease;
+}
+.menu-auth .magic button:hover { opacity: .92; }
+.menu-auth .magic button:disabled { opacity: .6; cursor: wait; }
+.menu-auth .auth-status { font-size: 13px; font-weight: 700; margin: 2px 2px 0; display: none; }
+.menu-auth .auth-status.ok { display: block; color: var(--accent); }
+.menu-auth .auth-status.err { display: block; color: #c0392b; }
+@media (prefers-color-scheme: dark) { .menu-auth .auth-status.err { color: #ff7a68; } }
+.menu-auth .who { display: flex; align-items: center; gap: 8px; padding: 6px 10px 10px; font-weight: 700; font-size: 15px; }
+.menu-auth .who .owner-badge {
+  font-family: var(--mono); font-size: 11px; color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: 999px; padding: 2px 9px;
+}
 
 /* ---------- calendar header ---------- */
 .calhead { padding: 44px 0 30px; }
@@ -264,9 +333,20 @@ footer { border-top: 1px solid var(--hairline); padding: 36px 0 52px; }
   <div class="wrap nav-inner">
     <a class="brand" href="/">When<span class="tld">.org</span></a>
     <nav class="nav-links">
-      <a class="about" href="/#manifesto">About When</a>
+      <a class="about" href="/#manifesto">About When.org</a>
       <a class="cta" href="webcal://when.org/teds-nyc.ics" id="subscribe-top">Subscribe</a>
     </nav>
+    <button class="menu-btn" id="menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu-panel" aria-haspopup="true">
+      <span class="bar"></span><span class="bar"></span>
+    </button>
+    <div class="menu-panel" id="menu-panel" hidden>
+      <a class="mi" href="/teds-nyc">Browse NYC <span class="hint">events</span></a>
+      <a class="mi" href="/teds-nyc">Ted&rsquo;s NYC <span class="hint">calendar</span></a>
+      <a class="mi" href="/#manifesto">About</a>
+      <a class="mi" href="https://github.com/tedbarnett/When" rel="noopener">GitHub</a>
+      <div class="menu-div" role="separator"></div>
+      <div class="menu-auth" id="menu-auth"><a class="mi" href="/api/auth/google">Log in</a></div>
+    </div>
   </div>
 </header>
 
@@ -314,7 +394,7 @@ footer { border-top: 1px solid var(--hairline); padding: 36px 0 52px; }
 
 <footer>
   <div class="wrap foot-inner">
-    <p class="foot-left">Ted&rsquo;s NYC is a <a href="/">When</a> calendar: a web page, an ICS feed, and a JSON API, all from one list of events. Listings link to the venues that host them.</p>
+    <p class="foot-left">Ted&rsquo;s NYC is a <a href="/">When.org</a> calendar: a web page, an ICS feed, and a JSON API, all from one list of events. Listings link to the venues that host them.</p>
     <p class="foot-right">New York, this week</p>
   </div>
 </footer>
@@ -505,6 +585,99 @@ footer { border-top: 1px solid var(--hairline); padding: 36px 0 52px; }
     })
     .catch(function () {
       document.getElementById('days-root').innerHTML = '<p class="loading">could not load events. try a refresh.</p>';
+    });
+})();
+</script>
+<script>
+/* When.org menu + auth (shared across pages) */
+(function () {
+  var btn = document.getElementById('menu-btn');
+  var panel = document.getElementById('menu-panel');
+  if (!btn || !panel) return;
+  function isOpen() { return btn.getAttribute('aria-expanded') === 'true'; }
+  function setOpen(v) {
+    btn.setAttribute('aria-expanded', v ? 'true' : 'false');
+    panel.hidden = !v;
+    if (v) {
+      var first = panel.querySelector('a, input, button');
+      if (first) first.focus({ preventScroll: true });
+    }
+  }
+  btn.addEventListener('click', function () { setOpen(!isOpen()); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && isOpen()) { setOpen(false); btn.focus(); }
+  });
+  document.addEventListener('click', function (e) {
+    if (isOpen() && !panel.contains(e.target) && !btn.contains(e.target)) setOpen(false);
+  });
+  panel.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a.mi, a.btn-google');
+    if (a) setOpen(false);
+  });
+
+  var authBox = document.getElementById('menu-auth');
+  function escText(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function loginHTML() {
+    return '<a class="btn-google" href="/api/auth/google">Sign in with Google</a>' +
+      '<div class="or">or</div>' +
+      '<form class="magic" id="magic-form" novalidate>' +
+        '<input type="email" id="magic-email" name="email" placeholder="you@example.com" autocomplete="email" aria-label="Email for sign-in link">' +
+        '<button type="submit" id="magic-send">Send sign-in link</button>' +
+        '<p class="auth-status" id="magic-status" role="status"></p>' +
+      '</form>';
+  }
+  function userHTML(me) {
+    var first = (me.name || me.email).split(' ')[0];
+    return '<div class="who"><span>' + escText(first) + '</span>' +
+      (me.isOwner ? '<span class="owner-badge">&#10022; owner</span>' : '') +
+      '</div>' +
+      '<a class="mi" href="/api/auth/logout">Sign out</a>';
+  }
+  function hookMagic() {
+    var form = document.getElementById('magic-form');
+    if (!form) return;
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var input = document.getElementById('magic-email');
+      var status = document.getElementById('magic-status');
+      var send = document.getElementById('magic-send');
+      var email = input.value.trim();
+      status.className = 'auth-status';
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        status.textContent = 'Enter a valid email address.';
+        status.className = 'auth-status err';
+        return;
+      }
+      send.disabled = true;
+      fetch('/api/auth/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email })
+      }).then(function (r) { return r.json(); }).then(function (d) {
+        if (d.ok) {
+          status.textContent = d.dev ? 'Email sign-in is almost ready. Use Google for now.' : 'Check your email for the sign-in link.';
+          status.className = 'auth-status ok';
+        } else {
+          status.textContent = d.error || 'Something went wrong. Try again.';
+          status.className = 'auth-status err';
+        }
+      }).catch(function () {
+        status.textContent = 'Network hiccup. Try again in a minute.';
+        status.className = 'auth-status err';
+      }).finally(function () { send.disabled = false; });
+    });
+  }
+  fetch('/api/me')
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .catch(function () { return null; })
+    .then(function (me) {
+      var signedIn = me && me.email;
+      authBox.innerHTML = signedIn ? userHTML(me) : loginHTML();
+      if (!signedIn) hookMagic();
     });
 })();
 </script>

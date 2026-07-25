@@ -6,3 +6,10 @@ pages_build_output_dir = "public"
 [[kv_namespaces]]
 binding = "WHEN_WAITLIST"
 id = "17ac37c5fa094254b2a4a80cc8241dc5"
+
+# Auth storage: magic-link tokens (15-min TTL). Secrets (SESSION_SECRET,
+# GOOGLE_CLIENT_SECRET, RESEND_API_KEY) live in the Pages project env,
+# never in this repo.
+[[kv_namespaces]]
+binding = "WHEN_AUTH"
+id = "8a2774ff75e149898dcf46c3b09c9169"
