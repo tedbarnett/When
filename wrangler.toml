@@ -19,3 +19,11 @@ id = "8a2774ff75e149898dcf46c3b09c9169"
 [[kv_namespaces]]
 binding = "WHEN_CAL"
 id = "dbc96d435850429a8b9ad2cdd5b50874"
+
+# Event Ideas candidate pool (issue #13): D1 database filled by the
+# workers/when-ingest cron Worker, read by /api/cities/nyc/ideas.
+# Schema lives in migrations/ (applied via the worker's wrangler.toml).
+[[d1_databases]]
+binding = "WHEN_EVENTS"
+database_name = "when-events"
+database_id = "883cbea3-2020-4cec-bdf2-10137399bb84"
