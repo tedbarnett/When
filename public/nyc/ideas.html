@@ -68,6 +68,10 @@ button { font-family: inherit; }
 .group-items { margin-left: 18px; padding-left: 12px; border-left: 2px solid var(--line); }
 .group-items .idea-row { padding: 11px 2px; }
 .group-items .idea-time { visibility: hidden; }
+.filter-row { display: flex; gap: 8px; flex-wrap: wrap; padding: 14px 2px 0; }
+.fchip { background: none; border: 1px solid var(--line); color: var(--faint); font-family: var(--mono); font-size: 11px; padding: 5px 12px; border-radius: 999px; cursor: pointer; }
+.fchip:hover { border-color: var(--faint); }
+.fchip.on { color: var(--head); border-color: var(--spark); }
 .idea-time { flex: none; width: 74px; font-family: var(--mono); font-size: 11.5px; color: var(--faint); padding-top: 3px; }
 .idea-main { flex: 1 1 auto; min-width: 0; }
 .idea-title { font-weight: 700; font-size: 15.5px; color: var(--head); line-height: 1.3; }
@@ -239,6 +243,15 @@ button { font-family: inherit; }
      title + time (day) / title + end date (any-day); groups render one row
      with an expandable per-location list. */
   var openGroups = {};
+  /* source filter (e.g. only NYC Parks); persisted per device */
+  var srcFilter = 'all';
+  try { srcFilter = localStorage.getItem('when:ideas:src') || 'all'; } catch (e) {}
+  function evSources(ev) {
+    return ev.signals && ev.signals.length ? ev.signals : (ev.source ? [ev.source] : []);
+  }
+  function passesSrc(ev) {
+    return srcFilter === 'all' || evSources(ev).indexOf(srcFilter) >= 0;
+  }
   function groupKey(ev, anyday) {
     return (anyday ? 'A|' : 'D|') +
       String(ev.title || '').toLowerCase().replace(/\s+/g, ' ').trim() + '|' +
@@ -320,19 +333,42 @@ button { font-family: inherit; }
     document.getElementById('day-next').disabled = !cur.next;
     document.getElementById('datebar').hidden = false;
 
-    var html = '<div class="ideas">';
-    if (cur.events.length) {
-      var groups = groupList(cur.events, false);
+    /* source filter chips: one per source present on this day */
+    var avail = {}, srcOrder = [];
+    var everything = (cur.events || []).concat(cur.anyday || []);
+    for (var s = 0; s < everything.length; s++) {
+      var ss = evSources(everything[s]);
+      for (var s2 = 0; s2 < ss.length; s2++) {
+        if (!avail[ss[s2]]) { avail[ss[s2]] = 1; srcOrder.push(ss[s2]); }
+      }
+    }
+    var html = '';
+    if (srcOrder.length > 1 || srcFilter !== 'all') {
+      html += '<div class="filter-row">' +
+        '<button class="fchip' + (srcFilter === 'all' ? ' on' : '') + '" type="button" data-srcfilter="all">all sources</button>';
+      for (s = 0; s < srcOrder.length; s++) {
+        html += '<button class="fchip' + (srcFilter === srcOrder[s] ? ' on' : '') + '" type="button" data-srcfilter="' + esc(srcOrder[s]) + '">' + esc(SOURCE_LABEL[srcOrder[s]] || srcOrder[s]) + '</button>';
+      }
+      html += '</div>';
+    }
+    var dayEvs = [];
+    for (var f = 0; f < (cur.events || []).length; f++) if (passesSrc(cur.events[f])) dayEvs.push(cur.events[f]);
+    var anyEvs = [];
+    for (f = 0; f < (cur.anyday || []).length; f++) if (passesSrc(cur.anyday[f])) anyEvs.push(cur.anyday[f]);
+
+    html += '<div class="ideas">';
+    if (dayEvs.length) {
+      var groups = groupList(dayEvs, false);
       for (var i = 0; i < groups.length; i++) {
         html += groups[i].items.length > 1 ? groupRowHtml(groups[i], false) : rowHtml(groups[i].items[0], false);
       }
     } else {
-      html += '<div class="empty">No ideas for this day' + (cur.next ? ' — try →' : '') + '.</div>';
+      html += '<div class="empty">No ' + (srcFilter !== 'all' ? esc(SOURCE_LABEL[srcFilter] || srcFilter) + ' ' : '') + 'ideas for this day' + (cur.next ? ' — try →' : '') + '.</div>';
     }
-    if (cur.anyday && cur.anyday.length) {
+    if (anyEvs.length) {
       html += '<h2 class="sect-head">any day<span class="dot">.</span></h2>' +
         '<div class="sect-note">multi-day runs overlapping this date</div>';
-      var agroups = groupList(cur.anyday, true);
+      var agroups = groupList(anyEvs, true);
       for (var j = 0; j < agroups.length; j++) {
         html += agroups[j].items.length > 1 ? groupRowHtml(agroups[j], true) : rowHtml(agroups[j].items[0], true);
       }
@@ -426,6 +462,12 @@ button { font-family: inherit; }
     if (t.getAttribute && t.getAttribute('data-grouptoggle')) {
       var gk = t.getAttribute('data-grouptoggle');
       openGroups[gk] = !openGroups[gk];
+      renderDay();
+      return;
+    }
+    if (t.getAttribute && t.getAttribute('data-srcfilter')) {
+      srcFilter = t.getAttribute('data-srcfilter');
+      try { localStorage.setItem('when:ideas:src', srcFilter); } catch (err) {}
       renderDay();
       return;
     }
