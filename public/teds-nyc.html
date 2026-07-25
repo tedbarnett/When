@@ -442,6 +442,7 @@ body.modal-open { overflow: hidden; }
       </div>
       <button class="history-link" id="history-open" type="button">history<span class="dot">.</span></button>
       <button class="add-pill" id="add-event-open" type="button" hidden aria-haspopup="dialog">＋ add event</button>
+      <a class="add-pill" id="ideas-link" href="/nyc/ideas" hidden style="text-decoration:none">✦ event ideas</a>
     </div>
   </div>
 
@@ -1658,6 +1659,7 @@ body.modal-open { overflow: hidden; }
     if (me && me.isOwner) {
       isOwner = true;
       document.getElementById('add-event-open').hidden = false; /* URL importer (issue #6) */
+      document.getElementById('ideas-link').hidden = false; /* Event Ideas supply tool (issue #13) */
       loadAdminData(); /* owner sees hidden + edit chrome; re-renders when it lands */
     }
   }).catch(function () { renderAuth(null); });
