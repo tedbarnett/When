@@ -1,7 +1,9 @@
 /**
  * POST /api/auth/email {email} — request a magic sign-in link.
  * Token goes to KV (WHEN_AUTH, 15-min TTL). If RESEND_API_KEY is set the link
- * is emailed from signin@when.org; until then we answer {ok:true, dev:true}
+ * is emailed via Resend (from address in AUTH_EMAIL_FROM, falling back to
+ * signin@barnettlabs.tech until when.org is verified in Resend); until then
+ * we answer {ok:true, dev:true}
  * and send nothing (the token still exists but is never revealed).
  */
 import { json } from '../../_lib/session.js';
@@ -47,7 +49,7 @@ export async function onRequestPost({ request, env }) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'When.org <signin@when.org>',
+      from: env.AUTH_EMAIL_FROM || 'When.org <signin@barnettlabs.tech>',
       to: [email],
       subject: 'Your When.org sign-in link',
       text:
