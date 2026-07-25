@@ -108,3 +108,8 @@ async function handle({ request, env }) {
 
 export const onRequestPost = handle;
 export const onRequestPatch = handle;
+
+/** Any other method (GET, etc.): explicit 405 instead of asset fallback. */
+export function onRequest() {
+  return json({ ok: false, error: 'method not allowed' }, 405, { Allow: 'POST, PATCH' });
+}

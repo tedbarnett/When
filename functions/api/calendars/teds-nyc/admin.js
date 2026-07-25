@@ -20,3 +20,8 @@ export async function onRequestGet({ request, env }) {
     return json({ ok: false, error: 'calendar data unavailable' }, 502);
   }
 }
+
+/** Any other method: explicit 405 instead of asset fallback. */
+export function onRequest() {
+  return json({ ok: false, error: 'method not allowed' }, 405, { Allow: 'GET' });
+}
