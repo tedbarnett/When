@@ -91,6 +91,9 @@ export function buildCandidate(raw, sourceId, now) {
   const title = str(raw.title, 200);
   const start = str(raw.start, 40);
   if (!title || !/^\d{4}-\d{2}-\d{2}T/.test(start)) return null;
+  // Cancelled events are noise, not ideas (NYC Parks prefixes titles with
+  // "CANCELED:"; covers both spellings and separator styles).
+  if (/^\s*cancell?ed\b/i.test(title)) return null;
   const venue = str(raw.venue, 200);
   const key = dedupeKey(venue, start, title);
   const iso = (now || new Date()).toISOString();
