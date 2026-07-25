@@ -1371,7 +1371,7 @@ body.modal-open { overflow: hidden; }
       '<div class="import-status' + (importErr ? ' err' : '') + '">' + esc(importErr || '') + '</div>';
   }
   function openImport() {
-    importState = 'input'; importErr = ''; importEv = null; importSrc = '';
+    importState = 'input'; importErr = ''; importEv = null; importSrc = ''; importUrlVal = '';
     renderImport();
     openOverlay('import');
     var inp = document.getElementById('import-url');
