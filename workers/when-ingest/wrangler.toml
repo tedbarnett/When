@@ -1,0 +1,20 @@
+# when-ingest — scheduled Worker that fills the Event Ideas candidate pool
+# (issue #13). Runs the enabled adapters every 6 hours and writes normalized,
+# legally-clean event facts into D1 (when-events).
+#
+# Secrets (set with `wrangler secret put …`, never in this file):
+#   TM_API_KEY   — Ticketmaster Discovery API key (adapter skips without it)
+#   INGEST_TOKEN — shared secret for manual POST /run
+
+name = "when-ingest"
+main = "src/index.js"
+compatibility_date = "2026-07-24"
+
+[triggers]
+crons = ["0 */6 * * *"]
+
+[[d1_databases]]
+binding = "WHEN_EVENTS"
+database_name = "when-events"
+database_id = "883cbea3-2020-4cec-bdf2-10137399bb84"
+migrations_dir = "../../migrations"
