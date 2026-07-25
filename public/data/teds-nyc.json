@@ -15,12 +15,20 @@
       "blurb": "A museum courtyard that turns into the best outdoor club in Queens. Dub legends early, techno late.",
       "venue": "MoMA PS1",
       "neighborhood": "Long Island City",
+      "geo": {
+        "lat": 40.7456,
+        "lng": -73.947
+      },
       "start": "2026-07-24T16:00:00-04:00",
       "end": "2026-07-24T22:00:00-04:00",
       "price": "$25+",
       "url": "https://www.momaps1.org/en",
       "image": "https://www.filepicker.io/api/file/3VWU9nWdQxOWZ8bgTDFA",
-      "tags": ["music", "party", "museum"]
+      "tags": [
+        "music",
+        "party",
+        "museum"
+      ]
     },
     {
       "id": "bandshell-jazz-0724",
@@ -28,12 +36,20 @@
       "blurb": "Cindy Blackman Santana leads an all-women jazz bill under the trees. Bring a blanket, it's free.",
       "venue": "Lena Horne Bandshell, Prospect Park",
       "neighborhood": "Park Slope",
+      "geo": {
+        "lat": 40.665,
+        "lng": -73.976
+      },
       "start": "2026-07-24T18:00:00-04:00",
       "end": "2026-07-24T22:00:00-04:00",
       "price": "Free",
       "url": "https://bricartsmedia.org/event/jazz-at-the-bandshell/",
       "image": "https://bricartsmedia.org/wp-content/uploads/2026/04/CBS-Photo%C2%A9Jimmy-Bruch-scaled-1.jpg",
-      "tags": ["jazz", "outdoors", "free"]
+      "tags": [
+        "jazz",
+        "outdoors",
+        "free"
+      ]
     },
     {
       "id": "mcbride-bluenote-0724",
@@ -41,11 +57,17 @@
       "blurb": "The greatest working bassist in jazz, close enough to touch. Book the 8pm and stay for a nightcap.",
       "venue": "Blue Note",
       "neighborhood": "Greenwich Village",
+      "geo": {
+        "lat": 40.7308,
+        "lng": -74.0006
+      },
       "start": "2026-07-24T20:00:00-04:00",
       "price": "Ticketed",
       "url": "https://www.bluenotejazz.com/nyc/tm-event/christian-mcbride-ursa-major",
       "image": "https://i.ticketweb.com/i/00/13/38/22/53_Original.jpg?v=6",
-      "tags": ["jazz"]
+      "tags": [
+        "jazz"
+      ]
     },
     {
       "id": "whitney-friday-0724",
@@ -53,12 +75,20 @@
       "blurb": "Five floors free after five. I go for the Hoppers and the sunset from the terraces.",
       "venue": "Whitney Museum of American Art",
       "neighborhood": "Meatpacking",
+      "geo": {
+        "lat": 40.7396,
+        "lng": -74.0089
+      },
       "start": "2026-07-24T17:00:00-04:00",
       "end": "2026-07-24T22:00:00-04:00",
       "price": "Free, reserve ahead",
       "url": "https://whitney.org/visit/free-admission/free-friday-nights",
       "image": "https://whitneymedia.org/assets/image/774437/gancsos_wmaa_01.jpg",
-      "tags": ["art", "museum", "free"]
+      "tags": [
+        "art",
+        "museum",
+        "free"
+      ]
     },
     {
       "id": "ska-bryant-0724",
@@ -66,11 +96,19 @@
       "blurb": "Carnegie Hall sends a ska orchestra to the lawn. Midtown at its most unlikely and joyful.",
       "venue": "Bryant Park",
       "neighborhood": "Midtown",
+      "geo": {
+        "lat": 40.7536,
+        "lng": -73.9832
+      },
       "start": "2026-07-24T19:00:00-04:00",
       "price": "Free",
       "url": "https://bryantpark.org/activities/picnic-performances",
       "image": "https://bryantpark.org/images/cache/assets/uploads/images/meta/Jazzmobile_2022-07-23_Ryan-Muir_lores_402-1200x627.jpg",
-      "tags": ["music", "outdoors", "free"]
+      "tags": [
+        "music",
+        "outdoors",
+        "free"
+      ]
     },
     {
       "id": "rooftop-urlirl-0724",
@@ -78,22 +116,37 @@
       "blurb": "Shorts about life inside the algorithm, outdoors with a beer. Filmmaker Q&A and afterparty included.",
       "venue": "Industry City, Courtyard 5/6",
       "neighborhood": "Sunset Park",
+      "geo": {
+        "lat": 40.6558,
+        "lng": -74.0095
+      },
       "start": "2026-07-24T20:30:00-04:00",
       "price": "$22",
       "url": "https://rooftopfilms.com/event/url-irl-internet-shorts-2026/",
       "image": "https://rooftopfilms.com/wp-content/uploads/2026/05/Their-Eyes_still-scaled.jpg",
-      "tags": ["film", "outdoors"]
+      "tags": [
+        "film",
+        "outdoors"
+      ]
     },
     {
       "id": "winters-tale-0725",
       "title": "The Winter's Tale: Shakespeare in the Park, first preview",
       "blurb": "Opening weekend at the Delacorte. Free Shakespeare under the stars is still the best deal in town.",
       "venue": "Delacorte Theater, Central Park",
-      "neighborhood": "Upper West Side",
+      "neighborhood": "Central Park",
+      "geo": {
+        "lat": 40.7801,
+        "lng": -73.969
+      },
       "start": "2026-07-25T20:00:00-04:00",
       "price": "Free, ticket lottery",
       "url": "https://publictheater.org/free-shakespeare-in-the-park/",
-      "tags": ["theater", "outdoors", "free"]
+      "tags": [
+        "theater",
+        "outdoors",
+        "free"
+      ]
     },
     {
       "id": "kris-davis-vanguard-0725",
@@ -101,11 +154,17 @@
       "blurb": "Piano, sax, drums, zero guardrails. The final weekend of a run people will claim they saw.",
       "venue": "Village Vanguard",
       "neighborhood": "West Village",
+      "geo": {
+        "lat": 40.7362,
+        "lng": -74.0017
+      },
       "start": "2026-07-25T20:00:00-04:00",
       "price": "$40",
       "url": "https://villagevanguard.com/",
       "image": "https://villagevanguard.com/wp-content/uploads/2026/07/60s-wider-taller.jpg",
-      "tags": ["jazz"]
+      "tags": [
+        "jazz"
+      ]
     },
     {
       "id": "afro-latinas-summerstage-0725",
@@ -113,11 +172,19 @@
       "blurb": "Susana Baca is a living legend of Afro-Peruvian song. Free, in the park, on a summer Saturday.",
       "venue": "Rumsey Playfield, Central Park",
       "neighborhood": "Central Park",
+      "geo": {
+        "lat": 40.771,
+        "lng": -73.97
+      },
       "start": "2026-07-25T17:00:00-04:00",
       "end": "2026-07-25T22:00:00-04:00",
       "price": "Free",
       "url": "https://cityparksfoundation.org/summerstage/",
-      "tags": ["music", "outdoors", "free"]
+      "tags": [
+        "music",
+        "outdoors",
+        "free"
+      ]
     },
     {
       "id": "summer-streets-0725",
@@ -125,11 +192,18 @@
       "blurb": "Miles of car-free streets to walk, bike, and skate. Go early before the sun gets serious.",
       "venue": "Citywide, car-free routes",
       "neighborhood": "Queens & Staten Island",
+      "geo": {
+        "lat": 40.756,
+        "lng": -73.9445
+      },
       "start": "2026-07-25T09:00:00-04:00",
       "end": "2026-07-25T17:00:00-04:00",
       "price": "Free",
       "url": "https://www.nyc.gov/html/dot/html/pedestrians/summerstreets.shtml",
-      "tags": ["outdoors", "free"]
+      "tags": [
+        "outdoors",
+        "free"
+      ]
     },
     {
       "id": "fort-greene-jazz-0725",
@@ -137,11 +211,19 @@
       "blurb": "Eric Frazier's neighborhood jazz festival, sixteen years running. A pure Brooklyn afternoon.",
       "venue": "Fort Greene Park",
       "neighborhood": "Fort Greene",
+      "geo": {
+        "lat": 40.6908,
+        "lng": -73.9756
+      },
       "start": "2026-07-25T15:00:00-04:00",
       "end": "2026-07-25T19:00:00-04:00",
       "price": "Free",
       "url": "https://www.fortgreenepark.org/calendar/jazz-festival-072526",
-      "tags": ["jazz", "outdoors", "free"]
+      "tags": [
+        "jazz",
+        "outdoors",
+        "free"
+      ]
     },
     {
       "id": "smorgasburg-wburg-0725",
@@ -149,12 +231,19 @@
       "blurb": "A hundred vendors on the waterfront. Go hungry, arrive before noon, thank me later.",
       "venue": "Marsha P. Johnson State Park",
       "neighborhood": "Williamsburg",
+      "geo": {
+        "lat": 40.7218,
+        "lng": -73.9624
+      },
       "start": "2026-07-25T11:00:00-04:00",
       "end": "2026-07-25T18:00:00-04:00",
       "price": "Free entry",
       "url": "https://www.smorgasburg.com/",
       "image": "https://static1.squarespace.com/static/58a0d691ff7c50486df2c34c/t/58a20d31ebbd1a8d3e82e3b9/1731965599439/JvP_092714_0457_print.jpg?format=1500w",
-      "tags": ["food", "market"]
+      "tags": [
+        "food",
+        "market"
+      ]
     },
     {
       "id": "marjorie-eliot-0726",
@@ -162,11 +251,19 @@
       "blurb": "Every Sunday since 1992, Marjorie opens her Sugar Hill parlor for free jazz. The most moving room in New York.",
       "venue": "555 Edgecombe Ave, Apt 3F",
       "neighborhood": "Harlem",
+      "geo": {
+        "lat": 40.833,
+        "lng": -73.9407
+      },
       "start": "2026-07-26T15:30:00-04:00",
       "end": "2026-07-26T17:30:00-04:00",
       "price": "Free",
       "url": "https://en.wikipedia.org/wiki/Marjorie_Eliot",
-      "tags": ["jazz", "free", "offbeat"]
+      "tags": [
+        "jazz",
+        "free",
+        "offbeat"
+      ]
     },
     {
       "id": "guelaguetza-socrates-0726",
@@ -174,12 +271,20 @@
       "blurb": "Oaxaca on the East River: folk dance, brass bands, and mole at Socrates Sculpture Park.",
       "venue": "Socrates Sculpture Park",
       "neighborhood": "Long Island City",
+      "geo": {
+        "lat": 40.7684,
+        "lng": -73.9367
+      },
       "start": "2026-07-26T12:00:00-04:00",
       "end": "2026-07-26T18:00:00-04:00",
       "price": "Free",
       "url": "https://socratessculpturepark.org/programevent/ballet-folklorico-mexicano-de-nueva-york-presents-la-guelaguetza/",
       "image": "https://socratessculpturepark.org/wp-content/uploads/programevent/MOC7571-768x512.jpg",
-      "tags": ["festival", "outdoors", "free"]
+      "tags": [
+        "festival",
+        "outdoors",
+        "free"
+      ]
     },
     {
       "id": "grand-bazaar-vintage-0726",
@@ -187,11 +292,18 @@
       "blurb": "The Upper West Side vintage hunt, indoors and out. Proceeds fund four public schools.",
       "venue": "Grand Bazaar NYC, 100 W 77th St",
       "neighborhood": "Upper West Side",
+      "geo": {
+        "lat": 40.7813,
+        "lng": -73.9761
+      },
       "start": "2026-07-26T10:00:00-04:00",
       "end": "2026-07-26T17:00:00-04:00",
       "price": "Free entry",
       "url": "https://grandbazaarnyc.org/events/summer-vintage-bazaar-2/",
-      "tags": ["market", "offbeat"]
+      "tags": [
+        "market",
+        "offbeat"
+      ]
     },
     {
       "id": "third-man-filmforum-0726",
@@ -199,11 +311,17 @@
       "blurb": "Vienna, that zither, and the best entrance in movie history. One week only; multiple showtimes daily.",
       "venue": "Film Forum",
       "neighborhood": "Greenwich Village",
+      "geo": {
+        "lat": 40.7289,
+        "lng": -74.0036
+      },
       "start": "2026-07-26T19:00:00-04:00",
       "price": "$16",
       "url": "https://filmforum.org/film/the-third-man-2026",
       "image": "https://filmforum.org/do-not-enter-or-modify-or-erase/client-uploads/THE_THIRD_MAN_thumbnail_2026.png",
-      "tags": ["film"]
+      "tags": [
+        "film"
+      ]
     },
     {
       "id": "vjo-vanguard-0727",
@@ -211,22 +329,36 @@
       "blurb": "The Monday night big band, sixty years and counting in the most sacred basement in jazz.",
       "venue": "Village Vanguard",
       "neighborhood": "West Village",
+      "geo": {
+        "lat": 40.7362,
+        "lng": -74.0017
+      },
       "start": "2026-07-27T20:00:00-04:00",
       "price": "$40",
       "url": "https://villagevanguard.com/",
       "image": "https://villagevanguard.com/wp-content/uploads/2018/11/monda-jazz.jpg",
-      "tags": ["jazz"]
+      "tags": [
+        "jazz"
+      ]
     },
     {
       "id": "broadway-boardwalk-0727",
       "title": "Broadway by the Boardwalk: Ali Stroker",
       "blurb": "A Tony winner sings on the Hudson at golden hour. Free, and it never gets old.",
       "venue": "Hudson River Park",
-      "neighborhood": "West Side waterfront",
+      "neighborhood": "Hell's Kitchen",
+      "geo": {
+        "lat": 40.7692,
+        "lng": -73.9937
+      },
       "start": "2026-07-27T18:30:00-04:00",
       "price": "Free",
       "url": "https://hudsonriverpark.org/event-series/broadway-by-the-boardwalk/",
-      "tags": ["theater", "outdoors", "free"]
+      "tags": [
+        "theater",
+        "outdoors",
+        "free"
+      ]
     },
     {
       "id": "truman-bryant-0727",
@@ -234,10 +366,18 @@
       "blurb": "Bryant Park's lawn, a blanket, and Jim Carrey's best movie at dusk. Claim grass at 5, film around 8.",
       "venue": "Bryant Park",
       "neighborhood": "Midtown",
+      "geo": {
+        "lat": 40.7536,
+        "lng": -73.9832
+      },
       "start": "2026-07-27T20:00:00-04:00",
       "price": "Free",
       "url": "https://bryantpark.org/activities/movie-nights",
-      "tags": ["film", "outdoors", "free"]
+      "tags": [
+        "film",
+        "outdoors",
+        "free"
+      ]
     },
     {
       "id": "keyon-harrold-bluenote-0728",
@@ -245,11 +385,17 @@
       "blurb": "The trumpet voice behind Miles Ahead, live in the Village. A warm, huge sound.",
       "venue": "Blue Note",
       "neighborhood": "Greenwich Village",
+      "geo": {
+        "lat": 40.7308,
+        "lng": -74.0006
+      },
       "start": "2026-07-28T20:00:00-04:00",
       "price": "Ticketed",
       "url": "https://www.bluenotejazz.com/nyc/tm-event/keyon-harrold-3",
       "image": "https://i.ticketweb.com/i/00/12/91/77/64_Original.jpg?v=4",
-      "tags": ["jazz"]
+      "tags": [
+        "jazz"
+      ]
     },
     {
       "id": "comedy-cellar-0728",
@@ -257,10 +403,16 @@
       "blurb": "Still the room where big names drop in unannounced. Take the late show and roll the dice.",
       "venue": "Comedy Cellar, MacDougal St",
       "neighborhood": "Greenwich Village",
+      "geo": {
+        "lat": 40.7302,
+        "lng": -74.0003
+      },
       "start": "2026-07-28T19:00:00-04:00",
       "price": "Cover + 2 items",
       "url": "https://www.comedycellar.com/",
-      "tags": ["comedy"]
+      "tags": [
+        "comedy"
+      ]
     },
     {
       "id": "julieta-venegas-summerstage-0729",
@@ -268,12 +420,20 @@
       "blurb": "A Latin alternative icon, free in Central Park. Expect the whole lawn singing Limon y Sal.",
       "venue": "Rumsey Playfield, Central Park",
       "neighborhood": "Central Park",
+      "geo": {
+        "lat": 40.771,
+        "lng": -73.97
+      },
       "start": "2026-07-29T18:00:00-04:00",
       "end": "2026-07-29T22:00:00-04:00",
       "price": "Free",
       "url": "https://cityparksfoundation.org/events/julieta-venegas/",
       "image": "https://cityparksfoundation.org/wp-content/uploads/2026/04/julietavenegas_webphoto.webp",
-      "tags": ["music", "outdoors", "free"]
+      "tags": [
+        "music",
+        "outdoors",
+        "free"
+      ]
     },
     {
       "id": "philadanco-joyce-0729",
@@ -281,11 +441,17 @@
       "blurb": "Philly's great Black dance company opens a week at the Joyce with two New York premieres.",
       "venue": "The Joyce Theater",
       "neighborhood": "Chelsea",
+      "geo": {
+        "lat": 40.7433,
+        "lng": -74.0009
+      },
       "start": "2026-07-29T19:30:00-04:00",
       "price": "Ticketed",
       "url": "https://www.joyce.org/performances/philadanco-qj8t",
       "image": "https://img.joyce.org/a_8_N2YAmN3PmQI6UXptQ-F5tIOmFlI9JSF7oIUE-wE/c:9000:4725:nowe:0:540/s:1200:630:1/aHR0cHM6Ly93d3cuam95Y2Uub3JnLy9jbXNfZmlsZXMvc3lzdGVtL2ltYWdlcy9pbWcyODc4X29yaWcuanBn",
-      "tags": ["dance"]
+      "tags": [
+        "dance"
+      ]
     },
     {
       "id": "ubb-summerstage-0730",
@@ -293,11 +459,19 @@
       "blurb": "Diggin' in the Crates royalty plus Sadat X and Nice & Smooth. A free hip-hop history lesson.",
       "venue": "Rumsey Playfield, Central Park",
       "neighborhood": "Central Park",
+      "geo": {
+        "lat": 40.771,
+        "lng": -73.97
+      },
       "start": "2026-07-30T19:00:00-04:00",
       "end": "2026-07-30T22:00:00-04:00",
       "price": "Free",
       "url": "https://cityparksfoundation.org/summerstage/",
-      "tags": ["music", "outdoors", "free"]
+      "tags": [
+        "music",
+        "outdoors",
+        "free"
+      ]
     },
     {
       "id": "atomic-habitz-bluenote-0730",
@@ -305,11 +479,18 @@
       "blurb": "A late-night groove summit with one of the greatest drummers alive. Rhythm-section nerd heaven.",
       "venue": "Blue Note",
       "neighborhood": "Greenwich Village",
+      "geo": {
+        "lat": 40.7308,
+        "lng": -74.0006
+      },
       "start": "2026-07-30T20:00:00-04:00",
       "price": "Ticketed",
       "url": "https://www.bluenotejazz.com/nyc/tm-event/atomic-habitz-chris-dave-x-marcus-king-x-cleo-pookie-sample-x-dj-ginyard-13",
       "image": "https://i.ticketweb.com/i/00/12/91/41/94_Original.jpg?v=5",
-      "tags": ["jazz", "music"]
+      "tags": [
+        "jazz",
+        "music"
+      ]
     },
     {
       "id": "funeral-of-god-0730",
@@ -317,10 +498,17 @@
       "blurb": "An absurdist dark comedy about staging a funeral for god. Four performances only.",
       "venue": "AMT Theater, 354 W 45th St",
       "neighborhood": "Hell's Kitchen",
+      "geo": {
+        "lat": 40.7595,
+        "lng": -73.9902
+      },
       "start": "2026-07-30T17:00:00-04:00",
       "price": "From $30",
       "url": "https://funeralofgod.com/",
-      "tags": ["theater", "offbeat"]
+      "tags": [
+        "theater",
+        "offbeat"
+      ]
     }
   ]
 }

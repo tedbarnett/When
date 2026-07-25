@@ -114,6 +114,18 @@ button.mchip:hover { border-color: var(--faint); color: var(--ink); }
 .history-link .dot { color: var(--spark); }
 .history-link:hover, .history-link.on { color: var(--head); }
 
+/* ---------- geo filter chips ---------- */
+.geo-row { display: flex; gap: 8px; overflow-x: auto; padding: 14px 20px 0; max-width: 1140px; margin: 0 auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.geo-row::-webkit-scrollbar { display: none; }
+.geo-chip { flex: none; font-family: var(--mono); font-size: 11px; letter-spacing: .05em; color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 6px 15px; cursor: pointer; transition: border-color .15s ease, color .15s ease, background .15s ease; }
+.geo-chip:hover { border-color: var(--faint); color: var(--ink); }
+.geo-chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.geo-empty { max-width: 660px; margin: 24px auto 0; padding: 0 20px; }
+.detail-geo { font-family: var(--mono); font-size: 11.5px; }
+.detail-geo a { color: var(--peri); text-decoration: none; }
+.detail-geo a:hover { color: var(--head); }
+.sync-note { font-family: var(--mono); font-size: 10.5px; color: var(--faint); padding: 0 12px 8px; }
+
 /* ---------- shared card bits ---------- */
 .shelf { display: flex; gap: 12px; overflow-x: auto; padding: 0 20px 8px; scrollbar-width: none; }
 .shelf::-webkit-scrollbar { display: none; }
@@ -403,6 +415,8 @@ body.modal-open { overflow: hidden; }
     </div>
   </div>
 
+  <div class="geo-row" id="geo-row" role="group" aria-label="Filter by area" hidden></div>
+
   <section id="view-week-root"></section>
   <section id="view-day-root" hidden></section>
   <section id="view-month-root" hidden></section>
@@ -477,6 +491,7 @@ body.modal-open { overflow: hidden; }
   var isOwner = false;      // set from /api/me; unlocks curator controls
   var overlay = { hidden: {}, edits: {} };
   var editing = false;      // detail modal is in edit mode
+  var geoFilter = 'everywhere'; // when:geo — single-choice area filter (issue #5)
   try {
     saved = JSON.parse(localStorage.getItem('when:saved') || '{}') || {};
     attended = JSON.parse(localStorage.getItem('when:attended') || '{}') || {};
@@ -484,7 +499,53 @@ body.modal-open { overflow: hidden; }
     followed = localStorage.getItem('when:followed') === '1';
     published = localStorage.getItem('when:published') === '1';
     handle = localStorage.getItem('when:handle') || 'tedbarnett';
+    geoFilter = localStorage.getItem('when:geo') || 'everywhere';
   } catch (e) {}
+
+  /* Geo (issue #5): neighborhood -> borough for the filter chips.
+     Single choice for now; multi-select, distance sort ("near me" via
+     event.geo + geolocation), and a full map view are future work. */
+  var BOROUGH_OF = {
+    'greenwich village': 'manhattan', 'west village': 'manhattan', 'meatpacking': 'manhattan',
+    'midtown': 'manhattan', 'central park': 'manhattan', 'upper west side': 'manhattan',
+    'upper east side': 'manhattan', 'harlem': 'manhattan', 'chelsea': 'manhattan',
+    "hell's kitchen": 'manhattan', 'east village': 'manhattan', 'soho': 'manhattan',
+    'park slope': 'brooklyn', 'sunset park': 'brooklyn', 'fort greene': 'brooklyn',
+    'williamsburg': 'brooklyn', 'bushwick': 'brooklyn', 'dumbo': 'brooklyn',
+    'long island city': 'queens', 'astoria': 'queens', 'flushing': 'queens',
+    'queens & staten island': 'queens' /* Summer Streets: Vernon Blvd route anchors in Queens */
+  };
+  var GEO_ORDER = ['manhattan', 'brooklyn', 'queens', 'bronx', 'staten island'];
+  function boroughOf(ev) { return BOROUGH_OF[(ev.neighborhood || '').toLowerCase()] || ''; }
+  function passesGeo(ev) { return geoFilter === 'everywhere' || boroughOf(ev) === geoFilter; }
+  function geoAreas() {
+    var seen = {}, out = [], i;
+    for (i = 0; i < allEvents.length; i++) { var b = boroughOf(allEvents[i]); if (b) seen[b] = 1; }
+    for (i = 0; i < GEO_ORDER.length; i++) if (seen[GEO_ORDER[i]]) out.push(GEO_ORDER[i]);
+    return out;
+  }
+  function geoFilteredCount() {
+    var n = 0;
+    for (var i = 0; i < allEvents.length; i++) if (passesGeo(allEvents[i])) n++;
+    return n;
+  }
+  function emptyGeoHtml() {
+    if (geoFilter === 'everywhere') return '';
+    return '<div class="geo-empty"><div class="tray-empty">Nothing in ' + esc(geoFilter) + ' this week — tap <strong>everywhere</strong> for the full list.</div></div>';
+  }
+  function renderGeoRow() {
+    var row = document.getElementById('geo-row');
+    var areas = geoAreas();
+    if (!areas.length || view === 'history') { row.hidden = true; return; }
+    var opts = ['everywhere'].concat(areas);
+    if (opts.indexOf(geoFilter) < 0) geoFilter = 'everywhere';
+    var html = '';
+    for (var i = 0; i < opts.length; i++) {
+      html += '<button class="geo-chip' + (geoFilter === opts[i] ? ' on' : '') + '" type="button" data-geo="' + esc(opts[i]) + '" aria-pressed="' + (geoFilter === opts[i]) + '">' + esc(opts[i]) + '</button>';
+    }
+    row.innerHTML = html;
+    row.hidden = false;
+  }
 
   /* Friends-going: mocked for the prototype; production = invite links + follow graph */
   var FRIENDS = {
@@ -569,6 +630,47 @@ body.modal-open { overflow: hidden; }
       localStorage.setItem('when:published', published ? '1' : '0');
       localStorage.setItem('when:handle', handle);
     } catch (e) {}
+    schedulePrefsPush(); /* signed-in: mirror every local mutation to the account (issue #7) */
+  }
+
+  /* ---------- account prefs sync (issue #7) ----------
+     Anonymous: localStorage only, exactly as before.
+     Signed in: on load, GET /api/me/prefs and MERGE (union of saved/attended,
+     followed = OR) so no device's taps are ever lost; write merged state back
+     to BOTH localStorage and the server. After that, every local mutation
+     debounces a PUT that replaces the server doc with the merged truth. */
+  var prefsSyncOn = false;
+  var prefsTimer = null;
+  function truthyMap(m) { var out = {}; for (var k in m) if (m[k]) out[k] = true; return out; }
+  function pushPrefs() {
+    if (!prefsSyncOn) return;
+    fetch('/api/me/prefs', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ saved: truthyMap(saved), attended: truthyMap(attended), followed: followed })
+    }).catch(function () {});
+  }
+  function schedulePrefsPush() {
+    if (!prefsSyncOn) return;
+    if (prefsTimer) clearTimeout(prefsTimer);
+    prefsTimer = setTimeout(pushPrefs, 800); /* debounce bursts of taps */
+  }
+  function startPrefsSync() {
+    prefsSyncOn = true;
+    fetch('/api/me/prefs', { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (remote) {
+        if (!remote) return;
+        var k;
+        for (k in (remote.saved || {})) if (remote.saved[k]) saved[k] = true;
+        for (k in (remote.attended || {})) if (remote.attended[k]) attended[k] = true;
+        followed = followed || !!remote.followed;
+        persist(); /* merged local + schedules the push-back */
+        renderAll();
+        if (!document.getElementById('tray-backdrop').hidden) renderTray();
+        if (detailId && !editing) renderDetail();
+      })
+      .catch(function () {});
   }
   function savedCount() {
     var n = 0;
@@ -657,7 +759,7 @@ body.modal-open { overflow: hidden; }
   /* ---------- week view ---------- */
   function renderWeek() {
     var root = document.getElementById('view-week-root');
-    if (!days.length) { root.innerHTML = ''; return; }
+    if (!days.length) { root.innerHTML = emptyGeoHtml(); return; }
     var day0 = days[0];
     var hero = null;
     for (var i = 0; i < day0.events.length; i++) {
@@ -709,7 +811,7 @@ body.modal-open { overflow: hidden; }
   /* ---------- day view ---------- */
   function renderDay() {
     var root = document.getElementById('view-day-root');
-    if (!days.length) { root.innerHTML = ''; return; }
+    if (!days.length) { root.innerHTML = emptyGeoHtml(); return; }
     if (dayIndex >= days.length) dayIndex = days.length - 1;
     var html = '<div class="day-pills">';
     for (var i = 0; i < days.length; i++) {
@@ -745,7 +847,7 @@ body.modal-open { overflow: hidden; }
   /* ---------- month view ---------- */
   function renderMonth() {
     var root = document.getElementById('view-month-root');
-    if (!days.length) { root.innerHTML = ''; return; }
+    if (!days.length) { root.innerHTML = emptyGeoHtml(); return; }
     var ym = days[0].key.slice(0, 7);
     var y = parseInt(ym.slice(0, 4), 10), mo = parseInt(ym.slice(5, 7), 10);
     var firstDow = dayDate(ym + '-01').getDay();
@@ -812,7 +914,9 @@ body.modal-open { overflow: hidden; }
         for (var i = 0; i < day.events.length; i++) html += histRowHtml(day.events[i]);
       }
     }
-    html += '<div class="hist-note">Kept on this device. Accounts &amp; sync come later.</div></div>';
+    html += '<div class="hist-note">' + (prefsSyncOn
+      ? 'Synced to your account — same history on every device.'
+      : 'Kept on this device. Sign in to sync across devices.') + '</div></div>';
     root.innerHTML = html;
   }
 
@@ -831,7 +935,11 @@ body.modal-open { overflow: hidden; }
     var kick = 'WHEN.ORG/TEDS-NYC';
     if (days.length) kick += ' · ' + dayDate(days[0].key).toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase() + ' ' + ddateLabel(days[0].key);
     document.getElementById('kicker').textContent = kick;
-    document.getElementById('count-chip').textContent = allEvents.length + ' picks this week';
+    var geoN = geoFilteredCount();
+    document.getElementById('count-chip').textContent = geoFilter === 'everywhere'
+      ? geoN + ' picks this week'
+      : geoN + (geoN === 1 ? ' pick in ' : ' picks in ') + geoFilter;
+    renderGeoRow();
     document.getElementById('follower-chip').textContent = (followed ? 143 : 142) + ' followers';
     var fb = document.getElementById('follow-btn');
     fb.textContent = followed ? '✓ Following' : 'Follow';
@@ -959,6 +1067,9 @@ body.modal-open { overflow: hidden; }
         '<div class="detail-when">' + esc(dateLabel(ev)) + ' · ' + esc(timeLabel(ev)) + '</div>' +
         '<h2 class="detail-title" id="detail-title-el">' + esc(ev.title) + '</h2>' +
         '<div class="detail-venue">' + esc(ev.venue) + (ev.neighborhood ? ' · ' + esc(ev.neighborhood) : '') + '</div>' +
+        (ev.geo && typeof ev.geo.lat === 'number' && typeof ev.geo.lng === 'number'
+          ? '<div class="detail-geo"><a href="https://maps.google.com/?q=' + esc(ev.geo.lat + ',' + ev.geo.lng) + '" target="_blank" rel="noopener">📍 ' + esc(ev.neighborhood || 'map') + '</a></div>'
+          : '') +
         ownerBits +
         (f.length ? '<div class="detail-fchip">' + avatarStack(f) + '<span class="flabel">' + esc(friendsLabel(f)) + '</span></div>' : '') +
         (ev.blurb ? '<div class="detail-blurb">' + esc(ev.blurb) + '</div>' : '') +
@@ -1078,6 +1189,15 @@ body.modal-open { overflow: hidden; }
       postOverlay({ action: 'reset', id: erEl.getAttribute('data-edit-reset') }).then(function (ok) {
         if (ok) loadAdminData(); else erEl.disabled = false;
       });
+      return;
+    }
+    var geoEl = t.closest ? t.closest('[data-geo]') : null;
+    if (geoEl) {
+      geoFilter = geoEl.getAttribute('data-geo') || 'everywhere';
+      try { localStorage.setItem('when:geo', geoFilter); } catch (err) {}
+      dayIndex = 0;
+      regroup();
+      renderAll();
       return;
     }
     var openEl = t.closest ? t.closest('[data-open]') : null;
@@ -1261,6 +1381,7 @@ body.modal-open { overflow: hidden; }
     if (me && me.email) {
       box.innerHTML = '<div class="mi" style="cursor:default">' + esc(me.name || me.email) +
         (me.isOwner ? '<span class="hint">✦ owner</span>' : '') + '</div>' +
+        '<div class="sync-note">synced across devices ✓</div>' +
         '<a class="mi" href="/api/auth/logout">Sign out</a>';
     } else {
       box.innerHTML = authLoggedOut();
@@ -1282,6 +1403,7 @@ body.modal-open { overflow: hidden; }
   }
   fetch('/api/me').then(function (r) { return r.ok ? r.json() : null; }).then(function (me) {
     renderAuth(me);
+    if (me && me.email) startPrefsSync(); /* saved/attended/followed follow the account */
     if (me && me.isOwner) {
       isOwner = true;
       loadAdminData(); /* owner sees hidden + edit chrome; re-renders when it lands */
@@ -1290,18 +1412,22 @@ body.modal-open { overflow: hidden; }
 
   /* ---------- boot ---------- */
   function ingest(data) {
-    var events = (data.events || []).slice().sort(function (a, b) { return a.start < b.start ? -1 : 1; });
+    allEvents = (data.events || []).slice().sort(function (a, b) { return a.start < b.start ? -1 : 1; });
+    regroup();
+  }
+  /* Rebuild days/pastDays from allEvents through the geo filter.
+     History deliberately ignores the filter — your past is your past. */
+  function regroup() {
     var todayK = nyTodayKey();
     var byDay = {};
     var pastByDay = {};
-    events.forEach(function (ev) {
+    allEvents.forEach(function (ev) {
       var k = ev.start.slice(0, 10);
       if (k < todayK) (pastByDay[k] = pastByDay[k] || []).push(ev);
-      else (byDay[k] = byDay[k] || []).push(ev);
+      else if (passesGeo(ev)) (byDay[k] = byDay[k] || []).push(ev);
     });
     days = Object.keys(byDay).sort().map(function (k) { return { key: k, events: byDay[k] }; });
     pastDays = Object.keys(pastByDay).sort().reverse().map(function (k) { return { key: k, events: pastByDay[k] }; });
-    allEvents = events;
   }
   fetch(DATA_URL).then(function (r) { return r.json(); }).then(function (data) {
     ingest(data);
