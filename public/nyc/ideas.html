@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Event Ideas · NYC · When.org</title>
+<meta name="description" content="Curator tool: candidate events for NYC, compiled from licensed APIs and open data. Review by day, add the good ones to the calendar.">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+<style>
+/* ------------------------------------------------------------------
+   when.org — Event Ideas (curator supply tool, issue #13)
+   Same hand-written token set as teds-nyc.html. No framework, no build.
+------------------------------------------------------------------- */
+@font-face { font-family:'Satoshi'; src:url('/fonts/satoshi-500.woff2') format('woff2'); font-weight:500; font-style:normal; font-display:swap; }
+@font-face { font-family:'Satoshi'; src:url('/fonts/satoshi-700.woff2') format('woff2'); font-weight:700; font-style:normal; font-display:swap; }
+@font-face { font-family:'Bricolage Grotesque'; src:url('/fonts/bricolage-var.woff2') format('woff2'); font-weight:200 800; font-style:normal; font-display:swap; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  --paper:#0e0f14; --surface:#17181d; --head:#ffffff; --ink:#ebebe7;
+  --muted:#a2a6ad; --faint:#71757d; --line:#272930;
+  --accent:#4d63ff; --peri:#9aa6ff; --spark:#ff5426;
+  --navbg:rgba(14,15,20,.84); --chip:rgba(255,255,255,.08);
+  --mono: ui-monospace, Menlo, monospace;
+  --sans: 'Satoshi', -apple-system, 'Segoe UI', sans-serif;
+  --brico: 'Bricolage Grotesque', 'Satoshi', sans-serif;
+  font-family: var(--sans); font-weight: 500;
+  background: var(--paper); color: var(--ink);
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+a { color: var(--peri); } a:hover { color: var(--head); }
+::selection { background:#ff5426; color:#ffffff; }
+button { font-family: inherit; }
+
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 20px; }
+
+.nav { position: sticky; top: 0; z-index: 20; background: var(--navbg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+.nav-inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 60px; }
+.brand { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+.wordmark { font-family: var(--brico); font-weight: 800; font-size: 22px; color: var(--head); letter-spacing: -0.05em; }
+.wordmark .tld { color: var(--peri); }
+.back-link { font-family: var(--mono); font-size: 11.5px; color: var(--muted); text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; white-space: nowrap; }
+.back-link:hover { color: var(--ink); border-color: var(--faint); }
+
+.calhead { padding-top: clamp(24px, 3.5vw, 42px); }
+.kicker { font-family: var(--mono); font-size: 11.5px; letter-spacing: .12em; color: var(--peri); text-transform: uppercase; }
+.view-title { font-family: var(--brico); font-weight: 800; font-size: clamp(42px, 7vw, 72px); letter-spacing: -0.05em; line-height: .92; color: var(--head); margin-top: 4px; }
+.view-title .dot { color: var(--spark); }
+.byline { font-size: 14.5px; color: var(--muted); margin-top: 12px; max-width: 60ch; }
+
+/* date pager */
+.datebar { position: sticky; top: 61px; z-index: 15; background: var(--navbg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); margin-top: 22px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.datebar-inner { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 20px; max-width: 860px; margin: 0 auto; }
+.day-nav { width: 36px; height: 36px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--ink); font-size: 16px; cursor: pointer; transition: border-color .15s ease; }
+.day-nav:hover:not(:disabled) { border-color: var(--faint); }
+.day-nav:disabled { opacity: .3; cursor: default; }
+.day-label { font-family: var(--brico); font-weight: 800; font-size: 20px; letter-spacing: -0.03em; color: var(--head); text-align: center; }
+.day-label .dow { color: var(--spark); }
+
+/* idea rows */
+.ideas { padding: 8px 0 24px; }
+.idea-row { display: flex; align-items: flex-start; gap: 14px; padding: 15px 2px; border-bottom: 1px solid var(--line); }
+.idea-time { flex: none; width: 74px; font-family: var(--mono); font-size: 11.5px; color: var(--faint); padding-top: 3px; }
+.idea-main { flex: 1 1 auto; min-width: 0; }
+.idea-title { font-weight: 700; font-size: 15.5px; color: var(--head); line-height: 1.3; }
+.idea-title a { color: inherit; text-decoration: none; }
+.idea-title a:hover { color: var(--peri); }
+.idea-venue { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.idea-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+.chip { font-family: var(--mono); font-size: 10.5px; color: var(--faint); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; white-space: nowrap; }
+.chip.price { color: var(--ink); }
+.chip.src { color: var(--peri); border-color: rgba(154,166,255,.35); }
+.idea-actions { flex: none; display: flex; align-items: center; gap: 8px; padding-top: 2px; }
+.linkout { font-family: var(--mono); font-size: 12px; color: var(--muted); text-decoration: none; border: 1px solid var(--line); border-radius: 999px; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; }
+.linkout:hover { color: var(--head); border-color: var(--faint); }
+.add-btn { border: 1px dashed var(--spark); background: transparent; color: var(--spark); font-family: var(--mono); font-size: 11px; letter-spacing: .05em; border-radius: 999px; padding: 6px 14px; cursor: pointer; white-space: nowrap; transition: background .15s ease; }
+.add-btn:hover { background: rgba(255,84,38,.1); }
+.added-chip { font-family: var(--mono); font-size: 11px; color: #6bc396; border: 1px solid rgba(107,195,150,.4); border-radius: 999px; padding: 6px 14px; white-space: nowrap; }
+.sect-head { font-family: var(--brico); font-weight: 800; font-size: 22px; letter-spacing: -0.04em; color: var(--head); margin: 30px 0 4px; }
+.sect-head .dot { color: var(--spark); }
+.sect-note { font-size: 12.5px; color: var(--faint); margin-bottom: 6px; }
+.empty { color: var(--faint); font-size: 14px; padding: 28px 2px; }
+.status-line { font-family: var(--mono); font-size: 11.5px; color: var(--faint); padding: 18px 2px; }
+.status-line.err { color: var(--spark); }
+.gate { padding: 48px 2px; max-width: 46ch; }
+.gate h2 { font-family: var(--brico); font-weight: 800; font-size: 26px; letter-spacing: -0.04em; color: var(--head); margin-bottom: 8px; }
+.gate p { font-size: 14.5px; color: var(--muted); line-height: 1.55; }
+
+.foot { border-top: 1px solid var(--line); margin-top: 40px; }
+.foot-inner { display: flex; justify-content: space-between; gap: 14px; padding: 18px 20px 40px; max-width: 860px; margin: 0 auto; font-size: 12px; color: var(--faint); }
+
+/* add sheet (mirrors teds-nyc.html sheet/edit-form patterns) */
+.backdrop { position: fixed; inset: 0; z-index: 50; background: rgba(4,5,9,.66); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); display: flex; align-items: flex-end; justify-content: center; }
+.backdrop[hidden] { display: none; }
+.sheet { background: var(--surface); border: 1px solid var(--line); border-radius: 22px 22px 0 0; width: 100%; max-width: 620px; max-height: 88vh; overflow-y: auto; padding: 20px 22px 30px; }
+@media (min-width: 700px) { .backdrop { align-items: center; } .sheet { border-radius: 22px; } }
+.head-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.sheet-title { font-family: var(--brico); font-weight: 800; font-size: 24px; letter-spacing: -0.04em; color: var(--head); }
+.sheet-title .dot { color: var(--spark); }
+.x-btn { width: 32px; height: 32px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 17px; cursor: pointer; }
+.x-btn:hover { color: var(--head); border-color: var(--faint); }
+.edit-form { display: grid; gap: 10px; margin-top: 10px; }
+.edit-form label { display: grid; gap: 4px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; color: var(--faint); }
+.edit-form input, .edit-form textarea { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; color: var(--ink); font-family: var(--sans); font-size: 14px; padding: 9px 12px; outline: none; width: 100%; }
+.edit-form input:focus, .edit-form textarea:focus { border-color: var(--faint); }
+.edit-form textarea { min-height: 74px; resize: vertical; }
+.edit-actions { display: flex; gap: 9px; margin-top: 12px; }
+.edit-actions .save { background: var(--accent); border: none; color: #fff; font-weight: 700; font-size: 13.5px; border-radius: 999px; padding: 9px 18px; cursor: pointer; }
+.edit-actions .save:disabled { opacity: .6; cursor: default; }
+.edit-actions .cancel { background: transparent; border: 1px solid var(--line); color: var(--muted); font-weight: 700; font-size: 13.5px; border-radius: 999px; padding: 9px 16px; cursor: pointer; }
+.edit-err { color: var(--spark); font-size: 12.5px; min-height: 16px; margin-top: 8px; }
+.sheet-src { font-family: var(--mono); font-size: 10.5px; color: var(--faint); }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="/"><span class="wordmark">when<span class="tld">.org</span></span></a>
+    <a class="back-link" href="/teds-nyc">← ted&rsquo;s nyc</a>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="calhead">
+    <div class="kicker">Curator tool · New York</div>
+    <h1 class="view-title">event ideas<span class="dot">.</span></h1>
+    <p class="byline">Candidate events compiled from licensed APIs and open data — facts only, every row links out to its primary page. Nothing is published until you add it.</p>
+  </div>
+
+  <div id="app">
+    <div class="status-line" id="boot-status">checking sign-in…</div>
+  </div>
+</main>
+
+<div class="datebar" id="datebar" hidden>
+  <div class="datebar-inner">
+    <button class="day-nav" id="day-prev" type="button" aria-label="Previous day with ideas">←</button>
+    <div class="day-label" id="day-label"></div>
+    <button class="day-nav" id="day-next" type="button" aria-label="Next day with ideas">→</button>
+  </div>
+</div>
+
+<div class="wrap" id="list-root"></div>
+
+<div class="foot">
+  <div class="foot-inner">
+    <span>Sources: NYC Parks open data · Ticketmaster Discovery API. Takedown: hello@when.org</span>
+    <span>CURATORS ONLY</span>
+  </div>
+</div>
+
+<!-- Add-to-calendar sheet (prefilled review form → overlay action:add) -->
+<div class="backdrop" id="add-backdrop" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="add-title">
+    <div class="head-row">
+      <span class="sheet-title" id="add-title">add event<span class="dot">.</span></span>
+      <button class="x-btn" type="button" id="add-close">×</button>
+    </div>
+    <div class="sheet-src" id="add-src"></div>
+    <div id="add-content"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- config / state ---------- */
+  var IDEAS_URL = '/api/cities/nyc/ideas';
+  var OVERLAY_URL = '/api/calendars/teds-nyc/overlay';
+  var SOURCE_LABEL = { 'nyc-parks': 'NYC Parks', 'ticketmaster': 'Ticketmaster' };
+  var cur = null;        // last API payload {date, prev, next, events, anyday}
+  var addingId = null;   // candidate id open in the add sheet
+
+  /* ---------- helpers (mirrors teds-nyc.html) ---------- */
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function nyTodayKey() {
+    try {
+      return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+    } catch (e) {
+      return new Date().toISOString().slice(0, 10);
+    }
+  }
+  function dayDate(key) { return new Date(key + 'T12:00:00-04:00'); }
+  function timeLabel(ev) {
+    var hr = parseInt(ev.start.slice(11, 13), 10);
+    var mn = ev.start.slice(14, 16);
+    if (hr === 0 && mn === '00') return 'all day';
+    var ap = hr >= 12 ? 'PM' : 'AM';
+    var hh = hr % 12; if (hh === 0) hh = 12;
+    return hh + ':' + mn + ap;
+  }
+  function ddateLabel(key) {
+    return dayDate(key).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+  }
+  /* NY UTC offset (±HH:MM) for a datetime-local value — keeps starts DST-correct */
+  function nyOffsetFor(dtLocal) {
+    try {
+      var d = new Date(dtLocal + ':00Z');
+      var s = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', timeZoneName: 'longOffset' }).format(d);
+      var m = s.match(/GMT([+-]\d{2}):?(\d{2})?/);
+      if (m) return m[1] + ':' + (m[2] || '00');
+    } catch (e) {}
+    return '-04:00';
+  }
+  function srcChips(ev) {
+    var out = '';
+    var sigs = ev.signals && ev.signals.length ? ev.signals : (ev.source ? [ev.source] : []);
+    for (var i = 0; i < sigs.length; i++) {
+      out += '<span class="chip src">' + esc(SOURCE_LABEL[sigs[i]] || sigs[i]) + '</span>';
+    }
+    return out;
+  }
+  function findCandidate(id) {
+    if (!cur) return null;
+    var pools = [cur.events || [], cur.anyday || []];
+    for (var p = 0; p < pools.length; p++) {
+      for (var i = 0; i < pools[p].length; i++) if (pools[p][i].id === id) return pools[p][i];
+    }
+    return null;
+  }
+
+  /* ---------- rendering ---------- */
+  function rowHtml(ev, anyday) {
+    var link = ev.source_url || ev.url;
+    var when = anyday
+      ? 'THRU ' + esc(ddateLabel((ev.end || ev.start).slice(0, 10)))
+      : esc(timeLabel(ev));
+    return '<div class="idea-row" data-row="' + esc(ev.id) + '">' +
+      '<div class="idea-time">' + when + '</div>' +
+      '<div class="idea-main">' +
+        '<div class="idea-title">' + (link ? '<a href="' + esc(link) + '" target="_blank" rel="noopener">' + esc(ev.title) + '</a>' : esc(ev.title)) + '</div>' +
+        '<div class="idea-venue">' + esc(ev.venue || '—') + (ev.neighborhood ? ' · ' + esc(ev.neighborhood) : '') + '</div>' +
+        '<div class="idea-chips">' +
+          (ev.price ? '<span class="chip price">' + esc(ev.price) + '</span>' : '') +
+          srcChips(ev) +
+        '</div>' +
+      '</div>' +
+      '<div class="idea-actions">' +
+        (link ? '<a class="linkout" href="' + esc(link) + '" target="_blank" rel="noopener" aria-label="Open source page">↗</a>' : '') +
+        (ev.added
+          ? '<span class="added-chip">✓ added</span>'
+          : '<button class="add-btn" type="button" data-add="' + esc(ev.id) + '">＋ add</button>') +
+      '</div>' +
+    '</div>';
+  }
+  function renderDay() {
+    var root = document.getElementById('list-root');
+    var label = document.getElementById('day-label');
+    var d = dayDate(cur.date);
+    label.innerHTML = '<span class="dow">' + esc(d.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase()) + '</span> ' +
+      esc(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+    document.getElementById('day-prev').disabled = !cur.prev;
+    document.getElementById('day-next').disabled = !cur.next;
+    document.getElementById('datebar').hidden = false;
+
+    var html = '<div class="ideas">';
+    if (cur.events.length) {
+      for (var i = 0; i < cur.events.length; i++) html += rowHtml(cur.events[i], false);
+    } else {
+      html += '<div class="empty">No ideas for this day' + (cur.next ? ' — try →' : '') + '.</div>';
+    }
+    if (cur.anyday && cur.anyday.length) {
+      html += '<h2 class="sect-head">any day<span class="dot">.</span></h2>' +
+        '<div class="sect-note">multi-day runs overlapping this date</div>';
+      for (var j = 0; j < cur.anyday.length; j++) html += rowHtml(cur.anyday[j], true);
+    }
+    html += '</div>';
+    root.innerHTML = html;
+  }
+  function setStatus(msg, isErr) {
+    document.getElementById('list-root').innerHTML =
+      '<div class="status-line' + (isErr ? ' err' : '') + '">' + esc(msg) + '</div>';
+  }
+
+  function load(date, push) {
+    setStatus('loading ideas…');
+    fetch(IDEAS_URL + '?date=' + encodeURIComponent(date), { cache: 'no-store' })
+      .then(function (r) {
+        return r.json().then(function (d) { return { s: r.status, d: d }; }, function () { return { s: r.status, d: null }; });
+      })
+      .then(function (res) {
+        if (res.s !== 200 || !res.d || !res.d.ok) {
+          if (res.s === 401 || res.s === 403) { renderGate(res.s); return; }
+          setStatus(res.d && res.d.error ? 'Could not load ideas — ' + res.d.error + '.' : 'Could not load ideas — try again.', true);
+          return;
+        }
+        cur = res.d;
+        if (push) {
+          try { history.pushState({ ideasDate: cur.date }, '', '/nyc/ideas?date=' + cur.date); } catch (e) {}
+        }
+        renderDay();
+      })
+      .catch(function () { setStatus('Network error — could not reach the ideas API.', true); });
+  }
+
+  /* ---------- curators-only gate ---------- */
+  function renderGate(status) {
+    document.getElementById('datebar').hidden = true;
+    document.getElementById('list-root').innerHTML = '';
+    document.getElementById('app').innerHTML =
+      '<div class="gate"><h2>curators only<span style="color:var(--spark)">.</span></h2>' +
+      '<p>' + (status === 403
+        ? 'You&rsquo;re signed in, but this supply tool is for calendar curators.'
+        : 'Sign in as the calendar owner to review event ideas.') +
+      ' Sign-in lives on the <a href="/teds-nyc">calendar page</a> — use the menu in the top right, then come back.</p></div>';
+  }
+
+  /* ---------- add flow (mirrors teds-nyc.html import-add-form) ---------- */
+  function addFormHtml(ev) {
+    return '<form class="edit-form" id="ideas-add-form">' +
+      '<label>title<input name="title" value="' + esc(ev.title) + '" required maxlength="200"></label>' +
+      '<label>venue<input name="venue" value="' + esc(ev.venue || '') + '" required maxlength="200"></label>' +
+      '<label>neighborhood<input name="neighborhood" value="' + esc(ev.neighborhood || '') + '" maxlength="120"></label>' +
+      '<label>price<input name="price" value="' + esc(ev.price || '') + '" maxlength="60"></label>' +
+      '<label>starts<input type="datetime-local" name="start" value="' + esc((ev.start || '').slice(0, 16)) + '" required></label>' +
+      '<label>ends (optional — multi-day runs land in “any day”)<input type="datetime-local" name="end" value="' + esc((ev.end || '').slice(0, 16)) + '"></label>' +
+      '<label>blurb<textarea name="blurb" maxlength="600">' + esc(ev.blurb || '') + '</textarea></label>' +
+      '<label>url<input type="url" name="url" value="' + esc(ev.url || '') + '" maxlength="600" placeholder="https://…"></label>' +
+      '<label>image url<input type="url" name="image" value="' + esc(ev.image || '') + '" maxlength="600" placeholder="https://…"></label>' +
+      '<div class="edit-actions">' +
+        '<button class="save" type="submit">Add to calendar</button>' +
+        '<button class="cancel" type="button" id="add-cancel">Cancel</button>' +
+      '</div>' +
+      '<div class="edit-err" id="add-err"></div>' +
+    '</form>';
+  }
+  function openAdd(id) {
+    var ev = findCandidate(id);
+    if (!ev) return;
+    addingId = id;
+    document.getElementById('add-src').textContent =
+      'from ' + (SOURCE_LABEL[ev.source] || ev.source || 'source') + ' — check everything before adding';
+    document.getElementById('add-content').innerHTML = addFormHtml(ev);
+    document.getElementById('add-backdrop').hidden = false;
+    var inp = document.querySelector('#ideas-add-form input[name="title"]');
+    if (inp) { try { inp.focus(); } catch (e) {} }
+  }
+  function closeAdd() {
+    addingId = null;
+    document.getElementById('add-backdrop').hidden = true;
+    document.getElementById('add-content').innerHTML = '';
+  }
+  function markAdded(id) {
+    var ev = findCandidate(id);
+    if (ev) ev.added = true;
+    renderDay();
+  }
+
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    if (!t) return;
+    if (t.getAttribute && t.getAttribute('data-add')) { openAdd(t.getAttribute('data-add')); return; }
+    if (t.id === 'add-close' || t.id === 'add-cancel') { closeAdd(); return; }
+    if (t.id === 'add-backdrop') { closeAdd(); return; }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && addingId) closeAdd();
+  });
+
+  document.addEventListener('submit', function (e) {
+    if (!e.target || e.target.id !== 'ideas-add-form') return;
+    e.preventDefault();
+    var id = addingId;
+    var f = e.target.elements;
+    var ev = {
+      title: f.title.value.trim(),
+      venue: f.venue.value.trim(),
+      neighborhood: f.neighborhood.value.trim(),
+      price: f.price.value.trim(),
+      blurb: f.blurb.value.trim(),
+      url: f.url.value.trim(),
+      image: f.image.value.trim()
+    };
+    var dt = f.start.value;
+    if (dt) ev.start = dt.length === 16 ? dt + ':00' + nyOffsetFor(dt) : dt;
+    var de = f.end.value;
+    if (de) ev.end = de.length === 16 ? de + ':00' + nyOffsetFor(de) : de;
+    var saveBtn = e.target.querySelector('.save');
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Adding…'; }
+    fetch(OVERLAY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'add', event: ev })
+    }).then(function (r) {
+      return r.json().then(function (d) { return { s: r.status, d: d }; }, function () { return { s: r.status, d: null }; });
+    }).then(function (res) {
+      if (res.s === 200 && res.d && res.d.ok) {
+        closeAdd();
+        markAdded(id);
+      } else {
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Add to calendar'; }
+        var err = document.getElementById('add-err');
+        if (err) err.textContent = (res.d && res.d.error) ? 'Could not add — ' + res.d.error + '.' : 'Could not add — try again.';
+      }
+    }).catch(function () {
+      if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Add to calendar'; }
+      var err = document.getElementById('add-err');
+      if (err) err.textContent = 'Network error — try again.';
+    });
+  });
+
+  /* ---------- date pagination ---------- */
+  document.getElementById('day-prev').addEventListener('click', function () {
+    if (cur && cur.prev) load(cur.prev, true);
+  });
+  document.getElementById('day-next').addEventListener('click', function () {
+    if (cur && cur.next) load(cur.next, true);
+  });
+  window.addEventListener('popstate', function () {
+    load(dateFromUrl(), false);
+  });
+  function dateFromUrl() {
+    var m = location.search.match(/[?&]date=(\d{4}-\d{2}-\d{2})/);
+    return m ? m[1] : nyTodayKey();
+  }
+
+  /* ---------- boot: owner gate, then load ---------- */
+  fetch('/api/me').then(function (r) { return r.ok ? r.json() : null; }).then(function (me) {
+    if (!me || !me.isOwner) { renderGate(me && me.email ? 403 : 401); return; }
+    document.getElementById('app').innerHTML = '';
+    load(dateFromUrl(), false);
+  }).catch(function () { renderGate(401); });
+})();
+</script>
+</body>
+</html>
