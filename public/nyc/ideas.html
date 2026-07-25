@@ -63,6 +63,11 @@ button { font-family: inherit; }
 /* idea rows */
 .ideas { padding: 8px 0 24px; }
 .idea-row { display: flex; align-items: flex-start; gap: 14px; padding: 15px 2px; border-bottom: 1px solid var(--line); }
+.grp-toggle { background: none; border: 1px solid var(--line); color: var(--faint); font-family: var(--mono); font-size: 11px; padding: 5px 10px; border-radius: 999px; cursor: pointer; white-space: nowrap; }
+.grp-toggle:hover { color: var(--ink); border-color: var(--faint); }
+.group-items { margin-left: 18px; padding-left: 12px; border-left: 2px solid var(--line); }
+.group-items .idea-row { padding: 11px 2px; }
+.group-items .idea-time { visibility: hidden; }
 .idea-time { flex: none; width: 74px; font-family: var(--mono); font-size: 11.5px; color: var(--faint); padding-top: 3px; }
 .idea-main { flex: 1 1 auto; min-width: 0; }
 .idea-title { font-weight: 700; font-size: 15.5px; color: var(--head); line-height: 1.3; }
@@ -229,6 +234,59 @@ button { font-family: inherit; }
   }
 
   /* ---------- rendering ---------- */
+  /* Collate repeats: the same program often runs at dozens of locations at the
+     same time (e.g. NYC Parks' "Kids In Motion" at 50 playgrounds). Group by
+     title + time (day) / title + end date (any-day); groups render one row
+     with an expandable per-location list. */
+  var openGroups = {};
+  function groupKey(ev, anyday) {
+    return (anyday ? 'A|' : 'D|') +
+      String(ev.title || '').toLowerCase().replace(/\s+/g, ' ').trim() + '|' +
+      (anyday ? String(ev.end || '').slice(0, 10) : String(ev.start || '').slice(11, 16));
+  }
+  function groupList(evs, anyday) {
+    var map = {}, out = [];
+    for (var i = 0; i < (evs || []).length; i++) {
+      var k = groupKey(evs[i], anyday);
+      if (!map[k]) { map[k] = { key: k, items: [] }; out.push(map[k]); }
+      map[k].items.push(evs[i]);
+    }
+    return out;
+  }
+  function groupRowHtml(g, anyday) {
+    var first = g.items[0];
+    var open = !!openGroups[g.key];
+    var added = 0, hoods = [], seen = {};
+    for (var i = 0; i < g.items.length; i++) {
+      if (g.items[i].added) added++;
+      var h = g.items[i].neighborhood || '';
+      if (h && !seen[h]) { seen[h] = 1; hoods.push(h); }
+    }
+    var hoodTxt = hoods.slice(0, 3).join(', ') + (hoods.length > 3 ? ' +' + (hoods.length - 3) : '');
+    var when = anyday
+      ? 'THRU ' + esc(ddateLabel((first.end || first.start).slice(0, 10)))
+      : esc(timeLabel(first));
+    var html = '<div class="idea-row grp-head">' +
+      '<div class="idea-time">' + when + '</div>' +
+      '<div class="idea-main">' +
+        '<div class="idea-title">' + esc(first.title) + '</div>' +
+        '<div class="idea-venue">' + g.items.length + ' locations' + (hoodTxt ? ' · ' + esc(hoodTxt) : '') + '</div>' +
+        '<div class="idea-chips">' +
+          (added ? '<span class="chip">✓ ' + added + ' added</span>' : '') +
+          srcChips(first) +
+        '</div>' +
+      '</div>' +
+      '<div class="idea-actions">' +
+        '<button class="grp-toggle" type="button" data-grouptoggle="' + esc(g.key) + '">' + (open ? 'hide ▴' : 'all ' + g.items.length + ' ▾') + '</button>' +
+      '</div>' +
+    '</div>';
+    if (open) {
+      html += '<div class="group-items">';
+      for (i = 0; i < g.items.length; i++) html += rowHtml(g.items[i], anyday);
+      html += '</div>';
+    }
+    return html;
+  }
   function rowHtml(ev, anyday) {
     var link = ev.source_url || ev.url;
     var when = anyday
@@ -264,14 +322,20 @@ button { font-family: inherit; }
 
     var html = '<div class="ideas">';
     if (cur.events.length) {
-      for (var i = 0; i < cur.events.length; i++) html += rowHtml(cur.events[i], false);
+      var groups = groupList(cur.events, false);
+      for (var i = 0; i < groups.length; i++) {
+        html += groups[i].items.length > 1 ? groupRowHtml(groups[i], false) : rowHtml(groups[i].items[0], false);
+      }
     } else {
       html += '<div class="empty">No ideas for this day' + (cur.next ? ' — try →' : '') + '.</div>';
     }
     if (cur.anyday && cur.anyday.length) {
       html += '<h2 class="sect-head">any day<span class="dot">.</span></h2>' +
         '<div class="sect-note">multi-day runs overlapping this date</div>';
-      for (var j = 0; j < cur.anyday.length; j++) html += rowHtml(cur.anyday[j], true);
+      var agroups = groupList(cur.anyday, true);
+      for (var j = 0; j < agroups.length; j++) {
+        html += agroups[j].items.length > 1 ? groupRowHtml(agroups[j], true) : rowHtml(agroups[j].items[0], true);
+      }
     }
     html += '</div>';
     root.innerHTML = html;
@@ -359,6 +423,12 @@ button { font-family: inherit; }
     var t = e.target;
     if (!t) return;
     if (t.getAttribute && t.getAttribute('data-add')) { openAdd(t.getAttribute('data-add')); return; }
+    if (t.getAttribute && t.getAttribute('data-grouptoggle')) {
+      var gk = t.getAttribute('data-grouptoggle');
+      openGroups[gk] = !openGroups[gk];
+      renderDay();
+      return;
+    }
     if (t.id === 'add-close' || t.id === 'add-cancel') { closeAdd(); return; }
     if (t.id === 'add-backdrop') { closeAdd(); return; }
   });
