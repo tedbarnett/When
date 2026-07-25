@@ -2,6 +2,8 @@
 
 **An open calendar of everything happening.** [when.org](https://when.org)
 
+<img width="1446" height="1638" alt="image" src="https://github.com/user-attachments/assets/2f9e09a4-0197-47b1-b85d-03f6e36847d0" />
+
 When.org is an open-source feed layer for local events. The atomic unit is a
 **calendar with an owner**: a curator who knows every jazz room in New York
 publishes `when.org/nyc-jazz`, and you subscribe to it the way you'd
