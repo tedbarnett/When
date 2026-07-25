@@ -1330,11 +1330,6 @@ body.modal-open { overflow: hidden; }
       '<label>blurb<textarea name="blurb" maxlength="600">' + esc(ev.blurb || '') + '</textarea></label>' +
       '<label>url<input type="url" name="url" value="' + esc(ev.url || '') + '" maxlength="600" placeholder="https://…"></label>' +
       '<label>image url<input type="url" name="image" value="' + esc(ev.image || '') + '" maxlength="600" placeholder="https://…"></label>' +
-      '<div class="edit-err" id="import-add-err"></div>' +
-      '<div class="edit-actions">' +
-        '<button class="save" type="submit">Add to calendar</button>' +
-        '<button class="cancel" type="button" id="import-back">Back</button>' +
-      '</div>' +
     '</form>';
   }
   function renderImport() {
@@ -1346,6 +1341,11 @@ body.modal-open { overflow: hidden; }
     if (importState === 'review' && importEv) {
       box.innerHTML =
         '<span class="src-badge">' + (importSrc === 'ai' ? 'AI-read — check everything' : 'from page data') + '</span>' +
+        '<div class="edit-actions" style="margin:10px 0 4px">' +
+          '<button class="save" type="submit" form="import-add-form">Add to calendar</button>' +
+          '<button class="cancel" type="button" id="import-back">Back</button>' +
+        '</div>' +
+        '<div class="edit-err" id="import-add-err"></div>' +
         importPreviewHtml(importEv) +
         '<div class="import-form-label">looks wrong? fix it before adding</div>' +
         importFormHtml(importEv);
@@ -1432,7 +1432,7 @@ body.modal-open { overflow: hidden; }
       var dt = f.start.value;
       if (dt) ev.start = dt.length === 16 ? dt + ':00' + nyOffsetFor(dt) : dt;
       if (importEv && importEv.end) ev.end = importEv.end;
-      var saveBtn = e.target.querySelector('.save');
+      var saveBtn = document.querySelector('#import-content .save');
       if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Adding…'; }
       fetch(OVERLAY_URL, {
         method: 'POST',
