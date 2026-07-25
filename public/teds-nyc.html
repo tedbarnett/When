@@ -3,682 +3,989 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ted's NYC · When.org</title>
-<meta name="description" content="Real New York this week: jazz basements, free lawns, old movies, new food. A calendar curated by Ted. Subscribe in any calendar app.">
+<title>Ted&rsquo;s NYC · When.org</title>
+<meta name="description" content="Real New York this week: jazz basements, free lawns, old movies, new food. Hand-picked, no filler. A When.org calendar: a web page, an ICS feed, and an API.">
 <link rel="canonical" href="https://when.org/teds-nyc">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="alternate" type="text/calendar" title="Ted's NYC (ICS)" href="/teds-nyc.ics">
 
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://when.org/teds-nyc">
 <meta property="og:site_name" content="When.org">
-<meta property="og:title" content="Ted's NYC · a When.org calendar">
-<meta property="og:description" content="Real New York for the week ahead, curated by Ted. Jazz, free lawns, old movies, new food. Subscribe in any calendar app.">
-<meta property="og:image" content="https://bricartsmedia.org/wp-content/uploads/2026/04/CBS-Photo%C2%A9Jimmy-Bruch-scaled-1.jpg">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Ted's NYC · a When.org calendar">
-<meta name="twitter:description" content="Real New York for the week ahead, curated by Ted. Subscribe in any calendar app.">
+<meta property="og:title" content="Ted&rsquo;s NYC · When.org">
+<meta property="og:description" content="Real New York this week, hand-picked. Subscribe once in Apple or Google Calendar and every week&rsquo;s picks arrive automatically.">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Ted&rsquo;s NYC · When.org">
+<meta name="twitter:description" content="Real New York this week, hand-picked. Subscribe in any calendar app.">
 
 <style>
-@font-face {
-  font-family: 'Satoshi';
-  src: url('/fonts/satoshi-500.woff2') format('woff2');
-  font-weight: 500; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: 'Satoshi';
-  src: url('/fonts/satoshi-700.woff2') format('woff2');
-  font-weight: 700; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: 'Satoshi';
-  src: url('/fonts/satoshi-900.woff2') format('woff2');
-  font-weight: 900; font-style: normal; font-display: swap;
-}
-
-:root {
-  --paper: #f6f6f3;
-  --surface: #fdfdfc;
-  --ink: #17191e;
-  --muted: #5b6068;
-  --faint: #8b9098;
-  --hairline: #e0e0da;
-  --accent: #2138d6;
-  --accent-ink: #ffffff;
-  --accent-soft: #eceefb;
-  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
-  --sans: 'Satoshi', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  /* fallback-card tints (light) */
-  --cb0-bg: #e8ebfa; --cb0-ink: #2138d6;
-  --cb1-bg: #e6f0ea; --cb1-ink: #1f7a4d;
-  --cb2-bg: #faece7; --cb2-ink: #c2552f;
-  --cb3-bg: #f4e9f3; --cb3-ink: #93387f;
-  --cb4-bg: #eef0e2; --cb4-ink: #6a7523;
-  --cb5-bg: #e7eff4; --cb5-ink: #22677f;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #101115;
-    --surface: #17181d;
-    --ink: #ebebe7;
-    --muted: #a2a6ad;
-    --faint: #71757d;
-    --hairline: #272930;
-    --accent: #7286ff;
-    --accent-ink: #0d1030;
-    --accent-soft: #1c2040;
-    --cb0-bg: #1c2040; --cb0-ink: #93a3ff;
-    --cb1-bg: #16281e; --cb1-ink: #6bc396;
-    --cb2-bg: #2e1d15; --cb2-ink: #e8926c;
-    --cb3-bg: #2a1a28; --cb3-ink: #d287c1;
-    --cb4-bg: #23261a; --cb4-ink: #b3bf68;
-    --cb5-bg: #16242c; --cb5-ink: #7ab6cf;
-  }
-}
+/* ------------------------------------------------------------------
+   when.org — Ted's NYC event browser
+   Hand-written CSS. No framework, no build step.
+   Dark by default; body[data-theme="light"] flips the tokens.
+   Display voice: Bricolage Grotesque 800 lowercase + vermilion period.
+------------------------------------------------------------------- */
+@font-face { font-family:'Satoshi'; src:url('/fonts/satoshi-500.woff2') format('woff2'); font-weight:500; font-style:normal; font-display:swap; }
+@font-face { font-family:'Satoshi'; src:url('/fonts/satoshi-700.woff2') format('woff2'); font-weight:700; font-style:normal; font-display:swap; }
+@font-face { font-family:'Satoshi'; src:url('/fonts/satoshi-900.woff2') format('woff2'); font-weight:900; font-style:normal; font-display:swap; }
+@font-face { font-family:'Bricolage Grotesque'; src:url('/fonts/bricolage-var.woff2') format('woff2'); font-weight:200 800; font-style:normal; font-display:swap; }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: var(--sans);
-  background: var(--paper);
-  color: var(--ink);
-  font-weight: 500;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
+  --paper:#0e0f14; --surface:#17181d; --head:#ffffff; --ink:#ebebe7;
+  --muted:#a2a6ad; --faint:#71757d; --line:#272930;
+  --accent:#4d63ff; --peri:#9aa6ff; --spark:#ff5426;
+  --navbg:rgba(14,15,20,.84); --chip:rgba(255,255,255,.08);
+  --cb0-bg:#1c2040; --cb0-ink:#93a3ff; --cb1-bg:#16281e; --cb1-ink:#6bc396;
+  --cb2-bg:#2e1d15; --cb2-ink:#e8926c; --cb3-bg:#2a1a28; --cb3-ink:#d287c1;
+  --cb4-bg:#23261a; --cb4-ink:#b3bf68; --cb5-bg:#16242c; --cb5-ink:#7ab6cf;
+  --av:#3c4150; --avink:#c6ccda;
+  --mono: ui-monospace, Menlo, monospace;
+  --sans: 'Satoshi', -apple-system, 'Segoe UI', sans-serif;
+  --brico: 'Bricolage Grotesque', 'Satoshi', sans-serif;
+  font-family: var(--sans); font-weight: 500;
+  background: var(--paper); color: var(--ink);
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  transition: background .3s ease, color .3s ease;
 }
-a { color: inherit; }
-::selection { background: var(--accent); color: var(--accent-ink); }
-.wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+body[data-theme="light"] {
+  --paper:#f6f6f3; --surface:#fdfdfc; --head:#17191e; --ink:#17191e;
+  --muted:#5b6068; --faint:#8b9098; --line:#e0e0da;
+  --accent:#2138d6; --peri:#2138d6; --spark:#e8541f;
+  --navbg:rgba(246,246,243,.86); --chip:rgba(23,25,30,.06);
+  --cb0-bg:#e8ebfa; --cb0-ink:#2138d6; --cb1-bg:#e6f0ea; --cb1-ink:#1f7a4d;
+  --cb2-bg:#faece7; --cb2-ink:#c2552f; --cb3-bg:#f4e9f3; --cb3-ink:#93387f;
+  --cb4-bg:#eef0e2; --cb4-ink:#6a7523; --cb5-bg:#e7eff4; --cb5-ink:#22677f;
+  --av:#d8dae2; --avink:#5b6068;
+}
+a { color: var(--peri); } a:hover { color: var(--head); }
+::selection { background:#ff5426; color:#ffffff; }
+button { font-family: inherit; }
+
+.wrap { max-width: 1140px; margin: 0 auto; padding: 0 20px; }
 
 /* ---------- nav ---------- */
-header.nav {
-  position: sticky; top: 0; z-index: 10;
-  background: color-mix(in srgb, var(--paper) 88%, transparent);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--hairline);
-}
-.nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-.brand {
-  display: flex; align-items: baseline; gap: 1px;
-  font-weight: 900; font-size: 22px; letter-spacing: -0.02em; text-decoration: none;
-}
-.brand .tld { color: var(--faint); font-weight: 700; font-size: 16px; }
-.nav-links { display: flex; align-items: center; gap: 22px; font-size: 15px; font-weight: 700; }
-.nav-links a { text-decoration: none; color: var(--muted); transition: color .18s ease; }
-.nav-links a:hover { color: var(--ink); }
-.nav-links a.cta {
-  color: var(--accent-ink); background: var(--accent);
-  padding: 9px 18px; border-radius: 999px;
-  transition: transform .18s ease, opacity .18s ease;
-}
-.nav-links a.cta:hover { opacity: .92; }
-.nav-links a.cta:active { transform: translateY(1px); }
-@media (max-width: 640px) { .nav-links a.about { display: none; } }
-
-/* ---------- menu ---------- */
-.nav-inner { position: relative; }
-.menu-btn {
-  display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
-  width: 40px; height: 40px; flex: none; margin-left: 18px;
-  background: var(--surface); border: 1px solid var(--hairline); border-radius: 999px;
-  cursor: pointer; transition: border-color .18s ease;
-}
+.nav { position: sticky; top: 0; z-index: 20; background: var(--navbg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+.nav-inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 60px; }
+.brand { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+.wordmark { font-family: var(--brico); font-weight: 800; font-size: 22px; color: var(--head); letter-spacing: -0.05em; }
+.wordmark .tld { color: var(--peri); }
+.nav-cluster { display: flex; align-items: center; gap: 9px; }
+.theme-btn { width: 34px; height: 34px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 15px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: border-color .15s ease; }
+.theme-btn:hover { border-color: var(--faint); }
+.follow-btn { border: 1px solid var(--line); background: transparent; color: var(--ink); font-weight: 700; font-size: 13px; border-radius: 999px; padding: 7px 15px; cursor: pointer; white-space: nowrap; transition: border-color .15s ease; }
+.follow-btn:hover { border-color: var(--faint); }
+.sub-btn { background: var(--accent); border: none; color: #fff; font-weight: 700; font-size: 13.5px; border-radius: 999px; padding: 8px 17px; cursor: pointer; }
+.menu-btn { width: 34px; height: 34px; border-radius: 999px; border: 1px solid var(--line); background: transparent; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; transition: border-color .15s ease; }
 .menu-btn:hover { border-color: var(--faint); }
-.menu-btn .bar { display: block; width: 15px; height: 2px; background: var(--ink); border-radius: 2px; transition: transform .22s ease; }
-.menu-btn[aria-expanded="true"] .bar:first-child { transform: translateY(3px) rotate(45deg); }
-.menu-btn[aria-expanded="true"] .bar:last-child { transform: translateY(-3px) rotate(-45deg); }
-.menu-panel {
-  position: absolute; top: 56px; right: 0; z-index: 40;
-  width: min(320px, calc(100vw - 48px));
-  background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px;
-  box-shadow: 0 24px 56px -20px color-mix(in srgb, var(--ink) 32%, transparent);
-  padding: 10px;
-}
-.menu-panel[hidden] { display: none; }
-@media (prefers-reduced-motion: no-preference) {
-  .menu-panel { animation: menuIn .18s cubic-bezier(0.16,1,0.3,1); }
-  @keyframes menuIn { from { opacity: 0; transform: translateY(-6px); } }
-}
-.menu-panel .mi {
-  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
-  padding: 11px 14px; border-radius: 10px; text-decoration: none;
-  font-weight: 700; font-size: 15px; color: var(--ink);
-  transition: background .15s ease, color .15s ease;
-}
-.menu-panel .mi:hover { background: var(--accent-soft); color: var(--accent); }
-.menu-panel .mi .hint { font-family: var(--mono); font-size: 11px; color: var(--faint); font-weight: 500; }
-.menu-div { height: 1px; background: var(--hairline); margin: 8px 4px; }
-.menu-auth { padding: 4px 4px 6px; }
-.menu-auth .btn-google {
-  display: block; text-align: center; text-decoration: none;
-  font-weight: 700; font-size: 14.5px; color: var(--ink); font-family: var(--sans);
-  background: var(--paper); border: 1px solid var(--hairline); border-radius: 999px;
-  padding: 10px 16px; cursor: pointer; transition: border-color .18s ease;
-}
-.menu-auth .btn-google:hover { border-color: var(--faint); }
-.menu-auth .or { text-align: center; font-family: var(--mono); font-size: 11px; color: var(--faint); margin: 10px 0; }
-.menu-auth .magic { display: grid; gap: 8px; }
-.menu-auth .magic input {
-  font-family: var(--sans); font-size: 14.5px; font-weight: 500; color: var(--ink);
-  background: var(--paper); border: 1px solid var(--hairline); border-radius: 10px;
-  padding: 10px 12px; width: 100%;
-  transition: border-color .18s ease, box-shadow .18s ease;
-}
-.menu-auth .magic input::placeholder { color: var(--faint); }
-.menu-auth .magic input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
-.menu-auth .magic button {
-  font-family: var(--sans); font-weight: 700; font-size: 14.5px;
-  color: var(--accent-ink); background: var(--accent); border: none; border-radius: 999px;
-  padding: 10px 16px; cursor: pointer; transition: opacity .18s ease;
-}
-.menu-auth .magic button:hover { opacity: .92; }
-.menu-auth .magic button:disabled { opacity: .6; cursor: wait; }
-.menu-auth .auth-status { font-size: 13px; font-weight: 700; margin: 2px 2px 0; display: none; }
-.menu-auth .auth-status.ok { display: block; color: var(--accent); }
-.menu-auth .auth-status.err { display: block; color: #c0392b; }
-@media (prefers-color-scheme: dark) { .menu-auth .auth-status.err { color: #ff7a68; } }
-.menu-auth .who { display: flex; align-items: center; gap: 8px; padding: 6px 10px 10px; font-weight: 700; font-size: 15px; }
-.menu-auth .who .owner-badge {
-  font-family: var(--mono); font-size: 11px; color: var(--accent);
-  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
-  border-radius: 999px; padding: 2px 9px;
+.menu-btn .bar { width: 13px; height: 1.5px; background: var(--ink); border-radius: 2px; }
+.menu-wrap { position: relative; }
+.menu-panel { position: absolute; right: 0; top: 44px; min-width: 230px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 8px; box-shadow: 0 24px 60px -20px rgba(0,0,0,.6); z-index: 40; }
+.menu-panel .mi { display: block; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: var(--ink); font-weight: 700; font-size: 14px; }
+.menu-panel .mi:hover { background: var(--chip); color: var(--head); }
+.menu-panel .mi .hint { font-family: var(--mono); font-size: 10.5px; color: var(--faint); margin-left: 6px; font-weight: 500; }
+.menu-div { height: 1px; background: var(--line); margin: 7px 4px; }
+.owner-badge { font-family: var(--mono); font-size: 10.5px; color: var(--spark); padding: 2px 12px 6px; }
+.auth-form { padding: 6px 12px 10px; display: grid; gap: 7px; }
+.auth-form input { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; color: var(--ink); font-family: var(--sans); font-size: 13.5px; padding: 9px 12px; outline: none; width: 100%; }
+.auth-form input:focus { border-color: var(--faint); }
+.auth-form .send { background: var(--accent); border: none; color: #fff; font-weight: 700; font-size: 13px; border-radius: 999px; padding: 9px 14px; cursor: pointer; }
+.btn-google { display: block; text-align: center; background: var(--chip); border-radius: 999px; color: var(--head); font-weight: 700; font-size: 13px; text-decoration: none; padding: 9px 14px; }
+.auth-note { font-size: 11.5px; color: var(--faint); line-height: 1.5; padding: 0 2px; }
+
+/* ---------- header block ---------- */
+.calhead { padding-top: clamp(24px, 3.5vw, 42px); }
+.kicker { font-family: var(--mono); font-size: 11.5px; letter-spacing: .12em; color: var(--peri); text-transform: uppercase; }
+.view-title { font-family: var(--brico); font-weight: 800; font-size: clamp(52px, 8.5vw, 96px); letter-spacing: -0.05em; line-height: .92; color: var(--head); margin-top: 4px; }
+.view-title .dot { color: var(--spark); }
+.meta-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 13px; }
+.byline { font-size: 15px; color: var(--muted); }
+.mchip { font-family: var(--mono); font-size: 11px; color: var(--faint); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
+
+/* ---------- view bar ---------- */
+.viewbar { position: sticky; top: 61px; z-index: 15; background: var(--navbg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); margin-top: 20px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.viewbar-inner { display: flex; align-items: center; gap: 12px; padding: 9px 20px; max-width: 1140px; margin: 0 auto; }
+.seg { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
+.seg button { font-weight: 700; font-size: 13.5px; padding: 7px 18px; border-radius: 999px; cursor: pointer; background: transparent; border: none; color: var(--muted); transition: background .15s ease, color .15s ease; }
+.seg button.on { background: var(--accent); color: #fff; }
+
+/* ---------- shared card bits ---------- */
+.shelf { display: flex; gap: 12px; overflow-x: auto; padding: 0 20px 8px; scrollbar-width: none; }
+.shelf::-webkit-scrollbar { display: none; }
+.tile, .hero, .daycard { -webkit-tap-highlight-color: transparent; }
+.price-chip { position: absolute; background: rgba(5,6,10,.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); color: #fff; font-family: var(--mono); border-radius: 999px; opacity: 0; transition: opacity .18s ease; pointer-events: none; }
+.save-btn { position: absolute; border-radius: 999px; background: rgba(255,255,255,.2); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border: none; color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s ease; }
+.save-btn:hover { background: rgba(255,255,255,.32); }
+.card-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(5,6,10,0) 40%, rgba(5,6,10,.88)); }
+.letter-block { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: var(--brico); font-weight: 800; }
+.friends { font-weight: 700; transition: color .2s ease, text-shadow .2s ease; }
+
+/* ---------- week view ---------- */
+.hero { position: relative; height: clamp(340px, 44vw, 460px); border-radius: 26px; overflow: hidden; margin-top: 22px; cursor: pointer; display: block; width: 100%; border: none; text-align: left; background: var(--cb0-bg); }
+.hero .scrim { background: linear-gradient(180deg, rgba(5,6,10,0) 30%, rgba(5,6,10,.92)); }
+.hero .price-chip { top: 14px; left: 14px; font-size: 11px; padding: 4px 12px; }
+.hero .save-btn { top: 14px; right: 14px; width: 44px; height: 44px; font-size: 21px; }
+.hero-body { position: absolute; left: clamp(16px,3vw,28px); right: clamp(16px,3vw,28px); bottom: clamp(16px,3vw,26px); display: grid; gap: 5px; }
+.hero-kicker { font-family: var(--mono); font-size: 12px; color: #9aa6ff; }
+.hero-title { font-family: var(--brico); font-weight: 800; font-size: clamp(24px, 4vw, 42px); letter-spacing: -0.03em; line-height: 1.02; color: #fff; max-width: 20ch; }
+.hero-venue { font-size: clamp(13px, 1.6vw, 15px); color: rgba(255,255,255,.75); }
+.hero .fchip { margin-top: 5px; display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,.14); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: 999px; padding: 5px 12px 5px 6px; justify-self: start; transition: background .2s ease; }
+.hero:hover .fchip { background: rgba(255,84,38,.4); }
+.hero .fchip .flabel { font-size: 12px; font-weight: 700; color: #fff; margin-left: 8px; }
+.hero .letter-block { font-size: 84px; }
+.shelf-label { font-family: var(--mono); font-size: 11.5px; letter-spacing: .12em; color: var(--faint); padding: 26px 0 12px; }
+.dayhead { display: flex; align-items: baseline; gap: 12px; padding: 30px 20px 14px; max-width: 1140px; margin: 0 auto; }
+.dayhead .dname { font-family: var(--brico); font-weight: 800; font-size: clamp(26px, 3.4vw, 36px); letter-spacing: -0.04em; color: var(--head); }
+.dayhead .dname .dot { color: var(--spark); }
+.dayhead .ddate { font-family: var(--mono); font-size: 11.5px; color: var(--faint); }
+.dayhead .dcount { font-family: var(--mono); font-size: 11px; color: var(--peri); margin-left: auto; }
+.tile { position: relative; flex: none; border-radius: 18px; overflow: hidden; cursor: pointer; border: none; text-align: left; padding: 0; transition: transform .18s ease; }
+.tile.t-tonight { width: 178px; height: 224px; }
+.tile.t-day { width: 216px; height: 266px; border-radius: 20px; }
+@media (hover: hover) { .tile:hover { transform: translateY(-3px); } }
+.tile .price-chip { top: 9px; left: 9px; font-size: 10px; padding: 3px 10px; }
+.tile.t-day .price-chip { top: 10px; left: 10px; }
+.tile .save-btn { top: 9px; right: 9px; width: 30px; height: 30px; font-size: 16px; }
+.tile.t-day .save-btn { top: 10px; right: 10px; width: 32px; height: 32px; font-size: 17px; }
+.tile .letter-block { font-size: 58px; }
+.tile.t-day .letter-block { font-size: 72px; }
+.tile-body { position: absolute; left: 11px; right: 11px; bottom: 11px; }
+.tile.t-day .tile-body { left: 13px; right: 13px; bottom: 13px; }
+.tile-time { font-family: var(--mono); font-size: 10px; color: #9aa6ff; }
+.tile.t-day .tile-time { font-size: 10.5px; }
+.tile-title { font-size: 13.5px; font-weight: 700; line-height: 1.2; color: #fff; margin-top: 2px; }
+.tile.t-day .tile-title { font-size: 15px; line-height: 1.22; }
+.tile-venue { font-size: 11.5px; color: rgba(255,255,255,.65); margin-top: 2px; }
+.tile .friends { font-size: 10.5px; color: #9aa6ff; margin-top: 3px; }
+.tile.t-day .friends { font-size: 11px; }
+@media (hover: hover) {
+  .tile:hover .friends { color: #ff6a42; text-shadow: 0 0 12px rgba(255,84,38,.85); }
+  .tile:hover .price-chip, .hero:hover .price-chip, .daycard:hover .price-chip { opacity: 1; }
 }
 
-/* ---------- calendar header ---------- */
-.calhead { padding: 44px 0 30px; }
-.cal-url { font-family: var(--mono); font-size: 13px; color: var(--accent); }
-.calhead h1 { font-size: clamp(36px, 6vw, 56px); font-weight: 900; letter-spacing: -0.035em; line-height: 1.05; margin-top: 4px; }
-.byline { margin-top: 8px; font-size: 17px; color: var(--muted); }
-.meta-row { margin-top: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.chip {
-  font-family: var(--mono); font-size: 11.5px; color: var(--muted);
-  border: 1px solid var(--hairline); border-radius: 999px;
-  padding: 4px 11px; background: var(--surface); text-decoration: none;
-  transition: border-color .18s ease, color .18s ease;
-}
-a.chip:hover { color: var(--ink); border-color: var(--faint); }
-.actions { margin-top: 22px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.btn {
-  display: inline-block; text-decoration: none; text-align: center;
-  background: var(--accent); color: var(--accent-ink);
-  font-weight: 700; font-size: 15px;
-  padding: 12px 24px; border-radius: 999px;
-  border: none; cursor: pointer; font-family: var(--sans);
-  transition: transform .18s ease, opacity .18s ease;
-}
-.btn:hover { opacity: .92; }
-.btn:active { transform: translateY(1px) scale(.99); }
-.btn.ghost {
-  background: var(--surface); color: var(--ink);
-  border: 1px solid var(--hairline);
-}
-.btn.ghost:hover { border-color: var(--faint); opacity: 1; }
-.sub-hint { font-size: 13px; color: var(--faint); margin-top: 10px; max-width: 52ch; }
+/* ---------- day view ---------- */
+.day-pills { display: flex; gap: 8px; overflow-x: auto; padding: 20px 20px 4px; scrollbar-width: none; max-width: 1140px; margin: 0 auto; }
+.day-pills::-webkit-scrollbar { display: none; }
+.day-pill { flex: none; border-radius: 999px; padding: 8px 16px; cursor: pointer; font-weight: 700; font-size: 13.5px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); transition: background .15s ease; }
+.day-pill.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+.day-pill .num { font-family: var(--mono); font-size: 10.5px; opacity: .7; }
+.day-cards { display: grid; gap: 18px; max-width: 660px; margin: 0 auto; padding: 18px 20px 10px; }
+.daycard { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; overflow: hidden; cursor: pointer; text-align: left; padding: 0; transition: transform .18s ease; width: 100%; }
+@media (hover: hover) { .daycard:hover { transform: translateY(-2px); } }
+.daycard-media { position: relative; aspect-ratio: 16/9; }
+.daycard-media .price-chip { top: 12px; left: 12px; font-size: 10.5px; padding: 3px 11px; }
+.daycard-media .save-btn { top: 12px; right: 12px; width: 36px; height: 36px; font-size: 18px; }
+.daycard-media .letter-block { font-size: 84px; }
+.daycard-body { padding: 16px 18px 18px; display: grid; gap: 5px; }
+.daycard-time { font-family: var(--mono); font-size: 11.5px; color: var(--peri); }
+.daycard-title { font-family: var(--brico); font-weight: 800; font-size: 23px; letter-spacing: -0.03em; line-height: 1.08; color: var(--head); }
+.daycard-venue { font-size: 13.5px; color: var(--muted); }
+.daycard-blurb { font-size: 14px; color: var(--muted); line-height: 1.5; }
+.daycard .friends { font-size: 12px; color: var(--peri); margin-top: 2px; }
+@media (hover: hover) { .daycard:hover .friends { color: var(--spark); } }
 
-/* ---------- view toggle ---------- */
-.viewbar {
-  position: sticky; top: 64px; z-index: 9;
-  background: color-mix(in srgb, var(--paper) 92%, transparent);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-top: 1px solid var(--hairline);
-  border-bottom: 1px solid var(--hairline);
-}
-.viewbar-inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 24px; }
-.seg { display: inline-flex; background: var(--surface); border: 1px solid var(--hairline); border-radius: 999px; padding: 3px; }
-.seg button {
-  font-family: var(--sans); font-weight: 700; font-size: 14px;
-  color: var(--muted); background: transparent; border: none;
-  padding: 7px 18px; border-radius: 999px; cursor: pointer;
-  transition: color .15s ease, background .15s ease;
-}
-.seg button.on { background: var(--accent); color: var(--accent-ink); }
-.seg button:disabled { color: var(--faint); cursor: not-allowed; position: relative; }
-.seg button:disabled:hover::after {
-  content: "soon"; position: absolute; left: 50%; top: -30px; transform: translateX(-50%);
-  font-family: var(--mono); font-size: 11px; background: var(--ink); color: var(--paper);
-  padding: 3px 9px; border-radius: 999px; white-space: nowrap;
-}
-.daynav { display: none; align-items: center; gap: 10px; }
-.daynav.show { display: inline-flex; }
-.daynav button {
-  width: 36px; height: 36px; border-radius: 999px;
-  border: 1px solid var(--hairline); background: var(--surface); color: var(--ink);
-  font-size: 16px; font-weight: 700; cursor: pointer; font-family: var(--sans);
-  transition: border-color .15s ease, transform .15s ease;
-}
-.daynav button:hover { border-color: var(--faint); }
-.daynav button:active { transform: translateY(1px); }
-.daynav button:disabled { color: var(--faint); cursor: not-allowed; }
-.daynav .daylabel { font-family: var(--mono); font-size: 12.5px; color: var(--muted); min-width: 118px; text-align: center; }
-
-/* ---------- days & cards ---------- */
-.days { padding: 12px 0 72px; }
-.dayhead { display: flex; align-items: baseline; gap: 12px; margin: 38px 0 16px; }
-.dayhead .dname { font-size: clamp(21px, 3vw, 27px); font-weight: 900; letter-spacing: -0.02em; }
-.dayhead .ddate { font-family: var(--mono); font-size: 12.5px; color: var(--faint); }
-.dayhead .dcount { font-family: var(--mono); font-size: 11.5px; color: var(--faint); margin-left: auto; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(255px, 1fr)); gap: 16px; }
-
-.card {
-  background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px;
-  overflow: hidden; text-decoration: none; display: flex; flex-direction: column;
-  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-}
-.card:hover {
-  transform: translateY(-2px);
-  border-color: var(--faint);
-  box-shadow: 0 16px 36px -20px color-mix(in srgb, var(--ink) 30%, transparent);
-}
-.card:active { transform: translateY(0); }
-.media { position: relative; aspect-ratio: 16 / 10; background: var(--accent-soft); overflow: hidden; }
-.media img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.card:hover .media img { transform: scale(1.03); }
-.media img { transition: transform .35s ease; }
-.media.blocked { display: flex; align-items: center; justify-content: center; }
-.media.blocked .big {
-  font-weight: 900; font-size: 64px; letter-spacing: -0.04em; line-height: 1;
-  user-select: none;
-}
-.media.blocked .tagword {
-  position: absolute; left: 14px; top: 12px;
-  font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .14em;
-  opacity: .75;
-}
-.cb0 { background: var(--cb0-bg); } .cb0 .big, .cb0 .tagword { color: var(--cb0-ink); }
-.cb1 { background: var(--cb1-bg); } .cb1 .big, .cb1 .tagword { color: var(--cb1-ink); }
-.cb2 { background: var(--cb2-bg); } .cb2 .big, .cb2 .tagword { color: var(--cb2-ink); }
-.cb3 { background: var(--cb3-bg); } .cb3 .big, .cb3 .tagword { color: var(--cb3-ink); }
-.cb4 { background: var(--cb4-bg); } .cb4 .big, .cb4 .tagword { color: var(--cb4-ink); }
-.cb5 { background: var(--cb5-bg); } .cb5 .big, .cb5 .tagword { color: var(--cb5-ink); }
-
-.body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
-.toprow { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.time { font-family: var(--mono); font-size: 12px; color: var(--accent); }
-.price { font-family: var(--mono); font-size: 11px; color: var(--muted); border: 1px solid var(--hairline); border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
-.price.free { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
-.card h3 { font-size: 16.5px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.3; }
-.where { font-size: 13px; color: var(--muted); }
-.blurb { font-size: 13.5px; color: var(--muted); line-height: 1.5; }
-.tags { margin-top: auto; padding-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
-.tag { font-family: var(--mono); font-size: 10.5px; color: var(--faint); border: 1px solid var(--hairline); border-radius: 999px; padding: 2px 8px; }
-
-.loading { padding: 60px 0; text-align: center; color: var(--faint); font-family: var(--mono); font-size: 13px; }
+/* ---------- month view ---------- */
+.month-wrap { max-width: 900px; margin: 0 auto; padding: 22px 20px 10px; }
+.month-head, .month-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.month-head { margin-bottom: 6px; }
+.month-head span { font-family: var(--mono); font-size: 10.5px; color: var(--faint); text-align: center; }
+.mcell { min-height: clamp(78px, 10.5vw, 108px); border-radius: 14px; background: transparent; border: 1px solid var(--line); padding: 7px 8px; display: flex; flex-direction: column; gap: 3px; overflow: hidden; text-align: left; font-family: var(--sans); transition: border-color .15s ease; }
+.mcell.blank { border-color: transparent; }
+.mcell.has { background: var(--surface); cursor: pointer; }
+@media (hover: hover) { .mcell.has:hover { border-color: var(--faint); } }
+.mcell-top { display: flex; align-items: baseline; justify-content: space-between; gap: 4px; }
+.mcell-num { font-family: var(--mono); font-size: 12px; color: var(--faint); }
+.mcell.has .mcell-num { color: var(--head); }
+.mcell-count { background: var(--spark); color: #fff; font-weight: 900; font-size: 9.5px; border-radius: 999px; padding: 1px 7px; flex: none; }
+.mcell-title { font-size: 10px; font-weight: 700; color: var(--ink); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mcell-more { font-family: var(--mono); font-size: 9px; color: var(--faint); }
+.month-note { font-size: 13px; color: var(--faint); margin-top: 14px; }
 
 /* ---------- footer ---------- */
-footer { border-top: 1px solid var(--hairline); padding: 36px 0 52px; }
-.foot-inner { display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; align-items: baseline; }
-.foot-left { font-size: 14.5px; color: var(--muted); max-width: 56ch; line-height: 1.7; }
-.foot-left a { color: var(--ink); font-weight: 700; text-decoration: none; border-bottom: 1.5px solid var(--hairline); }
-.foot-left a:hover { border-color: var(--ink); }
-.foot-right { font-size: 14.5px; color: var(--faint); }
+.foot { padding: 56px 20px 120px; max-width: 1140px; margin: 0 auto; }
+.foot-inner { border-top: 1px solid var(--line); padding-top: 24px; display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; font-size: 13.5px; color: var(--faint); line-height: 1.7; }
+.foot-inner .left { max-width: 56ch; }
+.foot-inner .right { font-family: var(--mono); font-size: 11px; }
 
-@media (max-width: 640px) {
-  .calhead { padding: 32px 0 24px; }
-  .grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-  .body { padding: 11px 12px 13px; }
-  .card h3 { font-size: 14.5px; }
-  .blurb { display: none; }
-  .media.blocked .big { font-size: 44px; }
-  .actions .btn { flex: 1; }
+/* ---------- floating pill ---------- */
+.float-pill { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 30; background: var(--accent); border: none; color: #fff; font-weight: 700; font-size: 14px; padding: 12px 24px; border-radius: 999px; box-shadow: 0 14px 36px -8px rgba(20,25,80,.7); white-space: nowrap; cursor: pointer; transition: transform .18s ease; }
+@media (hover: hover) { .float-pill:hover { transform: translateX(-50%) translateY(-2px); } }
+
+/* ---------- overlays ---------- */
+.backdrop { position: fixed; inset: 0; background: rgba(5,6,10,.65); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: 20px; }
+.backdrop[hidden] { display: none; }
+#sub-backdrop { z-index: 45; }
+#tray-backdrop { z-index: 40; align-items: flex-end; padding: 0; }
+#detail-backdrop { z-index: 50; background: rgba(5,6,10,.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+.sheet { background: var(--surface); border: 1px solid var(--line); }
+.x-btn { width: 32px; height: 32px; border-radius: 999px; background: var(--chip); border: none; color: var(--ink); font-size: 16px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; flex: none; }
+.sheet-title { font-family: var(--brico); font-weight: 800; letter-spacing: -0.04em; color: var(--head); }
+.sheet-title .dot { color: var(--spark); }
+
+/* subscribe sheet */
+.sub-sheet { width: min(420px, 100%); border-radius: 26px; padding: 24px; }
+.sub-sheet .head-row { display: flex; align-items: baseline; justify-content: space-between; }
+.sub-sheet .sheet-title { font-size: 24px; }
+.sub-copy { font-size: 13.5px; color: var(--muted); margin-top: 4px; }
+.sub-actions { display: grid; gap: 8px; margin-top: 16px; }
+.sub-actions .primary { display: block; background: var(--accent); color: #fff; font-weight: 700; font-size: 14.5px; text-align: center; padding: 12px 18px; border-radius: 999px; text-decoration: none; border: none; cursor: pointer; }
+.sub-actions .ghost { display: block; border: 1px solid var(--line); background: transparent; color: var(--ink); font-weight: 700; font-size: 14.5px; text-align: center; padding: 11px 18px; border-radius: 999px; text-decoration: none; cursor: pointer; }
+.sub-foot { font-family: var(--mono); font-size: 10.5px; color: var(--faint); text-align: center; margin-top: 12px; }
+
+/* tray */
+.tray { width: min(480px, 100%); max-height: 80vh; overflow-y: auto; border-radius: 26px 26px 0 0; padding: 22px 22px 26px; }
+.tray .head-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.tray .sheet-title { font-size: 26px; }
+.tray-copy { font-size: 13.5px; color: var(--muted); margin-top: 4px; }
+.tray-empty { margin-top: 20px; border: 1.5px dashed var(--line); border-radius: 16px; padding: 26px 20px; text-align: center; color: var(--faint); font-size: 14px; }
+.tray-list { display: grid; gap: 8px; margin-top: 16px; }
+.tray-row { display: flex; align-items: center; gap: 12px; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; }
+.tray-thumb { position: relative; width: 44px; height: 44px; flex: none; border-radius: 10px; overflow: hidden; }
+.tray-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tray-thumb .letter-block { font-family: var(--sans); font-weight: 900; font-size: 19px; }
+.tray-row .tmain { flex: 1; min-width: 0; }
+.tray-row .ttitle { font-size: 13.5px; font-weight: 700; color: var(--head); line-height: 1.25; }
+.tray-row .tmeta { font-family: var(--mono); font-size: 10.5px; color: var(--faint); margin-top: 2px; }
+.tray-row .x-btn { width: 28px; height: 28px; font-size: 14px; color: var(--muted); }
+.handle-row { display: flex; align-items: center; gap: 6px; margin-top: 16px; background: var(--paper); border: 1px solid var(--line); border-radius: 999px; padding: 6px 8px 6px 16px; }
+.handle-row .prefix { font-family: var(--mono); font-size: 13px; color: var(--faint); }
+.handle-row input { flex: 1; min-width: 0; background: transparent; border: none; outline: none; font-family: var(--mono); font-size: 13px; color: var(--head); }
+.publish-btn { margin-top: 10px; width: 100%; background: var(--accent); border: none; color: #fff; font-weight: 700; font-size: 15px; text-align: center; padding: 14px 20px; border-radius: 999px; cursor: pointer; }
+.publish-hint { font-family: var(--mono); font-size: 11px; color: var(--faint); text-align: center; margin-top: 10px; }
+.pub-box { margin-top: 16px; border: 1px solid var(--line); border-radius: 18px; padding: 16px; background: var(--paper); }
+.pub-live { font-weight: 900; font-size: 15px; color: var(--spark); }
+.pub-actions { display: grid; gap: 8px; margin-top: 12px; }
+.pub-actions .primary { display: block; background: var(--accent); color: #fff; font-weight: 700; font-size: 13.5px; text-align: center; padding: 10px 16px; border-radius: 999px; text-decoration: none; border: none; cursor: pointer; }
+.pub-actions .ghost { display: block; border: 1px solid var(--line); background: transparent; color: var(--ink); font-weight: 700; font-size: 13.5px; text-align: center; padding: 9px 16px; border-radius: 999px; text-decoration: none; cursor: pointer; }
+.invite-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid var(--line); margin-top: 14px; padding-top: 12px; }
+.invite-row .icopy { font-size: 12.5px; color: var(--muted); }
+.invite-row button { flex: none; background: none; border: none; font-weight: 700; font-size: 12.5px; color: var(--peri); cursor: pointer; }
+.invite-url { font-family: var(--mono); font-size: 10.5px; color: var(--faint); margin-top: 4px; }
+
+/* detail modal */
+.detail { width: min(440px, 100%); max-height: 86vh; overflow-y: auto; border-radius: 28px; box-shadow: 0 40px 100px -30px rgba(0,0,0,.8); }
+.detail-media { position: relative; height: 250px; }
+.detail-media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.detail-media .letter-block { font-size: 88px; }
+.detail-media .x-btn { position: absolute; top: 12px; right: 12px; width: 34px; height: 34px; background: rgba(5,6,10,.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: #fff; font-size: 17px; }
+.detail-price { position: absolute; top: 12px; left: 12px; background: rgba(5,6,10,.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: #fff; font-family: var(--mono); font-size: 11px; border-radius: 999px; padding: 4px 12px; }
+.detail-body { padding: 20px 22px 24px; display: grid; gap: 8px; }
+.detail-when { font-family: var(--mono); font-size: 12px; color: var(--peri); }
+.detail-title { font-family: var(--brico); font-weight: 800; font-size: 27px; letter-spacing: -0.03em; line-height: 1.05; color: var(--head); }
+.detail-venue { font-size: 14px; color: var(--muted); }
+.detail-fchip { display: inline-flex; align-items: center; gap: 6px; background: var(--chip); border-radius: 999px; padding: 5px 12px 5px 6px; justify-self: start; }
+.detail-fchip .flabel { font-size: 12px; font-weight: 700; color: var(--peri); margin-left: 8px; }
+.detail-blurb { font-size: 15px; color: var(--muted); line-height: 1.55; margin-top: 2px; }
+.share-row { display: flex; align-items: center; gap: 8px; background: var(--paper); border: 1px solid var(--line); border-radius: 999px; padding: 7px 8px 7px 14px; margin-top: 6px; }
+.share-row .surl { flex: 1; min-width: 0; font-family: var(--mono); font-size: 11.5px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.share-row button { flex: none; background: var(--chip); border: none; color: var(--ink); font-weight: 700; font-size: 12px; border-radius: 999px; padding: 6px 13px; cursor: pointer; }
+.detail-actions { display: grid; gap: 8px; margin-top: 8px; }
+.detail-actions .primary { background: var(--accent); border: none; color: #fff; font-weight: 700; font-size: 15px; text-align: center; padding: 13px 20px; border-radius: 999px; cursor: pointer; }
+.detail-actions .ghost { display: block; border: 1px solid var(--line); color: var(--ink); font-weight: 700; font-size: 15px; text-align: center; padding: 12px 20px; border-radius: 999px; text-decoration: none; }
+
+.avatar { width: 21px; height: 21px; border-radius: 999px; background: var(--av); display: inline-flex; align-items: center; justify-content: center; margin-right: -6px; border: 1.5px solid rgba(14,15,20,.4); flex: none; }
+.avstack { display: inline-flex; align-items: center; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tile, .daycard, .float-pill, .tile:hover, .daycard:hover { transform: none !important; transition: none; }
 }
-@media (max-width: 380px) { .grid { grid-template-columns: 1fr; } }
+body.modal-open { overflow: hidden; }
 </style>
 </head>
 <body>
+<script>
+/* Theme boot — before paint */
+(function () {
+  try {
+    if (localStorage.getItem('when:theme') === 'light') document.body.setAttribute('data-theme', 'light');
+  } catch (e) {}
+})();
+</script>
 
 <header class="nav">
   <div class="wrap nav-inner">
-    <a class="brand" href="/">When<span class="tld">.org</span></a>
-    <nav class="nav-links">
-      <a class="about" href="/#manifesto">About When.org</a>
-      <a class="cta" href="webcal://when.org/teds-nyc.ics" id="subscribe-top">Subscribe</a>
-    </nav>
-    <button class="menu-btn" id="menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu-panel" aria-haspopup="true">
-      <span class="bar"></span><span class="bar"></span>
-    </button>
-    <div class="menu-panel" id="menu-panel" hidden>
-      <a class="mi" href="/teds-nyc">Browse NYC <span class="hint">events</span></a>
-      <a class="mi" href="/teds-nyc">Ted&rsquo;s NYC <span class="hint">calendar</span></a>
-      <a class="mi" href="/#manifesto">About</a>
-      <a class="mi" href="https://github.com/tedbarnett/When" rel="noopener">GitHub</a>
-      <div class="menu-div" role="separator"></div>
-      <div class="menu-auth" id="menu-auth"><a class="mi" href="/api/auth/google">Log in</a></div>
+    <a class="brand" href="/">
+      <svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true"><circle cx="10" cy="10" r="5" fill="var(--accent)"/><circle cx="22" cy="10" r="5" fill="var(--accent)"/><circle cx="10" cy="22" r="5" fill="var(--accent)"/><path d="M22 14.6 L23.9 20.1 L29.4 22 L23.9 23.9 L22 29.4 L20.1 23.9 L14.6 22 L20.1 20.1 Z" fill="var(--spark)"/></svg>
+      <span class="wordmark">when<span class="tld">.org</span></span>
+    </a>
+    <div class="nav-cluster">
+      <button class="theme-btn" id="theme-toggle" type="button" aria-label="Toggle theme">☀</button>
+      <button class="follow-btn" id="follow-btn" type="button">Follow</button>
+      <button class="sub-btn" id="sub-open" type="button" aria-haspopup="dialog">Subscribe</button>
+      <div class="menu-wrap">
+        <button class="menu-btn" id="menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu-panel" aria-haspopup="true"><span class="bar"></span><span class="bar"></span></button>
+        <div class="menu-panel" id="menu-panel" hidden>
+          <a class="mi" href="/">Home</a>
+          <a class="mi" href="/#manifesto">About</a>
+          <a class="mi" href="https://github.com/tedbarnett/When" rel="noopener">GitHub</a>
+          <div class="menu-div" role="separator"></div>
+          <div class="menu-auth" id="menu-auth"><a class="mi" href="/api/auth/google">Log in</a></div>
+        </div>
+      </div>
     </div>
   </div>
 </header>
 
 <main>
-  <section class="calhead">
-    <div class="wrap">
-      <div class="cal-url">when.org/teds-nyc</div>
-      <h1>Ted&rsquo;s NYC</h1>
-      <p class="byline">Curated by Ted &middot; things I&rsquo;d actually go to</p>
-      <div class="meta-row">
-        <span class="chip" id="follower-chip">142 followers</span>
-        <span class="chip" id="count-chip">this week</span>
-        <a class="chip" href="/teds-nyc.ics">ICS</a>
-        <a class="chip" href="/data/teds-nyc.json">JSON</a>
-      </div>
-      <div class="actions">
-        <a class="btn" href="webcal://when.org/teds-nyc.ics">Subscribe (ICS)</a>
-        <button class="btn ghost" id="copy-feed" type="button">Copy feed URL</button>
-      </div>
-      <p class="sub-hint">Subscribe once in Apple or Google Calendar and this week&rsquo;s picks, and every week after, show up automatically.</p>
+  <div class="wrap calhead">
+    <div class="kicker" id="kicker">WHEN.ORG/TEDS-NYC</div>
+    <h1 class="view-title" id="view-title">tonight<span class="dot">.</span></h1>
+    <div class="meta-row">
+      <span class="byline">Curated by Ted · things I&rsquo;d actually go to</span>
+      <span class="mchip" id="count-chip">this week</span>
+      <span class="mchip" id="follower-chip">142 followers</span>
     </div>
-  </section>
+  </div>
 
   <div class="viewbar">
-    <div class="wrap viewbar-inner">
+    <div class="viewbar-inner">
       <div class="seg" role="tablist" aria-label="Calendar view">
-        <button type="button" id="view-week" class="on">Week</button>
-        <button type="button" id="view-day">Day</button>
-        <button type="button" id="view-month" disabled title="soon">Month</button>
-      </div>
-      <div class="daynav" id="daynav">
-        <button type="button" id="day-prev" aria-label="Previous day">&larr;</button>
-        <span class="daylabel" id="day-label"></span>
-        <button type="button" id="day-next" aria-label="Next day">&rarr;</button>
+        <button type="button" id="seg-week" class="on" role="tab" aria-selected="true">Week</button>
+        <button type="button" id="seg-day" role="tab" aria-selected="false">Day</button>
+        <button type="button" id="seg-month" role="tab" aria-selected="false">Month</button>
       </div>
     </div>
   </div>
 
-  <section class="days">
-    <div class="wrap" id="days-root">
-      <p class="loading">loading the week&hellip;</p>
+  <section id="view-week-root"></section>
+  <section id="view-day-root" hidden></section>
+  <section id="view-month-root" hidden></section>
+
+  <div class="foot">
+    <div class="foot-inner">
+      <span class="left">Ted&rsquo;s NYC is a <a href="/">when.org</a> calendar: a web page, an <a href="/teds-nyc.ics">ICS feed</a>, and a <a href="/data/teds-nyc.json">JSON API</a> from one list of events. Every event has its own link — share the good ones.</span>
+      <span class="right">NEW YORK · THIS WEEK</span>
     </div>
-  </section>
+  </div>
 </main>
 
-<footer>
-  <div class="wrap foot-inner">
-    <p class="foot-left">Ted&rsquo;s NYC is a <a href="/">When.org</a> calendar: a web page, an ICS feed, and a JSON API, all from one list of events. Listings link to the venues that host them.</p>
-    <p class="foot-right">New York, this week</p>
+<button class="float-pill" id="float-pill" type="button" aria-haspopup="dialog">＋ Start your calendar</button>
+
+<!-- Subscribe sheet -->
+<div class="backdrop" id="sub-backdrop" hidden>
+  <div class="sheet sub-sheet" role="dialog" aria-modal="true" aria-labelledby="sub-title">
+    <div class="head-row">
+      <span class="sheet-title" id="sub-title">subscribe<span class="dot">.</span></span>
+      <button class="x-btn" type="button" data-close="sub">×</button>
+    </div>
+    <div class="sub-copy">Once, in the calendar app you already use. Every week&rsquo;s picks arrive automatically. Free forever.</div>
+    <div class="sub-actions">
+      <a class="primary" href="webcal://when.org/teds-nyc.ics">Apple Calendar / iCal</a>
+      <a class="ghost" href="https://calendar.google.com/calendar/r?cid=https%3A%2F%2Fwhen.org%2Fteds-nyc.ics" target="_blank" rel="noopener">Google Calendar</a>
+      <button class="ghost" id="copy-feed" type="button">Copy feed URL</button>
+    </div>
+    <div class="sub-foot">when.org/teds-nyc.ics · JSON at /data/teds-nyc.json</div>
   </div>
-</footer>
+</div>
+
+<!-- Your-calendar tray -->
+<div class="backdrop" id="tray-backdrop" hidden>
+  <div class="sheet tray" role="dialog" aria-modal="true" aria-labelledby="tray-title">
+    <div class="head-row">
+      <span class="sheet-title" id="tray-title">your calendar<span class="dot">.</span></span>
+      <button class="x-btn" type="button" data-close="tray">×</button>
+    </div>
+    <div class="tray-copy">Every calendar starts as a list. Collect events, claim your address, share it.</div>
+    <div id="tray-content"></div>
+  </div>
+</div>
+
+<!-- Event detail -->
+<div class="backdrop" id="detail-backdrop" hidden>
+  <div class="sheet detail" role="dialog" aria-modal="true" aria-labelledby="detail-title-el" id="detail-card"></div>
+</div>
 
 <script>
 (function () {
-  var TZ = 'America/New_York';
-  var FEED_URL = 'https://when.org/teds-nyc.ics';
-  var state = { view: 'week', dayIndex: 0, days: [] };
+  'use strict';
 
-  function nyToday() {
-    return new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(new Date());
-  }
-  function dateKey(ev) { return ev.start.slice(0, 10); }
-  function fmtTime(ev) {
-    var h = parseInt(ev.start.slice(11, 13), 10);
-    var m = ev.start.slice(14, 16);
-    var ap = h >= 12 ? 'P' : 'A';
-    var hh = h % 12; if (hh === 0) hh = 12;
-    return hh + ':' + m + ap + 'M';
-  }
-  function dayName(key, todayKey) {
-    var d = new Date(key + 'T12:00:00-04:00');
-    var wd = new Intl.DateTimeFormat('en-US', { weekday: 'long', timeZone: TZ }).format(d);
-    var t = new Date(todayKey + 'T12:00:00-04:00');
-    var diff = Math.round((d - t) / 86400000);
-    if (diff === 0) return 'Today';
-    if (diff === 1) return 'Tomorrow';
-    return wd;
-  }
-  function dayDate(key) {
-    var d = new Date(key + 'T12:00:00-04:00');
-    return new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: TZ })
-      .format(d).toUpperCase().replace(/,/g, '');
-  }
+  /* ---------- state ---------- */
+  var DATA_URL = '/data/teds-nyc.json';
+  var FEED_URL = 'https://when.org/teds-nyc.ics';
+  var days = [];            // [{key, events:[...]}] sorted
+  var allEvents = [];
+  var view = 'week';
+  var dayIndex = 0;
+  var detailId = null;
+  var badImg = {};
+  var saved = {};
+  var followed = false;
+  var published = false;
+  var handle = 'tedbarnett';
+  try {
+    saved = JSON.parse(localStorage.getItem('when:saved') || '{}') || {};
+    followed = localStorage.getItem('when:followed') === '1';
+    published = localStorage.getItem('when:published') === '1';
+    handle = localStorage.getItem('when:handle') || 'tedbarnett';
+  } catch (e) {}
+
+  /* Friends-going: mocked for the prototype; production = invite links + follow graph */
+  var FRIENDS = {
+    'bandshell-jazz-0724': ['Mara', 'Dev'],
+    'warm-up-ps1-0724': ['Dev', 'Kai', 'Ana'],
+    'winters-tale-0725': ['Mara'],
+    'smorgasburg-wburg-0725': ['Josh'],
+    'third-man-filmforum-0726': ['Priya', 'Sam'],
+    'truman-bryant-0727': ['Josh', 'Mara'],
+    'julieta-venegas-summerstage-0729': ['Ana'],
+    'ubb-summerstage-0730': ['Dev', 'Josh']
+  };
+
+  /* ---------- helpers ---------- */
   function esc(s) {
-    return String(s).replace(/[&<>"']/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-    });
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
-  function hashHue(id) {
+  function cbIndex(id) {
     var h = 0;
     for (var i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
     return h % 6;
   }
-  function blockMedia(ev) {
-    var cb = 'cb' + hashHue(ev.id);
-    var word = (ev.tags && ev.tags[0]) || 'event';
-    var letter = ev.title.charAt(0).toUpperCase();
-    return '<div class="media blocked ' + cb + '"><span class="tagword">' + esc(word) + '</span><span class="big">' + esc(letter) + '</span></div>';
+  function timeLabel(ev) {
+    var hr = parseInt(ev.start.slice(11, 13), 10);
+    var mn = ev.start.slice(14, 16);
+    var ap = hr >= 12 ? 'PM' : 'AM';
+    var hh = hr % 12; if (hh === 0) hh = 12;
+    return hh + ':' + mn + ap;
   }
-  function cardHTML(ev) {
-    var media;
-    if (ev.image) {
-      media = '<div class="media"><img src="' + esc(ev.image) + '" alt="' + esc(ev.title) + '" loading="lazy" referrerpolicy="no-referrer" data-eid="' + esc(ev.id) + '"></div>';
-    } else {
-      media = blockMedia(ev);
+  function dayDate(key) { return new Date(key + 'T12:00:00-04:00'); }
+  function ddateLabel(key) {
+    return dayDate(key).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+  }
+  function dateLabel(ev) {
+    return dayDate(ev.start.slice(0, 10)).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase().replace(/,/g, '');
+  }
+  function friendsFor(id) { return FRIENDS[id] || []; }
+  function friendsLabel(f) {
+    if (!f.length) return '';
+    if (f.length === 1) return f[0] + ' is going';
+    if (f.length === 2) return f[0] + ' & ' + f[1] + ' are going';
+    return f.slice(0, -1).join(', ') + ' & ' + f[f.length - 1] + ' are going';
+  }
+  function avatarStack(f) {
+    var out = '<span class="avstack">';
+    for (var i = 0; i < f.length; i++) {
+      out += '<span class="avatar" title="' + esc(f[i]) + '"><svg width="11" height="11" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4.2" fill="var(--avink)"/><path d="M3.5 21 a8.5 8.5 0 0 1 17 0 Z" fill="var(--avink)"/></svg></span>';
     }
-    var price = ev.price || '';
-    var isFree = /^free/i.test(price);
-    var tags = (ev.tags || []).map(function (t) { return '<span class="tag">' + esc(t) + '</span>'; }).join('');
-    return '<a class="card" href="' + esc(ev.url) + '" target="_blank" rel="noopener">' +
-      media +
-      '<div class="body">' +
-        '<div class="toprow"><span class="time">' + fmtTime(ev) + '</span>' +
-        (price ? '<span class="price' + (isFree ? ' free' : '') + '">' + esc(price) + '</span>' : '') + '</div>' +
-        '<h3>' + esc(ev.title) + '</h3>' +
-        '<div class="where">' + esc(ev.venue) + ' &middot; ' + esc(ev.neighborhood) + '</div>' +
-        '<p class="blurb">' + esc(ev.blurb) + '</p>' +
-        '<div class="tags">' + tags + '</div>' +
-      '</div></a>';
+    return out + '</span>';
   }
-  function dayHTML(day, todayKey) {
-    var cards = day.events.map(cardHTML).join('');
-    return '<div class="dayhead"><span class="dname">' + esc(dayName(day.key, todayKey)) + '</span>' +
-      '<span class="ddate">' + esc(dayDate(day.key)) + '</span>' +
-      '<span class="dcount">' + day.events.length + (day.events.length === 1 ? ' pick' : ' picks') + '</span></div>' +
-      '<div class="grid">' + cards + '</div>';
+  function priceLabel(ev) {
+    if (!ev.price) return '—';
+    return ev.price;
   }
-  function render() {
-    var root = document.getElementById('days-root');
-    var todayKey = nyToday();
+  function showImg(ev) { return !!ev.image && !badImg[ev.id]; }
+  function persist() {
+    try {
+      localStorage.setItem('when:saved', JSON.stringify(saved));
+      localStorage.setItem('when:followed', followed ? '1' : '0');
+      localStorage.setItem('when:published', published ? '1' : '0');
+      localStorage.setItem('when:handle', handle);
+    } catch (e) {}
+  }
+  function savedCount() {
+    var n = 0;
+    for (var k in saved) if (saved[k]) n++;
+    return n;
+  }
+  function copyText(txt, btn, label) {
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).catch(function () {});
+    if (btn) {
+      var orig = label || btn.textContent;
+      btn.textContent = 'Copied ✓';
+      setTimeout(function () { btn.textContent = orig; }, 1800);
+    }
+  }
+
+  /* ---------- card templates ---------- */
+  function mediaHtml(ev, letterOnly) {
+    var cb = cbIndex(ev.id);
     var html = '';
-    if (state.view === 'week') {
-      state.days.forEach(function (day) { html += dayHTML(day, todayKey); });
+    if (showImg(ev)) {
+      html += '<img class="card-img" src="' + esc(ev.image) + '" alt="" loading="lazy" data-imgfor="' + esc(ev.id) + '">';
     } else {
-      var day = state.days[state.dayIndex];
-      if (day) html = dayHTML(day, todayKey);
+      html += '<div class="letter-block" style="background:var(--cb' + cb + '-bg);color:var(--cb' + cb + '-ink)">' + esc(ev.title.charAt(0).toUpperCase()) + '</div>';
     }
-    root.innerHTML = html || '<p class="loading">nothing on the calendar yet</p>';
-    hookImageFallbacks();
-    var nav = document.getElementById('daynav');
-    nav.className = 'daynav' + (state.view === 'day' ? ' show' : '');
-    if (state.view === 'day' && state.days[state.dayIndex]) {
-      document.getElementById('day-label').textContent = dayDate(state.days[state.dayIndex].key);
-      document.getElementById('day-prev').disabled = state.dayIndex === 0;
-      document.getElementById('day-next').disabled = state.dayIndex === state.days.length - 1;
-    }
-    document.getElementById('view-week').className = state.view === 'week' ? 'on' : '';
-    document.getElementById('view-day').className = state.view === 'day' ? 'on' : '';
+    if (!letterOnly) html += '<div class="scrim"></div>';
+    return html;
   }
-  function hookImageFallbacks() {
-    var eventsById = {};
-    state.days.forEach(function (d) { d.events.forEach(function (e) { eventsById[e.id] = e; }); });
-    document.querySelectorAll('.media img[data-eid]').forEach(function (img) {
-      img.addEventListener('error', function () {
-        var ev = eventsById[img.getAttribute('data-eid')];
-        if (!ev) return;
-        var media = img.parentElement;
-        var tmp = document.createElement('div');
-        tmp.innerHTML = blockMedia(ev);
-        media.replaceWith(tmp.firstChild);
-      }, { once: true });
-    });
+  function saveBtnHtml(ev) {
+    return '<button class="save-btn" type="button" data-save="' + esc(ev.id) + '" aria-label="' + (saved[ev.id] ? 'Remove from my calendar' : 'Add to my calendar') + '">' + (saved[ev.id] ? '✓' : '＋') + '</button>';
   }
-  function injectJsonLd(events) {
-    var ld = events.map(function (ev) {
-      var obj = {
-        '@context': 'https://schema.org',
-        '@type': 'Event',
-        name: ev.title,
-        description: ev.blurb,
-        startDate: ev.start,
-        eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-        location: {
-          '@type': 'Place',
-          name: ev.venue,
-          address: { '@type': 'PostalAddress', addressLocality: 'New York', addressRegion: 'NY', addressCountry: 'US' }
-        },
-        url: ev.url
-      };
-      if (ev.end) obj.endDate = ev.end;
-      if (ev.image) obj.image = ev.image;
-      if (ev.price && /^free/i.test(ev.price)) {
-        obj.offers = { '@type': 'Offer', price: '0', priceCurrency: 'USD', url: ev.url };
-      }
-      return obj;
-    });
-    var s = document.createElement('script');
-    s.type = 'application/ld+json';
-    s.textContent = JSON.stringify(ld);
-    document.head.appendChild(s);
+  function friendsHtml(ev, cls) {
+    var f = friendsFor(ev.id);
+    if (!f.length) return '';
+    return '<div class="friends ' + (cls || '') + '">★ ' + esc(friendsLabel(f)) + '</div>';
+  }
+  function tileHtml(ev, kind) {
+    var cb = cbIndex(ev.id);
+    var bg = showImg(ev) ? '' : ' style="background:var(--cb' + cb + '-bg)"';
+    var venue = kind === 't-day' ? '<div class="tile-venue">' + esc(ev.venue) + '</div>' : '';
+    return '<button class="tile ' + kind + '" type="button" data-open="' + esc(ev.id) + '"' + bg + '>' +
+      mediaHtml(ev) +
+      '<span class="price-chip">' + esc(priceLabel(ev)) + '</span>' +
+      saveBtnHtml(ev) +
+      '<span class="tile-body">' +
+        '<span class="tile-time">' + esc(timeLabel(ev)) + '</span>' +
+        '<span class="tile-title" style="display:block">' + esc(ev.title) + '</span>' +
+        venue + friendsHtml(ev) +
+      '</span>' +
+    '</button>';
   }
 
-  document.getElementById('view-week').addEventListener('click', function () { state.view = 'week'; render(); });
-  document.getElementById('view-day').addEventListener('click', function () {
-    state.view = 'day';
-    var todayKey = nyToday();
-    var idx = state.days.findIndex(function (d) { return d.key >= todayKey; });
-    state.dayIndex = idx >= 0 ? idx : 0;
-    render();
-  });
-  document.getElementById('day-prev').addEventListener('click', function () {
-    if (state.dayIndex > 0) { state.dayIndex--; render(); }
-  });
-  document.getElementById('day-next').addEventListener('click', function () {
-    if (state.dayIndex < state.days.length - 1) { state.dayIndex++; render(); }
-  });
-  document.getElementById('copy-feed').addEventListener('click', function () {
-    var btn = this;
-    function done() {
-      btn.textContent = 'Copied';
-      setTimeout(function () { btn.textContent = 'Copy feed URL'; }, 1800);
+  /* ---------- week view ---------- */
+  function renderWeek() {
+    var root = document.getElementById('view-week-root');
+    if (!days.length) { root.innerHTML = ''; return; }
+    var day0 = days[0];
+    var hero = null;
+    for (var i = 0; i < day0.events.length; i++) {
+      if (day0.events[i].id === 'bandshell-jazz-0724') { hero = day0.events[i]; break; }
     }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(FEED_URL).then(done, function () { window.prompt('Feed URL:', FEED_URL); });
+    if (!hero) { for (i = 0; i < day0.events.length; i++) { if (showImg(day0.events[i])) { hero = day0.events[i]; break; } } }
+    if (!hero) hero = day0.events[0];
+
+    var cbH = cbIndex(hero.id);
+    var hf = friendsFor(hero.id);
+    var html = '<div class="wrap">' +
+      '<button class="hero" type="button" data-open="' + esc(hero.id) + '" style="background:var(--cb' + cbH + '-bg)">' +
+        mediaHtml(hero) +
+        '<span class="price-chip">' + esc(priceLabel(hero)) + '</span>' +
+        saveBtnHtml(hero) +
+        '<span class="hero-body">' +
+          '<span class="hero-kicker">' + esc(timeLabel(hero)) + ' · TED&rsquo;S HEADLINE PICK</span>' +
+          '<span class="hero-title">' + esc(hero.title) + '</span>' +
+          '<span class="hero-venue">' + esc(hero.venue) + (hero.neighborhood ? ' · ' + esc(hero.neighborhood) : '') + '</span>' +
+          (hf.length ? '<span class="fchip">' + avatarStack(hf) + '<span class="flabel">' + esc(friendsLabel(hf)) + '</span></span>' : '') +
+        '</span>' +
+      '</button>' +
+      '<div class="shelf-label">ALSO TONIGHT</div>' +
+    '</div>';
+
+    html += '<div class="shelf" style="max-width:1140px;margin:0 auto">';
+    for (i = 0; i < day0.events.length; i++) {
+      if (day0.events[i].id !== hero.id) html += tileHtml(day0.events[i], 't-tonight');
+    }
+    html += '</div>';
+
+    for (var d = 1; d < days.length; d++) {
+      var day = days[d];
+      var dname = dayDate(day.key).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+      html += '<div class="dayhead">' +
+        '<span class="dname">' + esc(dname) + '<span class="dot">.</span></span>' +
+        '<span class="ddate">' + esc(ddateLabel(day.key)) + '</span>' +
+        '<span class="dcount">' + day.events.length + (day.events.length === 1 ? ' PICK' : ' PICKS') + '</span>' +
+      '</div>';
+      html += '<div class="shelf" style="max-width:1140px;margin:0 auto">';
+      for (i = 0; i < day.events.length; i++) html += tileHtml(day.events[i], 't-day');
+      html += '</div>';
+    }
+    root.innerHTML = html;
+  }
+
+  /* ---------- day view ---------- */
+  function renderDay() {
+    var root = document.getElementById('view-day-root');
+    if (!days.length) { root.innerHTML = ''; return; }
+    if (dayIndex >= days.length) dayIndex = days.length - 1;
+    var html = '<div class="day-pills">';
+    for (var i = 0; i < days.length; i++) {
+      var nm = i === 0 ? 'tonight' : dayDate(days[i].key).toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
+      html += '<button class="day-pill' + (i === dayIndex ? ' on' : '') + '" type="button" data-daypick="' + i + '">' + esc(nm) + ' <span class="num">' + esc(ddateLabel(days[i].key)) + '</span></button>';
+    }
+    html += '</div><div class="day-cards">';
+    var evs = days[dayIndex].events;
+    for (i = 0; i < evs.length; i++) {
+      var ev = evs[i];
+      var cb = cbIndex(ev.id);
+      html += '<button class="daycard" type="button" data-open="' + esc(ev.id) + '">' +
+        '<span class="daycard-media" style="display:block;' + (showImg(ev) ? '' : 'background:var(--cb' + cb + '-bg)') + '">' +
+          mediaHtml(ev) +
+          '<span class="price-chip">' + esc(priceLabel(ev)) + '</span>' +
+          saveBtnHtml(ev) +
+        '</span>' +
+        '<span class="daycard-body" style="display:grid">' +
+          '<span class="daycard-time">' + esc(timeLabel(ev)) + '</span>' +
+          '<span class="daycard-title">' + esc(ev.title) + '</span>' +
+          '<span class="daycard-venue">' + esc(ev.venue) + (ev.neighborhood ? ' · ' + esc(ev.neighborhood) : '') + '</span>' +
+          (ev.blurb ? '<span class="daycard-blurb">' + esc(ev.blurb) + '</span>' : '') +
+          friendsHtml(ev) +
+        '</span>' +
+      '</button>';
+    }
+    html += '</div>';
+    root.innerHTML = html;
+  }
+
+  /* ---------- month view ---------- */
+  function renderMonth() {
+    var root = document.getElementById('view-month-root');
+    if (!days.length) { root.innerHTML = ''; return; }
+    var ym = days[0].key.slice(0, 7);
+    var y = parseInt(ym.slice(0, 4), 10), mo = parseInt(ym.slice(5, 7), 10);
+    var firstDow = dayDate(ym + '-01').getDay();
+    var dim = new Date(y, mo, 0).getDate();
+    var html = '<div class="month-wrap"><div class="month-head"><span>SUN</span><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span></div><div class="month-grid">';
+    var i;
+    for (i = 0; i < firstDow; i++) html += '<div class="mcell blank"></div>';
+    for (var n = 1; n <= dim; n++) {
+      var key = ym + '-' + (n < 10 ? '0' + n : '' + n);
+      var idx = -1;
+      for (i = 0; i < days.length; i++) if (days[i].key === key) { idx = i; break; }
+      if (idx >= 0) {
+        var evs = days[idx].events;
+        html += '<button class="mcell has" type="button" data-daypick-month="' + idx + '">' +
+          '<span class="mcell-top"><span class="mcell-num">' + n + '</span><span class="mcell-count">' + evs.length + '</span></span>';
+        for (i = 0; i < Math.min(evs.length, 3); i++) html += '<span class="mcell-title">' + esc(evs[i].title) + '</span>';
+        if (evs.length > 3) html += '<span class="mcell-more">+' + (evs.length - 3) + ' more</span>';
+        html += '</button>';
+      } else {
+        html += '<div class="mcell"><span class="mcell-top"><span class="mcell-num">' + n + '</span></span></div>';
+      }
+    }
+    html += '</div><div class="month-note">Days with a vermilion count have picks — tap one to open its day view.</div></div>';
+    root.innerHTML = html;
+  }
+
+  /* ---------- header / chrome ---------- */
+  function monthName() {
+    if (!days.length) return 'month';
+    return dayDate(days[0].key.slice(0, 7) + '-01').toLocaleDateString('en-US', { month: 'long' }).toLowerCase();
+  }
+  function renderChrome() {
+    var titleEl = document.getElementById('view-title');
+    var t = 'tonight';
+    if (view === 'day') t = dayIndex === 0 ? 'tonight' : dayDate(days[dayIndex].key).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    if (view === 'month') t = monthName();
+    titleEl.innerHTML = esc(t) + '<span class="dot">.</span>';
+    var kick = 'WHEN.ORG/TEDS-NYC';
+    if (days.length) kick += ' · ' + dayDate(days[0].key).toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase() + ' ' + ddateLabel(days[0].key);
+    document.getElementById('kicker').textContent = kick;
+    document.getElementById('count-chip').textContent = allEvents.length + ' picks this week';
+    document.getElementById('follower-chip').textContent = (followed ? 143 : 142) + ' followers';
+    var fb = document.getElementById('follow-btn');
+    fb.textContent = followed ? '✓ Following' : 'Follow';
+    var n = savedCount();
+    document.getElementById('float-pill').textContent = n > 0 ? 'Your calendar · ' + n : '＋ Start your calendar';
+    document.getElementById('seg-week').className = view === 'week' ? 'on' : '';
+    document.getElementById('seg-day').className = view === 'day' ? 'on' : '';
+    document.getElementById('seg-month').className = view === 'month' ? 'on' : '';
+    document.getElementById('seg-week').setAttribute('aria-selected', view === 'week');
+    document.getElementById('seg-day').setAttribute('aria-selected', view === 'day');
+    document.getElementById('seg-month').setAttribute('aria-selected', view === 'month');
+    document.getElementById('view-week-root').hidden = view !== 'week';
+    document.getElementById('view-day-root').hidden = view !== 'day';
+    document.getElementById('view-month-root').hidden = view !== 'month';
+  }
+
+  function renderAll() {
+    renderChrome();
+    if (view === 'week') renderWeek();
+    else if (view === 'day') renderDay();
+    else renderMonth();
+  }
+
+  /* ---------- tray ---------- */
+  function renderTray() {
+    var box = document.getElementById('tray-content');
+    var list = [];
+    for (var i = 0; i < allEvents.length; i++) if (saved[allEvents[i].id]) list.push(allEvents[i]);
+    if (!list.length) {
+      box.innerHTML = '<div class="tray-empty">Nothing collected yet — tap ＋ on any event to start.</div>';
+      return;
+    }
+    var html = '<div class="tray-list">';
+    for (i = 0; i < list.length; i++) {
+      var ev = list[i];
+      var cb = cbIndex(ev.id);
+      html += '<div class="tray-row">' +
+        '<span class="tray-thumb" style="' + (showImg(ev) ? '' : 'background:var(--cb' + cb + '-bg)') + '">' +
+          (showImg(ev) ? '<img src="' + esc(ev.image) + '" alt="" loading="lazy" data-imgfor="' + esc(ev.id) + '">' :
+            '<span class="letter-block" style="color:var(--cb' + cb + '-ink)">' + esc(ev.title.charAt(0).toUpperCase()) + '</span>') +
+        '</span>' +
+        '<span class="tmain"><span class="ttitle" style="display:block">' + esc(ev.title) + '</span><span class="tmeta" style="display:block">' + esc(dateLabel(ev)) + ' · ' + esc(timeLabel(ev)) + '</span></span>' +
+        '<button class="x-btn" type="button" data-save="' + esc(ev.id) + '" aria-label="Remove">×</button>' +
+      '</div>';
+    }
+    html += '</div>';
+    var feed = 'https://when.org/' + handle + '.ics';
+    if (!published) {
+      html += '<div class="handle-row"><span class="prefix">when.org/</span><input id="handle-input" value="' + esc(handle) + '" spellcheck="false" autocapitalize="off"></div>' +
+        '<button class="publish-btn" id="publish-btn" type="button">Publish as my calendar →</button>' +
+        '<div class="publish-hint">a page, an ICS feed, and an API — free forever</div>';
     } else {
-      window.prompt('Feed URL:', FEED_URL);
+      html += '<div class="pub-box">' +
+        '<div class="pub-live">✓ when.org/' + esc(handle) + ' is live</div>' +
+        '<div class="pub-actions">' +
+          '<a class="primary" href="webcal://when.org/' + esc(handle) + '.ics">Subscribe in Apple / iCal</a>' +
+          '<a class="ghost" href="https://calendar.google.com/calendar/r?cid=' + encodeURIComponent(feed) + '" target="_blank" rel="noopener">Subscribe in Google Calendar</a>' +
+          '<button class="ghost" id="copy-myfeed" type="button">Copy your feed URL</button>' +
+        '</div>' +
+        '<div class="invite-row"><span class="icopy">Invite friends — they see what you&rsquo;re going to:</span><button id="copy-invite" type="button">Copy invite link</button></div>' +
+        '<div class="invite-url">when.org/' + esc(handle) + '/invite/x7q3</div>' +
+      '</div>';
+    }
+    box.innerHTML = html;
+  }
+
+  /* ---------- detail ---------- */
+  function findEvent(id) {
+    for (var i = 0; i < allEvents.length; i++) if (allEvents[i].id === id) return allEvents[i];
+    return null;
+  }
+  function renderDetail() {
+    var card = document.getElementById('detail-card');
+    var ev = findEvent(detailId);
+    if (!ev) { card.innerHTML = ''; return; }
+    var cb = cbIndex(ev.id);
+    var f = friendsFor(ev.id);
+    card.innerHTML =
+      '<div class="detail-media" style="' + (showImg(ev) ? '' : 'background:var(--cb' + cb + '-bg)') + '">' +
+        (showImg(ev) ? '<img src="' + esc(ev.image) + '" alt="" data-imgfor="' + esc(ev.id) + '">' :
+          '<div class="letter-block" style="color:var(--cb' + cb + '-ink)">' + esc(ev.title.charAt(0).toUpperCase()) + '</div>') +
+        '<span class="detail-price">' + esc(priceLabel(ev)) + '</span>' +
+        '<button class="x-btn" type="button" data-close="detail">×</button>' +
+      '</div>' +
+      '<div class="detail-body">' +
+        '<div class="detail-when">' + esc(dateLabel(ev)) + ' · ' + esc(timeLabel(ev)) + '</div>' +
+        '<h2 class="detail-title" id="detail-title-el">' + esc(ev.title) + '</h2>' +
+        '<div class="detail-venue">' + esc(ev.venue) + (ev.neighborhood ? ' · ' + esc(ev.neighborhood) : '') + '</div>' +
+        (f.length ? '<div class="detail-fchip">' + avatarStack(f) + '<span class="flabel">' + esc(friendsLabel(f)) + '</span></div>' : '') +
+        (ev.blurb ? '<div class="detail-blurb">' + esc(ev.blurb) + '</div>' : '') +
+        '<div class="share-row"><span class="surl">when.org/teds-nyc/' + esc(ev.id) + '</span><button id="copy-link" type="button">Copy link</button></div>' +
+        '<div class="detail-actions">' +
+          '<button class="primary" type="button" data-save="' + esc(ev.id) + '" data-savelabel="1">' + (saved[ev.id] ? '✓ On my calendar' : '＋ Add to my calendar') + '</button>' +
+          (ev.url ? '<a class="ghost" href="' + esc(ev.url) + '" target="_blank" rel="noopener">Venue site ↗</a>' : '') +
+        '</div>' +
+      '</div>';
+  }
+
+  /* ---------- overlays ---------- */
+  var lastFocus = null;
+  function anyOverlayOpen() {
+    return !document.getElementById('detail-backdrop').hidden ||
+           !document.getElementById('tray-backdrop').hidden ||
+           !document.getElementById('sub-backdrop').hidden;
+  }
+  function setScrollLock() { document.body.classList.toggle('modal-open', anyOverlayOpen()); }
+  function openOverlay(which) {
+    lastFocus = document.activeElement;
+    document.getElementById(which + '-backdrop').hidden = false;
+    setScrollLock();
+    var card = document.querySelector('#' + which + '-backdrop .x-btn');
+    if (card) card.focus();
+  }
+  function closeOverlay(which) {
+    document.getElementById(which + '-backdrop').hidden = true;
+    setScrollLock();
+    if (lastFocus && lastFocus.focus) { try { lastFocus.focus(); } catch (e) {} }
+  }
+
+  /* ---------- routing (per-event URLs) ---------- */
+  function openDetail(id, push) {
+    detailId = id;
+    renderDetail();
+    openOverlay('detail');
+    if (push !== false) {
+      try { history.pushState({ whenDetail: id }, '', '/teds-nyc/' + encodeURIComponent(id)); } catch (e) {}
+    }
+  }
+  function closeDetail(viaHistory) {
+    detailId = null;
+    closeOverlay('detail');
+    if (!viaHistory) {
+      try {
+        if (history.state && history.state.whenDetail) history.back();
+        else history.replaceState({}, '', '/teds-nyc');
+      } catch (e) {}
+    }
+  }
+  window.addEventListener('popstate', function (e) {
+    var m = location.pathname.match(/^\/teds-nyc\/([^\/]+)$/);
+    if (m) { openDetail(decodeURIComponent(m[1]), false); }
+    else if (detailId) { closeDetail(true); }
+  });
+
+  /* ---------- events (delegated) ---------- */
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+
+    var saveEl = t.closest ? t.closest('[data-save]') : null;
+    if (saveEl) {
+      e.stopPropagation(); e.preventDefault();
+      var sid = saveEl.getAttribute('data-save');
+      saved[sid] = !saved[sid];
+      persist();
+      renderAll();
+      if (!document.getElementById('tray-backdrop').hidden) renderTray();
+      if (detailId) renderDetail();
+      return;
+    }
+    var openEl = t.closest ? t.closest('[data-open]') : null;
+    if (openEl) { openDetail(openEl.getAttribute('data-open')); return; }
+
+    var dp = t.closest ? t.closest('[data-daypick]') : null;
+    if (dp) { dayIndex = parseInt(dp.getAttribute('data-daypick'), 10) || 0; renderAll(); return; }
+    var dpm = t.closest ? t.closest('[data-daypick-month]') : null;
+    if (dpm) { dayIndex = parseInt(dpm.getAttribute('data-daypick-month'), 10) || 0; view = 'day'; renderAll(); return; }
+
+    var closeEl = t.closest ? t.closest('[data-close]') : null;
+    if (closeEl) {
+      var which = closeEl.getAttribute('data-close');
+      if (which === 'detail') closeDetail(); else closeOverlay(which);
+      return;
+    }
+    if (t.id === 'detail-backdrop') { closeDetail(); return; }
+    if (t.id === 'tray-backdrop') { closeOverlay('tray'); return; }
+    if (t.id === 'sub-backdrop') { closeOverlay('sub'); return; }
+
+    if (t.id === 'copy-feed') { copyText(FEED_URL, t); return; }
+    if (t.id === 'copy-link' && detailId) { copyText('https://when.org/teds-nyc/' + detailId, t); return; }
+    if (t.id === 'copy-myfeed') { copyText('https://when.org/' + handle + '.ics', t); return; }
+    if (t.id === 'copy-invite') { copyText('https://when.org/' + handle + '/invite/x7q3', t); return; }
+    if (t.id === 'publish-btn') { published = true; persist(); renderTray(); return; }
+  });
+
+  document.addEventListener('input', function (e) {
+    if (e.target && e.target.id === 'handle-input') {
+      handle = (e.target.value || '').toLowerCase().replace(/[^a-z0-9-]/g, '') || 'tedbarnett';
+      e.target.value = handle;
+      persist();
     }
   });
 
-  fetch('/data/teds-nyc.json')
-    .then(function (r) { return r.json(); })
-    .then(function (data) {
-      var events = data.events.slice().sort(function (a, b) { return a.start < b.start ? -1 : 1; });
-      var byDay = {};
-      events.forEach(function (ev) {
-        var k = dateKey(ev);
-        (byDay[k] = byDay[k] || []).push(ev);
-      });
-      state.days = Object.keys(byDay).sort().map(function (k) { return { key: k, events: byDay[k] }; });
-      document.getElementById('count-chip').textContent = events.length + ' events this week';
-      if (data.calendar && typeof data.calendar.followers === 'number') {
-        document.getElementById('follower-chip').textContent = data.calendar.followers + ' followers';
-      }
-      injectJsonLd(events);
-      render();
-    })
-    .catch(function () {
-      document.getElementById('days-root').innerHTML = '<p class="loading">could not load events. try a refresh.</p>';
-    });
-})();
-</script>
-<script>
-/* When.org menu + auth (shared across pages) */
-(function () {
-  var btn = document.getElementById('menu-btn');
-  var panel = document.getElementById('menu-panel');
-  if (!btn || !panel) return;
-  function isOpen() { return btn.getAttribute('aria-expanded') === 'true'; }
-  function setOpen(v) {
-    btn.setAttribute('aria-expanded', v ? 'true' : 'false');
-    panel.hidden = !v;
-    if (v) {
-      var first = panel.querySelector('a, input, button');
-      if (first) first.focus({ preventScroll: true });
+  /* broken images -> tinted letter blocks (real photos only, no AI imagery) */
+  document.addEventListener('error', function (e) {
+    var t = e.target;
+    if (t && t.tagName === 'IMG' && t.getAttribute('data-imgfor')) {
+      badImg[t.getAttribute('data-imgfor')] = true;
+      renderAll();
+      if (detailId) renderDetail();
+      if (!document.getElementById('tray-backdrop').hidden) renderTray();
     }
-  }
-  btn.addEventListener('click', function () { setOpen(!isOpen()); });
+  }, true);
+
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && isOpen()) { setOpen(false); btn.focus(); }
+    if (e.key !== 'Escape') return;
+    if (!document.getElementById('detail-backdrop').hidden) { closeDetail(); return; }
+    if (!document.getElementById('tray-backdrop').hidden) { closeOverlay('tray'); return; }
+    if (!document.getElementById('sub-backdrop').hidden) { closeOverlay('sub'); return; }
+    var mp = document.getElementById('menu-panel');
+    if (mp && !mp.hidden) { mp.hidden = true; document.getElementById('menu-btn').setAttribute('aria-expanded', 'false'); }
+  });
+
+  document.getElementById('seg-week').addEventListener('click', function () { view = 'week'; renderAll(); });
+  document.getElementById('seg-day').addEventListener('click', function () { view = 'day'; renderAll(); });
+  document.getElementById('seg-month').addEventListener('click', function () { view = 'month'; renderAll(); });
+  document.getElementById('sub-open').addEventListener('click', function () { openOverlay('sub'); });
+  document.getElementById('float-pill').addEventListener('click', function () { renderTray(); openOverlay('tray'); });
+  document.getElementById('follow-btn').addEventListener('click', function () { followed = !followed; persist(); renderChrome(); });
+
+  /* theme */
+  var themeBtn = document.getElementById('theme-toggle');
+  function syncThemeGlyph() { themeBtn.textContent = document.body.getAttribute('data-theme') === 'light' ? '☾' : '☀'; }
+  themeBtn.addEventListener('click', function () {
+    var light = document.body.getAttribute('data-theme') === 'light';
+    if (light) document.body.removeAttribute('data-theme');
+    else document.body.setAttribute('data-theme', 'light');
+    try { localStorage.setItem('when:theme', light ? 'dark' : 'light'); } catch (e) {}
+    syncThemeGlyph();
+  });
+  syncThemeGlyph();
+
+  /* menu + auth (preserved) */
+  var menuBtn = document.getElementById('menu-btn');
+  var menuPanel = document.getElementById('menu-panel');
+  menuBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var open = !menuPanel.hidden;
+    menuPanel.hidden = open;
+    menuBtn.setAttribute('aria-expanded', String(!open));
   });
   document.addEventListener('click', function (e) {
-    if (isOpen() && !panel.contains(e.target) && !btn.contains(e.target)) setOpen(false);
+    if (!menuPanel.hidden && !menuPanel.contains(e.target) && e.target !== menuBtn) {
+      menuPanel.hidden = true;
+      menuBtn.setAttribute('aria-expanded', 'false');
+    }
   });
-  panel.addEventListener('click', function (e) {
-    var a = e.target.closest && e.target.closest('a.mi, a.btn-google');
-    if (a) setOpen(false);
-  });
-
-  var authBox = document.getElementById('menu-auth');
-  function escText(s) {
-    return String(s).replace(/[&<>"']/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-    });
-  }
-  function loginHTML() {
-    return '<a class="btn-google" href="/api/auth/google">Sign in with Google</a>' +
-      '<div class="or">or</div>' +
-      '<form class="magic" id="magic-form" novalidate>' +
-        '<input type="email" id="magic-email" name="email" placeholder="you@example.com" autocomplete="email" aria-label="Email for sign-in link">' +
-        '<button type="submit" id="magic-send">Send sign-in link</button>' +
-        '<p class="auth-status" id="magic-status" role="status"></p>' +
+  function authLoggedOut() {
+    return '<a class="btn-google mi" href="/api/auth/google">Sign in with Google</a>' +
+      '<form class="auth-form" id="email-auth-form">' +
+        '<input type="email" name="email" placeholder="you@example.com" required autocomplete="email">' +
+        '<button class="send" type="submit">Send sign-in link</button>' +
+        '<div class="auth-note" id="auth-note">No passwords — we email you a magic link.</div>' +
       '</form>';
   }
-  function userHTML(me) {
-    var first = (me.name || me.email).split(' ')[0];
-    return '<div class="who"><span>' + escText(first) + '</span>' +
-      (me.isOwner ? '<span class="owner-badge">&#10022; owner</span>' : '') +
-      '</div>' +
-      '<a class="mi" href="/api/auth/logout">Sign out</a>';
+  function renderAuth(me) {
+    var box = document.getElementById('menu-auth');
+    if (me && me.email) {
+      box.innerHTML = '<div class="mi" style="cursor:default">' + esc(me.name || me.email) +
+        (me.isOwner ? '<span class="hint">✦ owner</span>' : '') + '</div>' +
+        '<a class="mi" href="/api/auth/logout">Sign out</a>';
+    } else {
+      box.innerHTML = authLoggedOut();
+      var f = document.getElementById('email-auth-form');
+      if (f) f.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var em = f.email.value.trim();
+        if (!em) return;
+        fetch('/api/auth/email', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: em })
+        }).then(function (r) { return r.json(); }).then(function () {
+          document.getElementById('auth-note').textContent = 'Check your email — sign-in link sent.';
+        }).catch(function () {
+          document.getElementById('auth-note').textContent = 'Could not send — try again.';
+        });
+      });
+    }
   }
-  function hookMagic() {
-    var form = document.getElementById('magic-form');
-    if (!form) return;
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var input = document.getElementById('magic-email');
-      var status = document.getElementById('magic-status');
-      var send = document.getElementById('magic-send');
-      var email = input.value.trim();
-      status.className = 'auth-status';
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        status.textContent = 'Enter a valid email address.';
-        status.className = 'auth-status err';
-        return;
-      }
-      send.disabled = true;
-      fetch('/api/auth/email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email })
-      }).then(function (r) { return r.json(); }).then(function (d) {
-        if (d.ok) {
-          status.textContent = d.dev ? 'Email sign-in is almost ready. Use Google for now.' : 'Check your email for the sign-in link.';
-          status.className = 'auth-status ok';
-        } else {
-          status.textContent = d.error || 'Something went wrong. Try again.';
-          status.className = 'auth-status err';
-        }
-      }).catch(function () {
-        status.textContent = 'Network hiccup. Try again in a minute.';
-        status.className = 'auth-status err';
-      }).finally(function () { send.disabled = false; });
+  fetch('/api/me').then(function (r) { return r.ok ? r.json() : null; }).then(renderAuth).catch(function () { renderAuth(null); });
+
+  /* ---------- boot ---------- */
+  fetch(DATA_URL).then(function (r) { return r.json(); }).then(function (data) {
+    var events = (data.events || []).slice().sort(function (a, b) { return a.start < b.start ? -1 : 1; });
+    var byDay = {};
+    events.forEach(function (ev) {
+      var k = ev.start.slice(0, 10);
+      (byDay[k] = byDay[k] || []).push(ev);
     });
-  }
-  fetch('/api/me')
-    .then(function (r) { return r.ok ? r.json() : null; })
-    .catch(function () { return null; })
-    .then(function (me) {
-      var signedIn = me && me.email;
-      authBox.innerHTML = signedIn ? userHTML(me) : loginHTML();
-      if (!signedIn) hookMagic();
-    });
+    days = Object.keys(byDay).sort().map(function (k) { return { key: k, events: byDay[k] }; });
+    allEvents = events;
+    renderAll();
+
+    /* schema.org ItemList of Events */
+    try {
+      var ld = { '@context': 'https://schema.org', '@type': 'ItemList', name: "Ted's NYC", url: 'https://when.org/teds-nyc', itemListElement: [] };
+      events.forEach(function (ev, i) {
+        ld.itemListElement.push({
+          '@type': 'ListItem', position: i + 1,
+          item: {
+            '@type': 'Event', name: ev.title, startDate: ev.start,
+            url: 'https://when.org/teds-nyc/' + ev.id,
+            location: { '@type': 'Place', name: ev.venue, address: (ev.neighborhood ? ev.neighborhood + ', ' : '') + 'New York, NY' },
+            image: ev.image || undefined, description: ev.blurb || undefined
+          }
+        });
+      });
+      var s = document.createElement('script');
+      s.type = 'application/ld+json';
+      s.textContent = JSON.stringify(ld);
+      document.head.appendChild(s);
+    } catch (e) {}
+
+    /* deep link: server injects __WHEN_DETAIL_ID for /teds-nyc/{id}; also parse path */
+    var deep = window.__WHEN_DETAIL_ID;
+    if (!deep) {
+      var m = location.pathname.match(/^\/teds-nyc\/([^\/]+)$/);
+      if (m) deep = decodeURIComponent(m[1]);
+    }
+    if (deep && findEvent(deep)) {
+      try { history.replaceState({ whenDetail: deep }, '', '/teds-nyc/' + encodeURIComponent(deep)); } catch (e) {}
+      openDetail(deep, false);
+    }
+  }).catch(function () {});
 })();
 </script>
 </body>

@@ -40,10 +40,10 @@
 
 <style>
 /* ------------------------------------------------------------------
-   When.org
+   when.org — landing
    Hand-written CSS. No framework, no build step.
-   Shape system: interactive elements = pill, containers = 16px,
-   inputs = 10px. One accent (cobalt), locked across the page.
+   Dark by default; body[data-theme="light"] flips the tokens.
+   Wordmark: Bricolage Grotesque 800. Everything else: Satoshi.
 ------------------------------------------------------------------- */
 @font-face {
   font-family: 'Satoshi';
@@ -60,32 +60,10 @@
   src: url('/fonts/satoshi-900.woff2') format('woff2');
   font-weight: 900; font-style: normal; font-display: swap;
 }
-
-:root {
-  --paper: #f6f6f3;
-  --surface: #fdfdfc;
-  --ink: #17191e;
-  --muted: #5b6068;
-  --faint: #8b9098;
-  --hairline: #e0e0da;
-  --accent: #2138d6;
-  --accent-ink: #ffffff;
-  --accent-soft: #eceefb;
-  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
-  --sans: 'Satoshi', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --paper: #101115;
-    --surface: #17181d;
-    --ink: #ebebe7;
-    --muted: #a2a6ad;
-    --faint: #71757d;
-    --hairline: #272930;
-    --accent: #7286ff;
-    --accent-ink: #0d1030;
-    --accent-soft: #1c2040;
-  }
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  src: url('/fonts/bricolage-var.woff2') format('woff2');
+  font-weight: 200 800; font-style: normal; font-display: swap;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -93,6 +71,23 @@ html { scroll-behavior: smooth; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
 body {
+  --paper: #0e0f14;
+  --surface: #17181d;
+  --head: #ffffff;
+  --ink: #ebebe7;
+  --muted: #a2a6ad;
+  --faint: #71757d;
+  --line: #272930;
+  --accent: #4d63ff;
+  --peri: #9aa6ff;
+  --spark: #ff5426;
+  --navbg: rgba(14,15,20,.84);
+  --chip: rgba(255,255,255,.08);
+  --footbg: rgba(255,255,255,.03);
+  --err: #ff7a68;
+  --mono: ui-monospace, Menlo, monospace;
+  --sans: 'Satoshi', -apple-system, 'Segoe UI', sans-serif;
+  --brico: 'Bricolage Grotesque', 'Satoshi', sans-serif;
   font-family: var(--sans);
   background: var(--paper);
   color: var(--ink);
@@ -100,60 +95,74 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  transition: background .3s ease, color .3s ease;
+}
+body[data-theme="light"] {
+  --paper: #f6f6f3;
+  --surface: #fdfdfc;
+  --head: #17191e;
+  --ink: #17191e;
+  --muted: #5b6068;
+  --faint: #8b9098;
+  --line: #e0e0da;
+  --accent: #2138d6;
+  --peri: #2138d6;
+  --spark: #e8541f;
+  --navbg: rgba(246,246,243,.86);
+  --chip: rgba(23,25,30,.06);
+  --footbg: rgba(23,25,30,.03);
+  --err: #c0392b;
 }
 
 a { color: inherit; }
-::selection { background: var(--accent); color: var(--accent-ink); }
+::selection { background: #ff5426; color: #ffffff; }
+b, strong { color: var(--head); font-weight: 700; }
 
-.wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+.wrap { max-width: 1140px; margin: 0 auto; padding: 0 20px; }
 
 /* ---------- nav ---------- */
 header.nav {
-  position: sticky; top: 0; z-index: 10;
-  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  position: sticky; top: 0; z-index: 20;
+  background: var(--navbg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--line);
 }
-.nav-inner {
-  display: flex; align-items: center; justify-content: space-between;
-  height: 64px;
+.nav-inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 60px; position: relative; }
+.brand { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+.brand .wordmark {
+  font-family: var(--brico); font-weight: 800; font-size: 22px;
+  color: var(--head); letter-spacing: -0.05em; line-height: 1;
 }
-.brand {
-  display: flex; align-items: baseline; gap: 1px;
-  font-weight: 900; font-size: 22px; letter-spacing: -0.02em;
-  text-decoration: none;
-}
-.brand .tld { color: var(--faint); font-weight: 700; font-size: 16px; }
-.nav-links { display: flex; align-items: center; gap: 26px; font-size: 15px; font-weight: 700; }
-.nav-links a { text-decoration: none; color: var(--muted); transition: color .18s ease; }
-.nav-links a:hover { color: var(--ink); }
+.brand .wordmark .tld { color: var(--peri); }
+.nav-links { display: flex; align-items: center; gap: 20px; }
+.nav-links a { text-decoration: none; font-weight: 700; font-size: 14px; color: var(--muted); transition: color .18s ease; }
+.nav-links a:hover { color: var(--head); }
 .nav-links a.cta {
-  color: var(--accent-ink); background: var(--accent);
-  padding: 9px 18px; border-radius: 999px;
-  transition: transform .18s ease, opacity .18s ease;
+  background: var(--accent); color: #fff;
+  font-size: 13.5px; border-radius: 999px; padding: 8px 17px;
+  transition: opacity .18s ease, transform .18s ease;
 }
-.nav-links a.cta:hover { opacity: .92; }
+.nav-links a.cta:hover { opacity: .92; color: #fff; }
 .nav-links a.cta:active { transform: translateY(1px); }
-@media (max-width: 640px) { .nav-links a.gh, .nav-links a.mani { display: none; } }
+@media (max-width: 640px) { .nav-links a.mani, .nav-links a.gh { display: none; } }
 
-/* ---------- menu ---------- */
-.nav-inner { position: relative; }
+/* ---------- menu (account) ---------- */
 .menu-btn {
   display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
-  width: 40px; height: 40px; flex: none; margin-left: 18px;
-  background: var(--surface); border: 1px solid var(--hairline); border-radius: 999px;
+  width: 34px; height: 34px; flex: none;
+  background: transparent; border: 1px solid var(--line); border-radius: 999px;
   cursor: pointer; transition: border-color .18s ease;
 }
 .menu-btn:hover { border-color: var(--faint); }
-.menu-btn .bar { display: block; width: 15px; height: 2px; background: var(--ink); border-radius: 2px; transition: transform .22s ease; }
-.menu-btn[aria-expanded="true"] .bar:first-child { transform: translateY(3px) rotate(45deg); }
-.menu-btn[aria-expanded="true"] .bar:last-child { transform: translateY(-3px) rotate(-45deg); }
+.menu-btn .bar { display: block; width: 13px; height: 1.5px; background: var(--muted); border-radius: 2px; transition: transform .22s ease; }
+.menu-btn[aria-expanded="true"] .bar:first-child { transform: translateY(2.75px) rotate(45deg); }
+.menu-btn[aria-expanded="true"] .bar:last-child { transform: translateY(-2.75px) rotate(-45deg); }
 .menu-panel {
-  position: absolute; top: 56px; right: 0; z-index: 40;
-  width: min(320px, calc(100vw - 48px));
-  background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px;
-  box-shadow: 0 24px 56px -20px color-mix(in srgb, var(--ink) 32%, transparent);
+  position: absolute; top: 54px; right: 0; z-index: 40;
+  width: min(320px, calc(100vw - 40px));
+  background: var(--surface); border: 1px solid var(--line); border-radius: 18px;
+  box-shadow: 0 24px 56px -20px rgba(0,0,0,.6);
   padding: 10px;
 }
 .menu-panel[hidden] { display: none; }
@@ -163,82 +172,83 @@ header.nav {
 }
 .menu-panel .mi {
   display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
-  padding: 11px 14px; border-radius: 10px; text-decoration: none;
+  padding: 11px 14px; border-radius: 12px; text-decoration: none;
   font-weight: 700; font-size: 15px; color: var(--ink);
   transition: background .15s ease, color .15s ease;
 }
-.menu-panel .mi:hover { background: var(--accent-soft); color: var(--accent); }
+.menu-panel .mi:hover { background: var(--chip); color: var(--head); }
 .menu-panel .mi .hint { font-family: var(--mono); font-size: 11px; color: var(--faint); font-weight: 500; }
-.menu-div { height: 1px; background: var(--hairline); margin: 8px 4px; }
+.menu-div { height: 1px; background: var(--line); margin: 8px 4px; }
 .menu-auth { padding: 4px 4px 6px; }
 .menu-auth .btn-google {
   display: block; text-align: center; text-decoration: none;
   font-weight: 700; font-size: 14.5px; color: var(--ink); font-family: var(--sans);
-  background: var(--paper); border: 1px solid var(--hairline); border-radius: 999px;
+  background: var(--paper); border: 1px solid var(--line); border-radius: 999px;
   padding: 10px 16px; cursor: pointer; transition: border-color .18s ease;
 }
 .menu-auth .btn-google:hover { border-color: var(--faint); }
 .menu-auth .or { text-align: center; font-family: var(--mono); font-size: 11px; color: var(--faint); margin: 10px 0; }
 .menu-auth .magic { display: grid; gap: 8px; }
 .menu-auth .magic input {
-  font-family: var(--sans); font-size: 14.5px; font-weight: 500; color: var(--ink);
-  background: var(--paper); border: 1px solid var(--hairline); border-radius: 10px;
+  font-family: var(--sans); font-size: 14.5px; font-weight: 500; color: var(--head);
+  background: var(--paper); border: 1px solid var(--line); border-radius: 10px;
   padding: 10px 12px; width: 100%;
-  transition: border-color .18s ease, box-shadow .18s ease;
+  transition: border-color .18s ease;
 }
 .menu-auth .magic input::placeholder { color: var(--faint); }
-.menu-auth .magic input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent); }
+.menu-auth .magic input:focus { outline: none; border-color: var(--accent); }
 .menu-auth .magic button {
   font-family: var(--sans); font-weight: 700; font-size: 14.5px;
-  color: var(--accent-ink); background: var(--accent); border: none; border-radius: 999px;
+  color: #fff; background: var(--accent); border: none; border-radius: 999px;
   padding: 10px 16px; cursor: pointer; transition: opacity .18s ease;
 }
 .menu-auth .magic button:hover { opacity: .92; }
 .menu-auth .magic button:disabled { opacity: .6; cursor: wait; }
 .menu-auth .auth-status { font-size: 13px; font-weight: 700; margin: 2px 2px 0; display: none; }
-.menu-auth .auth-status.ok { display: block; color: var(--accent); }
-.menu-auth .auth-status.err { display: block; color: #c0392b; }
-@media (prefers-color-scheme: dark) { .menu-auth .auth-status.err { color: #ff7a68; } }
-.menu-auth .who { display: flex; align-items: center; gap: 8px; padding: 6px 10px 10px; font-weight: 700; font-size: 15px; }
+.menu-auth .auth-status.ok { display: block; color: var(--peri); }
+.menu-auth .auth-status.err { display: block; color: var(--err); }
+.menu-auth .who { display: flex; align-items: center; gap: 8px; padding: 6px 10px 10px; font-weight: 700; font-size: 15px; color: var(--head); }
 .menu-auth .who .owner-badge {
-  font-family: var(--mono); font-size: 11px; color: var(--accent);
-  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  font-family: var(--mono); font-size: 11px; color: var(--peri);
+  border: 1px solid var(--line);
   border-radius: 999px; padding: 2px 9px;
 }
 
 /* ---------- hero ---------- */
-.hero { padding: 72px 0 88px; }
-.hero-grid {
-  display: grid; grid-template-columns: 7fr 5fr; gap: 64px;
-  align-items: center;
+.hero { padding: clamp(44px, 6vw, 80px) 0 0; }
+.hero-grid { display: flex; gap: 56px; align-items: center; flex-wrap: wrap; }
+.hero-left { flex: 7; min-width: 320px; }
+.hero-right { flex: 5; min-width: 300px; }
+.kicker {
+  font-family: var(--mono); font-size: 11.5px; letter-spacing: .12em;
+  color: var(--peri); text-transform: uppercase;
 }
 h1 {
-  font-size: clamp(40px, 6vw, 68px);
-  font-weight: 900; letter-spacing: -0.035em; line-height: 1.02;
-  max-width: 12ch;
+  margin-top: 8px;
+  font-family: var(--sans); font-weight: 900;
+  font-size: clamp(42px, 6.2vw, 72px);
+  letter-spacing: -0.025em; line-height: 1.04;
+  color: var(--head); max-width: 14ch;
 }
-h1 .accent { color: var(--accent); }
-.hero-sub {
-  margin-top: 22px; font-size: 19px; color: var(--muted);
-  max-width: 44ch; line-height: 1.55;
-}
-.hero-ctas { margin-top: 34px; display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+.period { color: var(--spark); }
+.hero-sub { margin-top: 20px; font-size: 18px; color: var(--muted); max-width: 44ch; line-height: 1.55; }
+.hero-ctas { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-top: 30px; }
 .btn {
-  display: inline-block; text-decoration: none;
-  background: var(--accent); color: var(--accent-ink);
-  font-weight: 700; font-size: 16px;
+  display: inline-block; text-decoration: none; text-align: center;
+  background: var(--accent); color: #fff;
+  font-weight: 700; font-size: 15.5px; font-family: var(--sans);
   padding: 14px 28px; border-radius: 999px;
-  border: none; cursor: pointer; font-family: var(--sans);
-  transition: transform .18s ease, opacity .18s ease;
+  border: none; cursor: pointer;
+  transition: opacity .18s ease, transform .18s ease;
 }
 .btn:hover { opacity: .92; }
 .btn:active { transform: translateY(1px) scale(.99); }
 .link-plain {
-  font-weight: 700; font-size: 16px; color: var(--muted);
-  text-decoration: none; border-bottom: 1.5px solid var(--hairline);
+  font-weight: 700; font-size: 15.5px; color: var(--ink);
+  text-decoration: none; border-bottom: 1.5px solid var(--line);
   padding-bottom: 2px; transition: color .18s ease, border-color .18s ease;
 }
-.link-plain:hover { color: var(--ink); border-color: var(--ink); }
+.link-plain:hover { color: var(--head); border-color: var(--head); }
 
 @media (prefers-reduced-motion: no-preference) {
   .rise { animation: rise .7s cubic-bezier(0.16,1,0.3,1) both; }
@@ -247,184 +257,175 @@ h1 .accent { color: var(--accent); }
   @keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 }
 
-/* ---------- calendar preview card ---------- */
+/* ---------- mini calendar card ---------- */
 .cal-card {
-  background: var(--surface);
-  border: 1px solid var(--hairline);
-  border-radius: 16px;
-  box-shadow: 0 18px 44px -22px color-mix(in srgb, var(--ink) 22%, transparent);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 20px;
   overflow: hidden;
+  box-shadow: 0 24px 60px -28px rgba(0,0,0,.7);
 }
-.cal-head { padding: 18px 20px 14px; border-bottom: 1px solid var(--hairline); }
-.cal-url { font-family: var(--mono); font-size: 13px; color: var(--accent); font-weight: 500; }
-.cal-title { font-size: 19px; font-weight: 900; letter-spacing: -0.01em; margin-top: 6px; }
-.cal-byline { font-size: 13px; color: var(--muted); margin-top: 2px; }
+.cal-head { padding: 16px 18px 13px; border-bottom: 1px solid var(--line); }
+.cal-url { font-family: var(--mono); font-size: 12px; color: var(--peri); }
+.cal-title {
+  font-family: var(--brico); font-weight: 800; font-size: 19px;
+  letter-spacing: -0.03em; color: var(--head); margin-top: 4px;
+}
+.cal-byline { font-size: 12.5px; color: var(--muted); margin-top: 1px; }
 .cal-rows { list-style: none; }
 .cal-rows li {
-  display: grid; grid-template-columns: 52px 1fr auto; gap: 14px;
-  padding: 13px 20px; align-items: center;
-  border-bottom: 1px solid var(--hairline);
+  display: grid; grid-template-columns: 50px 1fr auto; gap: 13px;
+  align-items: center; padding: 12px 18px; border-bottom: 1px solid var(--line);
 }
 .cal-rows li:last-child { border-bottom: none; }
-.dow {
-  font-family: var(--mono); font-size: 11px; font-weight: 500;
-  color: var(--faint); text-align: center; line-height: 1.3;
-}
-.dow b { display: block; font-size: 15px; color: var(--ink); font-weight: 700; }
+.dow { font-family: var(--mono); font-size: 10.5px; color: var(--faint); text-align: center; line-height: 1.3; }
+.dow b { display: block; font-size: 14px; color: var(--head); font-weight: 700; font-family: var(--mono); }
 .ev { min-width: 0; }
-.ev-name { font-weight: 700; font-size: 14.5px; line-height: 1.3; }
-.ev-venue { font-size: 12.5px; color: var(--muted); margin-top: 1px; }
-.ev-time { font-family: var(--mono); font-size: 12px; color: var(--faint); white-space: nowrap; }
+.ev-name { display: block; font-weight: 700; font-size: 14px; color: var(--head); line-height: 1.3; }
+.ev-venue { display: block; font-size: 12px; color: var(--muted); }
+.ev-price { font-family: var(--mono); font-size: 11px; color: var(--faint); white-space: nowrap; }
 .cal-foot {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 20px; background: color-mix(in srgb, var(--paper) 55%, var(--surface));
+  padding: 13px 18px; background: var(--footbg); border-top: 1px solid var(--line);
 }
-.chiprow { display: flex; gap: 8px; }
+.chiprow { display: flex; gap: 7px; }
 .chip {
-  font-family: var(--mono); font-size: 11px; color: var(--muted);
-  border: 1px solid var(--hairline); border-radius: 999px;
-  padding: 4px 10px; background: var(--surface);
+  font-family: var(--mono); font-size: 10.5px; color: var(--muted);
+  border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px;
 }
-.cal-sub {
-  font-size: 13px; font-weight: 700; color: var(--accent);
-  text-decoration: none;
-}
-.cal-note { font-size: 13px; color: var(--faint); margin-top: 14px; text-align: center; }
-.cal-note a { color: var(--accent); font-weight: 700; text-decoration: none; }
-.cal-note a:hover { text-decoration: underline; }
-@media (max-width: 880px) {
-  .hero { padding: 48px 0 64px; }
-  .hero-grid { grid-template-columns: 1fr; gap: 44px; }
-  .hero-sub { font-size: 17px; }
-}
+.cal-sub { font-weight: 700; font-size: 13px; color: var(--peri); text-decoration: none; }
+.cal-note { font-size: 13px; color: var(--faint); margin: 14px 0 0; text-align: center; }
+.cal-note a { color: var(--peri); font-weight: 700; text-decoration: none; }
+.cal-note a:hover { color: var(--head); }
 
-/* ---------- city strip ---------- */
-.cities { border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); }
-.cities-inner { padding: 56px 0; }
+/* ---------- cities strip ---------- */
+.cities { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-top: clamp(48px, 6vw, 80px); }
+.cities-inner { padding: 48px 0; }
 .cities h2 {
-  font-size: clamp(26px, 3.6vw, 40px); font-weight: 900;
-  letter-spacing: -0.03em; line-height: 1.15;
+  font-family: var(--sans); font-weight: 900;
+  font-size: clamp(26px, 3.6vw, 40px); letter-spacing: -0.02em; line-height: 1.12;
+  color: var(--head);
 }
 .cities h2 .next { color: var(--faint); }
 .cities p { margin-top: 12px; color: var(--muted); max-width: 62ch; }
 
 /* ---------- manifesto ---------- */
-.manifesto { padding: 96px 0; }
+.manifesto { padding: clamp(60px, 8vw, 96px) 0; }
 .manifesto h2 {
-  font-size: clamp(30px, 4.4vw, 48px); font-weight: 900;
-  letter-spacing: -0.03em; line-height: 1.08; max-width: 18ch;
+  font-family: var(--sans); font-weight: 900;
+  font-size: clamp(30px, 4.4vw, 48px); letter-spacing: -0.02em; line-height: 1.1;
+  color: var(--head); max-width: 18ch;
 }
-.manifesto-body {
-  margin-top: 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 40px;
-}
-.manifesto-body p { color: var(--muted); font-size: 17px; max-width: 58ch; }
-.manifesto-body p b, .manifesto-body p strong { color: var(--ink); font-weight: 700; }
-@media (max-width: 880px) { .manifesto { padding: 72px 0; } .manifesto-body { grid-template-columns: 1fr; gap: 20px; } }
+.manifesto-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 36px; margin-top: 30px; }
+.manifesto-body .col { display: grid; gap: 16px; align-content: start; }
+.manifesto-body p { color: var(--muted); font-size: 16.5px; max-width: 58ch; line-height: 1.6; }
 
 /* ---------- four things ---------- */
-.four { padding: 0 0 96px; }
-.four h2 { font-size: clamp(26px, 3.4vw, 36px); font-weight: 900; letter-spacing: -0.025em; }
-.four-sub { color: var(--muted); margin-top: 10px; max-width: 60ch; }
+.four { padding: 0 0 clamp(60px, 8vw, 96px); }
+.four h2 {
+  font-family: var(--sans); font-weight: 900;
+  font-size: clamp(26px, 3.4vw, 36px); letter-spacing: -0.02em; line-height: 1.12;
+  color: var(--head);
+}
+.four-sub { margin-top: 10px; color: var(--muted); max-width: 60ch; }
 .four-grid {
-  margin-top: 40px;
-  display: grid; grid-template-columns: repeat(4, 1fr);
-  border-top: 1px solid var(--hairline);
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  border-top: 1px solid var(--line); margin-top: 32px;
 }
-.four-grid > div { padding: 26px 26px 30px 0; border-bottom: 1px solid var(--hairline); }
-.four-grid .tag { font-family: var(--mono); font-size: 12px; color: var(--accent); }
-.four-grid h3 { font-size: 18px; font-weight: 700; margin-top: 10px; letter-spacing: -0.01em; }
-.four-grid p { font-size: 14.5px; color: var(--muted); margin-top: 6px; }
-@media (max-width: 880px) {
-  .four { padding-bottom: 72px; }
-  .four-grid { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 540px) { .four-grid { grid-template-columns: 1fr; } }
+.four-grid > div { padding: 24px 24px 28px 0; border-bottom: 1px solid var(--line); }
+.four-grid .tag { font-family: var(--mono); font-size: 12px; color: var(--spark); }
+.four-grid h3 { margin-top: 10px; font-size: 17.5px; font-weight: 700; color: var(--head); letter-spacing: -0.01em; }
+.four-grid p { margin-top: 6px; font-size: 14px; color: var(--muted); }
 
 /* ---------- earn ---------- */
-.earn { background: var(--surface); border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); padding: 96px 0; }
+.earn { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.earn-inner { padding: clamp(60px, 8vw, 90px) 0; }
 .earn h2 {
-  font-size: clamp(30px, 4.4vw, 48px); font-weight: 900;
-  letter-spacing: -0.03em; line-height: 1.08; max-width: 20ch;
+  font-family: var(--sans); font-weight: 900;
+  font-size: clamp(30px, 4.4vw, 46px); letter-spacing: -0.02em; line-height: 1.1;
+  color: var(--head); max-width: 20ch;
 }
-.earn-list { margin-top: 48px; display: grid; gap: 0; }
+.earn-list { margin-top: 36px; }
 .earn-row {
-  display: grid; grid-template-columns: 220px 1fr; gap: 32px;
-  padding: 30px 0; border-top: 1px solid var(--hairline);
+  display: grid; grid-template-columns: minmax(140px, 220px) 1fr; gap: 28px;
+  padding: 26px 0; border-top: 1px solid var(--line);
 }
-.earn-row:last-child { border-bottom: 1px solid var(--hairline); }
-.earn-who { font-size: 21px; font-weight: 900; letter-spacing: -0.015em; }
+.earn-row:last-child { border-bottom: 1px solid var(--line); }
+.earn-who { font-family: var(--sans); font-weight: 900; font-size: 21px; letter-spacing: -0.015em; color: var(--head); }
 .earn-row p { color: var(--muted); max-width: 62ch; }
-.earn-row p b { color: var(--ink); font-weight: 700; }
-.earn-note { margin-top: 28px; color: var(--faint); font-size: 15px; max-width: 62ch; }
-@media (max-width: 720px) {
-  .earn { padding: 72px 0; }
-  .earn-row { grid-template-columns: 1fr; gap: 8px; padding: 24px 0; }
-}
+.earn-note { margin-top: 24px; color: var(--faint); font-size: 14.5px; max-width: 62ch; }
+@media (max-width: 720px) { .earn-row { grid-template-columns: 1fr; gap: 8px; padding: 22px 0; } }
 
 /* ---------- waitlist ---------- */
-.waitlist { padding: 104px 0; }
-.wl-grid { display: grid; grid-template-columns: 5fr 6fr; gap: 72px; align-items: start; }
+.waitlist { padding: clamp(60px, 8vw, 100px) 0; }
+.wl-grid { display: flex; gap: 56px; align-items: flex-start; flex-wrap: wrap; }
+.wl-left { flex: 5; min-width: 280px; }
 .waitlist h2 {
-  font-size: clamp(30px, 4vw, 44px); font-weight: 900;
-  letter-spacing: -0.03em; line-height: 1.08;
+  font-family: var(--sans); font-weight: 900;
+  font-size: clamp(30px, 4vw, 44px); letter-spacing: -0.02em; line-height: 1.1;
+  color: var(--head);
 }
-.waitlist .wl-copy { margin-top: 16px; color: var(--muted); max-width: 44ch; }
+.wl-copy { margin-top: 14px; color: var(--muted); max-width: 44ch; }
 form.wl {
-  background: var(--surface); border: 1px solid var(--hairline);
-  border-radius: 16px; padding: 32px;
+  flex: 6; min-width: 300px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 20px; padding: 28px;
 }
-.field { display: grid; gap: 8px; margin-bottom: 22px; }
-.field label { font-size: 14px; font-weight: 700; }
-.field input, .field select {
-  font-family: var(--sans); font-size: 16px; font-weight: 500;
-  color: var(--ink); background: var(--paper);
-  border: 1px solid var(--hairline); border-radius: 10px;
+.field { display: grid; gap: 8px; margin-bottom: 20px; }
+.field .lbl { font-size: 14px; font-weight: 700; color: var(--head); }
+.field input {
+  font-family: var(--sans); font-size: 15.5px; font-weight: 500; color: var(--head);
+  background: var(--paper); border: 1px solid var(--line); border-radius: 10px;
   padding: 12px 14px; width: 100%;
-  transition: border-color .18s ease, box-shadow .18s ease;
-  appearance: none; -webkit-appearance: none;
-}
-.field select {
-  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%238b9098' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat; background-position: right 14px center;
-  padding-right: 38px;
-}
-.field input::placeholder { color: var(--faint); }
-.field input:focus, .field select:focus {
-  outline: none; border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
-}
-.field .hint { font-size: 13px; color: var(--faint); }
-.hp { position: absolute; left: -9999px; opacity: 0; height: 0; overflow: hidden; }
-.wl-status { margin-top: 14px; font-size: 14.5px; font-weight: 700; display: none; }
-.wl-status.ok { display: block; color: var(--accent); }
-.wl-status.err { display: block; color: #c0392b; }
-@media (prefers-color-scheme: dark) { .wl-status.err { color: #ff7a68; } }
-@media (max-width: 880px) {
-  .waitlist { padding: 72px 0; }
-  .wl-grid { grid-template-columns: 1fr; gap: 40px; }
-  form.wl { padding: 24px; }
-}
-
-/* ---------- footer ---------- */
-footer { border-top: 1px solid var(--hairline); padding: 44px 0 56px; }
-.foot-inner { display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; align-items: baseline; }
-.foot-left { font-size: 14.5px; color: var(--muted); max-width: 52ch; line-height: 1.7; }
-.foot-left a { color: var(--ink); font-weight: 700; text-decoration: none; border-bottom: 1.5px solid var(--hairline); }
-.foot-left a:hover { border-color: var(--ink); }
-.foot-right { font-size: 14.5px; color: var(--faint); }
-.foot-right .hist-link {
-  font: inherit; color: var(--ink); font-weight: 700;
-  background: none; border: none; padding: 0; cursor: pointer;
-  border-bottom: 1.5px solid var(--hairline);
   transition: border-color .18s ease;
 }
-.foot-right .hist-link:hover { border-color: var(--ink); }
+.field input::placeholder { color: var(--faint); }
+.field input:focus { outline: none; border-color: var(--accent); }
+.rolechips { display: flex; gap: 7px; flex-wrap: wrap; }
+.rolechip {
+  font-family: var(--sans); font-weight: 700; font-size: 13px;
+  border-radius: 999px; padding: 7px 15px; cursor: pointer;
+  background: transparent; color: var(--muted); border: 1px solid var(--line);
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.rolechip:hover { border-color: var(--faint); }
+.rolechip[aria-pressed="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+.wl-submit {
+  display: block; width: 100%;
+  background: var(--accent); color: #fff; border: none; cursor: pointer;
+  font-family: var(--sans); font-weight: 700; font-size: 15px; text-align: center;
+  padding: 13px 20px; border-radius: 999px;
+  transition: opacity .18s ease, transform .18s ease;
+}
+.wl-submit:hover { opacity: .92; }
+.wl-submit:active { transform: translateY(1px); }
+.wl-submit:disabled { opacity: .6; cursor: wait; }
+.hp { position: absolute; left: -9999px; opacity: 0; height: 0; overflow: hidden; }
+.wl-status { margin-top: 12px; font-size: 14px; font-weight: 700; display: none; }
+.wl-status.ok { display: block; color: var(--spark); }
+.wl-status.err { display: block; color: var(--err); }
+
+/* ---------- footer ---------- */
+footer { border-top: 1px solid var(--line); }
+.foot-inner {
+  padding: 40px 0 56px;
+  display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; align-items: baseline;
+}
+.foot-left { font-size: 14px; color: var(--muted); max-width: 52ch; line-height: 1.7; }
+.foot-left a { color: var(--head); font-weight: 700; text-decoration: none; border-bottom: 1.5px solid var(--line); }
+.foot-left a:hover { border-color: var(--head); }
+.foot-right { font-size: 14px; color: var(--faint); }
+.foot-right .hist-link {
+  font: inherit; color: var(--head); font-weight: 700;
+  background: none; border: none; padding: 0; cursor: pointer;
+  border-bottom: 1.5px solid var(--line);
+  transition: border-color .18s ease;
+}
+.foot-right .hist-link:hover { border-color: var(--head); }
 
 /* ---------- When.com history modal ---------- */
 .hist-backdrop {
   position: fixed; inset: 0; z-index: 60;
   display: grid; place-items: center; padding: 20px;
-  background: color-mix(in srgb, #0b0c10 55%, transparent);
+  background: rgba(5,6,10,.65);
   backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
 }
 .hist-backdrop[hidden] { display: none; }
@@ -433,8 +434,8 @@ footer { border-top: 1px solid var(--hairline); padding: 44px 0 56px; }
   max-height: min(760px, calc(100vh - 40px));
   max-height: min(760px, calc(100dvh - 40px));
   overflow-y: auto; overscroll-behavior: contain;
-  background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px;
-  box-shadow: 0 32px 80px -24px color-mix(in srgb, #0b0c10 60%, transparent);
+  background: var(--surface); border: 1px solid var(--line); border-radius: 26px;
+  box-shadow: 0 40px 100px -30px rgba(0,0,0,.8);
 }
 @media (prefers-reduced-motion: no-preference) {
   .hist-backdrop:not([hidden]) { animation: histFade .2s ease both; }
@@ -447,29 +448,29 @@ footer { border-top: 1px solid var(--hairline); padding: 44px 0 56px; }
   display: flex; align-items: center; justify-content: center;
   width: 36px; height: 36px; margin: 12px 12px -48px auto;
   font-family: var(--sans); font-size: 20px; line-height: 1; color: var(--muted);
-  background: var(--surface); border: 1px solid var(--hairline); border-radius: 999px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
   cursor: pointer; transition: color .18s ease, border-color .18s ease;
 }
-.hist-x:hover { color: var(--ink); border-color: var(--faint); }
+.hist-x:hover { color: var(--head); border-color: var(--faint); }
 .hist-body { padding: 30px 28px 30px; }
 .hist-logo {
   display: inline-flex; padding: 12px 18px;
-  background: #003366; border: 1px solid var(--hairline); border-radius: 10px;
+  background: #003366; border: 1px solid var(--line); border-radius: 10px;
 }
 .hist-logo img { display: block; width: 108px; height: auto; }
 .hist-kicker {
   margin-top: 18px;
-  font-family: var(--mono); font-size: 11.5px; color: var(--accent);
+  font-family: var(--mono); font-size: 11.5px; color: var(--peri);
   letter-spacing: .06em; text-transform: uppercase;
 }
 .hist-body h2 {
   margin-top: 8px; font-size: clamp(23px, 5vw, 29px);
-  font-weight: 900; letter-spacing: -0.025em; line-height: 1.12;
+  font-weight: 900; letter-spacing: -0.02em; line-height: 1.12; color: var(--head);
 }
 .hist-shot { display: block; margin-top: 20px; text-decoration: none; }
 .hist-shot img {
   display: block; width: 100%; height: auto;
-  background: #fff; border: 1px solid var(--hairline); border-radius: 10px;
+  background: #fff; border: 1px solid var(--line); border-radius: 10px;
   transition: border-color .18s ease;
 }
 .hist-shot:hover img { border-color: var(--faint); }
@@ -481,44 +482,47 @@ footer { border-top: 1px solid var(--hairline); padding: 44px 0 56px; }
 .hist-prose { margin-top: 20px; }
 .hist-prose p { font-size: 15.5px; color: var(--muted); }
 .hist-prose p + p { margin-top: 14px; }
-.hist-prose b { color: var(--ink); font-weight: 700; }
 .hist-quote {
   margin-top: 24px; padding: 22px 24px;
-  background: var(--accent-soft);
-  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
-  border-radius: 16px;
+  background: var(--chip);
+  border: 1px solid var(--line);
+  border-radius: 18px;
 }
 .hist-quote blockquote {
-  font-size: 19px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.32;
+  font-size: 19px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.32; color: var(--head);
 }
 .hist-quote figcaption { margin-top: 10px; font-size: 13.5px; color: var(--muted); }
-.hist-quote .aftermath {
-  margin-top: 12px;
-  font-family: var(--mono); font-size: 11.5px; color: var(--accent);
-}
-.hist-sources {
-  margin-top: 20px;
-  font-family: var(--mono); font-size: 11px; color: var(--faint); line-height: 1.8;
-}
+.hist-quote .aftermath { margin-top: 12px; font-family: var(--mono); font-size: 11.5px; color: var(--peri); }
+.hist-sources { margin-top: 20px; font-family: var(--mono); font-size: 11px; color: var(--faint); line-height: 1.8; }
 </style>
 </head>
 <body>
+<script>
+/* Apply persisted theme before first paint (dark is the default). */
+(function () {
+  try {
+    if (localStorage.getItem('when:theme') === 'light') document.body.setAttribute('data-theme', 'light');
+  } catch (e) {}
+})();
+</script>
 
 <header class="nav">
   <div class="wrap nav-inner">
-    <a class="brand" href="/">When<span class="tld">.org</span></a>
+    <a class="brand" href="/" aria-label="when.org home">
+      <svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true"><circle cx="10" cy="10" r="5" fill="var(--accent)"/><circle cx="22" cy="10" r="5" fill="var(--accent)"/><circle cx="10" cy="22" r="5" fill="var(--accent)"/><path d="M22 14.6 L23.9 20.1 L29.4 22 L23.9 23.9 L22 29.4 L20.1 23.9 L14.6 22 L20.1 20.1 Z" fill="var(--spark)"/></svg>
+      <span class="wordmark">when<span class="tld">.org</span></span>
+    </a>
     <nav class="nav-links">
       <a class="mani" href="#manifesto">Manifesto</a>
       <a class="gh" href="https://github.com/tedbarnett/When" rel="noopener">GitHub</a>
       <a class="cta" href="#waitlist">Join the waitlist</a>
+      <button class="menu-btn" id="menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu-panel" aria-haspopup="true">
+        <span class="bar"></span><span class="bar"></span>
+      </button>
     </nav>
-    <button class="menu-btn" id="menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu-panel" aria-haspopup="true">
-      <span class="bar"></span><span class="bar"></span>
-    </button>
     <div class="menu-panel" id="menu-panel" hidden>
-      <a class="mi" href="/teds-nyc">Browse NYC <span class="hint">events</span></a>
       <a class="mi" href="/teds-nyc">Ted&rsquo;s NYC <span class="hint">calendar</span></a>
-      <a class="mi" href="/#manifesto">About</a>
+      <a class="mi" href="/#manifesto">Manifesto</a>
       <a class="mi" href="https://github.com/tedbarnett/When" rel="noopener">GitHub</a>
       <div class="menu-div" role="separator"></div>
       <div class="menu-auth" id="menu-auth"><a class="mi" href="/api/auth/google">Log in</a></div>
@@ -529,43 +533,44 @@ footer { border-top: 1px solid var(--hairline); padding: 44px 0 56px; }
 <main>
   <section class="hero">
     <div class="wrap hero-grid">
-      <div>
-        <h1 class="rise">An open calendar of <span class="accent">everything happening.</span></h1>
-        <p class="hero-sub rise d1">Open-source event feeds for your city. Subscribe in any calendar app. The curators and hosts behind them get paid.</p>
+      <div class="hero-left">
+        <p class="kicker rise">OPEN-SOURCE &middot; NEW YORK FIRST</p>
+        <h1 class="rise">An open calendar of everything happening<span class="period">.</span></h1>
+        <p class="hero-sub rise d1">Event feeds for your city, curated by people who actually go out. Subscribe in any calendar app. The curators and hosts behind them get paid.</p>
         <div class="hero-ctas rise d2">
           <a class="btn" href="#waitlist">Join the waitlist</a>
-          <a class="link-plain" href="#manifesto">Read the manifesto</a>
+          <a class="link-plain" href="/teds-nyc">Browse Ted&rsquo;s NYC &rarr;</a>
         </div>
       </div>
-      <div class="rise d2">
-        <div class="cal-card" aria-label="Example of a When.org calendar">
+      <div class="hero-right rise d2">
+        <div class="cal-card" aria-label="Example of a when.org calendar">
           <div class="cal-head">
-            <div class="cal-url">when.org/nyc-jazz</div>
-            <div class="cal-title">NYC Jazz</div>
-            <div class="cal-byline">Curated by someone who is at the club four nights a week</div>
+            <div class="cal-url">when.org/teds-nyc</div>
+            <div class="cal-title">Ted&rsquo;s NYC</div>
+            <div class="cal-byline">Curated by Ted &middot; things I&rsquo;d actually go to</div>
           </div>
           <ul class="cal-rows">
             <li>
-              <span class="dow">MON<b>8P</b></span>
-              <span class="ev"><span class="ev-name">Vanguard Jazz Orchestra</span><span class="ev-venue" style="display:block">Village Vanguard, West Village</span></span>
-              <span class="ev-time">$40</span>
+              <span class="dow">FRI<b>6P</b></span>
+              <span class="ev"><span class="ev-name">Jazz at the Bandshell</span><span class="ev-venue">Prospect Park &middot; &starf; Mara &amp; Dev are going</span></span>
+              <span class="ev-price">Free</span>
             </li>
             <li>
-              <span class="dow">FRI<b>11P</b></span>
-              <span class="ev"><span class="ev-name">Late-Night Jam Session</span><span class="ev-venue" style="display:block">Smalls, Greenwich Village</span></span>
-              <span class="ev-time">$25</span>
+              <span class="dow">SAT<b>8P</b></span>
+              <span class="ev"><span class="ev-name">Kris Davis at the Vanguard</span><span class="ev-venue">Village Vanguard, West Village</span></span>
+              <span class="ev-price">$40</span>
             </li>
             <li>
-              <span class="dow">SUN<b>3:30P</b></span>
-              <span class="ev"><span class="ev-name">Parlor Jazz at Marjorie Eliot's</span><span class="ev-venue" style="display:block">555 Edgecombe Ave, Harlem</span></span>
-              <span class="ev-time">Free</span>
+              <span class="dow">SUN<b>3:30</b></span>
+              <span class="ev"><span class="ev-name">Parlor Jazz at Marjorie Eliot&rsquo;s</span><span class="ev-venue">555 Edgecombe Ave, Harlem</span></span>
+              <span class="ev-price">Free</span>
             </li>
           </ul>
           <div class="cal-foot">
             <div class="chiprow">
               <span class="chip">Web</span><span class="chip">ICS</span><span class="chip">JSON</span>
             </div>
-            <span class="cal-sub">Subscribe</span>
+            <a class="cal-sub" href="/teds-nyc">Subscribe</a>
           </div>
         </div>
         <p class="cal-note">Every calendar is a page, a feed, and an API. The first one is live: <a href="/teds-nyc">Ted&rsquo;s NYC &rarr;</a></p>
@@ -575,22 +580,22 @@ footer { border-top: 1px solid var(--hairline); padding: 44px 0 56px; }
 
   <section class="cities" id="cities">
     <div class="wrap cities-inner">
-      <h2>Starting in New York. <span class="next">New Orleans next.</span></h2>
-      <p>When.org launches local-first: a handful of genuinely great, hand-curated NYC calendars with live feeds, before anything else. New Orleans follows. Anywhere else, the code is open: run When.org for your own town.</p>
+      <h2>Starting in New York<span class="period">.</span> <span class="next">New Orleans next.</span></h2>
+      <p>A handful of genuinely great, hand-curated NYC calendars with live feeds, before anything else. New Orleans follows. Anywhere else &mdash; the code is open, run when.org for your own town.</p>
     </div>
   </section>
 
   <section class="manifesto" id="manifesto">
     <div class="wrap">
-      <h2>Events are trapped in silos.</h2>
+      <h2>Events are trapped in silos<span class="period">.</span></h2>
       <div class="manifesto-body">
-        <div>
-          <p>What's happening tonight in your city is scattered across Meetup, Facebook, Eventbrite, venue websites, and a hundred Instagram stories. Each one is a closed destination that holds listings hostage to its own growth. None of them answer the simple question: <b>what's going on around here?</b></p>
-          <p style="margin-top:18px">When.org is the open alternative. The unit isn't an app or an account, it's a <b>calendar with an owner</b>. A person who knows every jazz room in New York publishes a calendar, and you subscribe to it the way you'd subscribe to a newsletter. It shows up in the calendar app you already use, and it stays current.</p>
+        <div class="col">
+          <p>What&rsquo;s happening tonight in your city is scattered across Meetup, Facebook, Eventbrite, venue websites, and a hundred Instagram stories. Each one is a closed destination that holds listings hostage to its own growth. None of them answer the simple question: <b>what&rsquo;s going on around here?</b></p>
+          <p>when.org is the open alternative. The unit isn&rsquo;t an app or an account &mdash; it&rsquo;s a <b>calendar with an owner</b>. A person who knows every jazz room in New York publishes a calendar, and you subscribe the way you&rsquo;d subscribe to a newsletter. It shows up in the calendar app you already use, and it stays current.</p>
         </div>
-        <div>
+        <div class="col">
           <p><b>Feeds are free forever.</b> Reading is free. Publishing is free. Subscribing your calendar app is free. Data out is sacred: every page carries open standards, so nothing you build here is ever locked in.</p>
-          <p style="margin-top:18px">The When.org platform is free, but curators can sell calendar subscriptions, tickets, tips. Think of it as a <b>Substack for calendars</b>. They can be free or, if high-quality enough, paid.</p>
+          <p>The platform is free, but curators can sell calendar subscriptions, tickets, tips. Think of it as a <b>Substack for calendars</b> &mdash; free, or if it&rsquo;s good enough, paid.</p>
         </div>
       </div>
     </div>
@@ -599,12 +604,12 @@ footer { border-top: 1px solid var(--hairline); padding: 44px 0 56px; }
   <section class="four">
     <div class="wrap">
       <h2>Every calendar is four things at once</h2>
-      <p class="four-sub">Publish once. It's instantly useful everywhere, with no exporting, no re-posting, no lock-in.</p>
+      <p class="four-sub">Publish once. It&rsquo;s instantly useful everywhere &mdash; no exporting, no re-posting, no lock-in.</p>
       <div class="four-grid">
         <div>
           <span class="tag">/nyc-jazz</span>
           <h3>A web page</h3>
-          <p>A clean public page anyone can visit, share, and search. Event markup built in.</p>
+          <p>A clean public page anyone can visit and share &mdash; and every event has its own link.</p>
         </div>
         <div>
           <span class="tag">.ics</span>
@@ -614,7 +619,7 @@ footer { border-top: 1px solid var(--hairline); padding: 44px 0 56px; }
         <div>
           <span class="tag">.json</span>
           <h3>An API</h3>
-          <p>Structured, open data for apps, sites, and researchers. No key required to read.</p>
+          <p>Structured, open data for apps, researchers &mdash; and your personal AI. No key to read.</p>
         </div>
         <div>
           <span class="tag">@weekly</span>
@@ -626,8 +631,8 @@ footer { border-top: 1px solid var(--hairline); padding: 44px 0 56px; }
   </section>
 
   <section class="earn">
-    <div class="wrap">
-      <h2>The people who make the scene should make money.</h2>
+    <div class="wrap earn-inner">
+      <h2>The people who make the scene should make money<span class="period">.</span></h2>
       <div class="earn-list">
         <div class="earn-row">
           <div class="earn-who">Curators</div>
@@ -642,44 +647,35 @@ footer { border-top: 1px solid var(--hairline); padding: 44px 0 56px; }
           <p>Embed your own calendar on your website free, and claim your venue page so every listing points home. Pro tools for branding and analytics come later.</p>
         </div>
       </div>
-      <p class="earn-note">When.org only earns when you do: a small share of payments, never a paywall on the feed itself.</p>
+      <p class="earn-note">when.org only earns when you do: a small share of payments, never a paywall on the feed itself.</p>
     </div>
   </section>
 
   <section class="waitlist" id="waitlist">
     <div class="wrap wl-grid">
-      <div>
-        <h2>Be there when it starts.</h2>
-        <p class="wl-copy">Join the waitlist and we'll write when the first New York calendars go live. If you curate, host, or run a room, we want to hear from you first.</p>
+      <div class="wl-left">
+        <h2>Be there when it starts<span class="period">.</span></h2>
+        <p class="wl-copy">Join the waitlist and we&rsquo;ll write when the first New York calendars go live. If you curate, host, or run a room, we want to hear from you first.</p>
       </div>
       <form class="wl" id="waitlist-form" method="post" action="/api/waitlist" novalidate>
         <div class="field">
-          <label for="wl-email">Email</label>
+          <label class="lbl" for="wl-email">Email</label>
           <input id="wl-email" name="email" type="email" required autocomplete="email" placeholder="you@example.com">
         </div>
         <div class="field">
-          <label for="wl-role">Which are you?</label>
-          <select id="wl-role" name="role">
-            <option value="curious" selected>Just curious</option>
-            <option value="curator">I'm a curator</option>
-            <option value="host">I host events</option>
-            <option value="venue">I run a venue</option>
-          </select>
-          <span class="hint">Optional, but it helps us invite the right people first.</span>
-        </div>
-        <div class="field">
-          <label for="wl-city">Your city</label>
-          <select id="wl-city" name="city">
-            <option value="nyc" selected>New York</option>
-            <option value="nola">New Orleans</option>
-            <option value="other">Somewhere else</option>
-          </select>
+          <span class="lbl" id="wl-role-label">Which are you?</span>
+          <div class="rolechips" role="group" aria-labelledby="wl-role-label" id="wl-roles">
+            <button type="button" class="rolechip" data-role="curious" aria-pressed="true">Just curious</button>
+            <button type="button" class="rolechip" data-role="curator" aria-pressed="false">I&rsquo;m a curator</button>
+            <button type="button" class="rolechip" data-role="host" aria-pressed="false">I host events</button>
+            <button type="button" class="rolechip" data-role="venue" aria-pressed="false">I run a venue</button>
+          </div>
         </div>
         <div class="hp" aria-hidden="true">
           <label for="wl-website">Website</label>
           <input id="wl-website" name="website" type="text" tabindex="-1" autocomplete="off">
         </div>
-        <button class="btn" type="submit" id="wl-submit">Join the waitlist</button>
+        <button class="wl-submit" type="submit" id="wl-submit">Join the waitlist</button>
         <p class="wl-status" id="wl-status" role="status"></p>
       </form>
     </div>
@@ -689,7 +685,7 @@ footer { border-top: 1px solid var(--hairline); padding: 44px 0 56px; }
 <footer>
   <div class="wrap foot-inner">
     <p class="foot-left">An open-source project, AGPL-licensed. Read the code, open an issue, or run your own instance: <a href="https://github.com/tedbarnett/When" rel="noopener">github.com/tedbarnett/When</a></p>
-    <p class="foot-right">From the founder of <button type="button" class="hist-link" id="hist-open" aria-haspopup="dialog" aria-controls="hist-backdrop">When.com</button> (1998)</p>
+    <p class="foot-right">From the founder of <button type="button" class="hist-link" id="hist-open" aria-haspopup="dialog" aria-controls="hist-backdrop">When.com</button> (1998, acquired by AOL)</p>
   </div>
 </footer>
 
@@ -777,10 +773,23 @@ footer { border-top: 1px solid var(--hairline); padding: 44px 0 56px; }
 })();
 </script>
 <script>
+/* Waitlist form — role via pill chips, POSTs to /api/waitlist */
 (function () {
   var form = document.getElementById('waitlist-form');
   var status = document.getElementById('wl-status');
   var submit = document.getElementById('wl-submit');
+  var roles = document.getElementById('wl-roles');
+  var role = 'curious';
+
+  roles.addEventListener('click', function (e) {
+    var chip = e.target.closest('.rolechip');
+    if (!chip) return;
+    role = chip.getAttribute('data-role');
+    roles.querySelectorAll('.rolechip').forEach(function (c) {
+      c.setAttribute('aria-pressed', c === chip ? 'true' : 'false');
+    });
+  });
+
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     var email = document.getElementById('wl-email').value.trim();
@@ -797,8 +806,8 @@ footer { border-top: 1px solid var(--hairline); padding: 44px 0 56px; }
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: email,
-        role: document.getElementById('wl-role').value,
-        city: document.getElementById('wl-city').value,
+        role: role,
+        city: 'nyc',
         website: document.getElementById('wl-website').value
       })
     }).then(function (r) { return r.json(); }).then(function (d) {
