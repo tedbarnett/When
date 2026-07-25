@@ -221,6 +221,8 @@ h1 .accent { color: var(--accent); }
   text-decoration: none;
 }
 .cal-note { font-size: 13px; color: var(--faint); margin-top: 14px; text-align: center; }
+.cal-note a { color: var(--accent); font-weight: 700; text-decoration: none; }
+.cal-note a:hover { text-decoration: underline; }
 @media (max-width: 880px) {
   .hero { padding: 48px 0 64px; }
   .hero-grid { grid-template-columns: 1fr; gap: 44px; }
@@ -398,7 +400,7 @@ footer { border-top: 1px solid var(--hairline); padding: 44px 0 56px; }
             <span class="cal-sub">Subscribe</span>
           </div>
         </div>
-        <p class="cal-note">Every calendar is a page, a feed, and an API. This one is a preview.</p>
+        <p class="cal-note">Every calendar is a page, a feed, and an API. The first one is live: <a href="/teds-nyc">Ted&rsquo;s NYC &rarr;</a></p>
       </div>
     </div>
   </section>

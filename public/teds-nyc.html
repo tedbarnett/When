@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ted's NYC · When</title>
+<meta name="description" content="Real New York this week: jazz basements, free lawns, old movies, new food. A calendar curated by Ted. Subscribe in any calendar app.">
+<link rel="canonical" href="https://when.org/teds-nyc">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="alternate" type="text/calendar" title="Ted's NYC (ICS)" href="/teds-nyc.ics">
+
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://when.org/teds-nyc">
+<meta property="og:site_name" content="When">
+<meta property="og:title" content="Ted's NYC · a When calendar">
+<meta property="og:description" content="Real New York for the week ahead, curated by Ted. Jazz, free lawns, old movies, new food. Subscribe in any calendar app.">
+<meta property="og:image" content="https://bricartsmedia.org/wp-content/uploads/2026/04/CBS-Photo%C2%A9Jimmy-Bruch-scaled-1.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ted's NYC · a When calendar">
+<meta name="twitter:description" content="Real New York for the week ahead, curated by Ted. Subscribe in any calendar app.">
+
+<style>
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/satoshi-500.woff2') format('woff2');
+  font-weight: 500; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/satoshi-700.woff2') format('woff2');
+  font-weight: 700; font-style: normal; font-display: swap;
+}
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/satoshi-900.woff2') format('woff2');
+  font-weight: 900; font-style: normal; font-display: swap;
+}
+
+:root {
+  --paper: #f6f6f3;
+  --surface: #fdfdfc;
+  --ink: #17191e;
+  --muted: #5b6068;
+  --faint: #8b9098;
+  --hairline: #e0e0da;
+  --accent: #2138d6;
+  --accent-ink: #ffffff;
+  --accent-soft: #eceefb;
+  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: 'Satoshi', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* fallback-card tints (light) */
+  --cb0-bg: #e8ebfa; --cb0-ink: #2138d6;
+  --cb1-bg: #e6f0ea; --cb1-ink: #1f7a4d;
+  --cb2-bg: #faece7; --cb2-ink: #c2552f;
+  --cb3-bg: #f4e9f3; --cb3-ink: #93387f;
+  --cb4-bg: #eef0e2; --cb4-ink: #6a7523;
+  --cb5-bg: #e7eff4; --cb5-ink: #22677f;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #101115;
+    --surface: #17181d;
+    --ink: #ebebe7;
+    --muted: #a2a6ad;
+    --faint: #71757d;
+    --hairline: #272930;
+    --accent: #7286ff;
+    --accent-ink: #0d1030;
+    --accent-soft: #1c2040;
+    --cb0-bg: #1c2040; --cb0-ink: #93a3ff;
+    --cb1-bg: #16281e; --cb1-ink: #6bc396;
+    --cb2-bg: #2e1d15; --cb2-ink: #e8926c;
+    --cb3-bg: #2a1a28; --cb3-ink: #d287c1;
+    --cb4-bg: #23261a; --cb4-ink: #b3bf68;
+    --cb5-bg: #16242c; --cb5-ink: #7ab6cf;
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--sans);
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 500;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+a { color: inherit; }
+::selection { background: var(--accent); color: var(--accent-ink); }
+.wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+
+/* ---------- nav ---------- */
+header.nav {
+  position: sticky; top: 0; z-index: 10;
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--hairline);
+}
+.nav-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+.brand {
+  display: flex; align-items: baseline; gap: 1px;
+  font-weight: 900; font-size: 22px; letter-spacing: -0.02em; text-decoration: none;
+}
+.brand .tld { color: var(--faint); font-weight: 700; font-size: 16px; }
+.nav-links { display: flex; align-items: center; gap: 22px; font-size: 15px; font-weight: 700; }
+.nav-links a { text-decoration: none; color: var(--muted); transition: color .18s ease; }
+.nav-links a:hover { color: var(--ink); }
+.nav-links a.cta {
+  color: var(--accent-ink); background: var(--accent);
+  padding: 9px 18px; border-radius: 999px;
+  transition: transform .18s ease, opacity .18s ease;
+}
+.nav-links a.cta:hover { opacity: .92; }
+.nav-links a.cta:active { transform: translateY(1px); }
+@media (max-width: 640px) { .nav-links a.about { display: none; } }
+
+/* ---------- calendar header ---------- */
+.calhead { padding: 44px 0 30px; }
+.cal-url { font-family: var(--mono); font-size: 13px; color: var(--accent); }
+.calhead h1 { font-size: clamp(36px, 6vw, 56px); font-weight: 900; letter-spacing: -0.035em; line-height: 1.05; margin-top: 4px; }
+.byline { margin-top: 8px; font-size: 17px; color: var(--muted); }
+.meta-row { margin-top: 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.chip {
+  font-family: var(--mono); font-size: 11.5px; color: var(--muted);
+  border: 1px solid var(--hairline); border-radius: 999px;
+  padding: 4px 11px; background: var(--surface); text-decoration: none;
+  transition: border-color .18s ease, color .18s ease;
+}
+a.chip:hover { color: var(--ink); border-color: var(--faint); }
+.actions { margin-top: 22px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.btn {
+  display: inline-block; text-decoration: none; text-align: center;
+  background: var(--accent); color: var(--accent-ink);
+  font-weight: 700; font-size: 15px;
+  padding: 12px 24px; border-radius: 999px;
+  border: none; cursor: pointer; font-family: var(--sans);
+  transition: transform .18s ease, opacity .18s ease;
+}
+.btn:hover { opacity: .92; }
+.btn:active { transform: translateY(1px) scale(.99); }
+.btn.ghost {
+  background: var(--surface); color: var(--ink);
+  border: 1px solid var(--hairline);
+}
+.btn.ghost:hover { border-color: var(--faint); opacity: 1; }
+.sub-hint { font-size: 13px; color: var(--faint); margin-top: 10px; max-width: 52ch; }
+
+/* ---------- view toggle ---------- */
+.viewbar {
+  position: sticky; top: 64px; z-index: 9;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+}
+.viewbar-inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; }
+.seg { display: inline-flex; background: var(--surface); border: 1px solid var(--hairline); border-radius: 999px; padding: 3px; }
+.seg button {
+  font-family: var(--sans); font-weight: 700; font-size: 14px;
+  color: var(--muted); background: transparent; border: none;
+  padding: 7px 18px; border-radius: 999px; cursor: pointer;
+  transition: color .15s ease, background .15s ease;
+}
+.seg button.on { background: var(--accent); color: var(--accent-ink); }
+.seg button:disabled { color: var(--faint); cursor: not-allowed; position: relative; }
+.seg button:disabled:hover::after {
+  content: "soon"; position: absolute; left: 50%; top: -30px; transform: translateX(-50%);
+  font-family: var(--mono); font-size: 11px; background: var(--ink); color: var(--paper);
+  padding: 3px 9px; border-radius: 999px; white-space: nowrap;
+}
+.daynav { display: none; align-items: center; gap: 10px; }
+.daynav.show { display: inline-flex; }
+.daynav button {
+  width: 36px; height: 36px; border-radius: 999px;
+  border: 1px solid var(--hairline); background: var(--surface); color: var(--ink);
+  font-size: 16px; font-weight: 700; cursor: pointer; font-family: var(--sans);
+  transition: border-color .15s ease, transform .15s ease;
+}
+.daynav button:hover { border-color: var(--faint); }
+.daynav button:active { transform: translateY(1px); }
+.daynav button:disabled { color: var(--faint); cursor: not-allowed; }
+.daynav .daylabel { font-family: var(--mono); font-size: 12.5px; color: var(--muted); min-width: 118px; text-align: center; }
+
+/* ---------- days & cards ---------- */
+.days { padding: 12px 0 72px; }
+.dayhead { display: flex; align-items: baseline; gap: 12px; margin: 38px 0 16px; }
+.dayhead .dname { font-size: clamp(21px, 3vw, 27px); font-weight: 900; letter-spacing: -0.02em; }
+.dayhead .ddate { font-family: var(--mono); font-size: 12.5px; color: var(--faint); }
+.dayhead .dcount { font-family: var(--mono); font-size: 11.5px; color: var(--faint); margin-left: auto; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(255px, 1fr)); gap: 16px; }
+
+.card {
+  background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px;
+  overflow: hidden; text-decoration: none; display: flex; flex-direction: column;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.card:hover {
+  transform: translateY(-2px);
+  border-color: var(--faint);
+  box-shadow: 0 16px 36px -20px color-mix(in srgb, var(--ink) 30%, transparent);
+}
+.card:active { transform: translateY(0); }
+.media { position: relative; aspect-ratio: 16 / 10; background: var(--accent-soft); overflow: hidden; }
+.media img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.card:hover .media img { transform: scale(1.03); }
+.media img { transition: transform .35s ease; }
+.media.blocked { display: flex; align-items: center; justify-content: center; }
+.media.blocked .big {
+  font-weight: 900; font-size: 64px; letter-spacing: -0.04em; line-height: 1;
+  user-select: none;
+}
+.media.blocked .tagword {
+  position: absolute; left: 14px; top: 12px;
+  font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .14em;
+  opacity: .75;
+}
+.cb0 { background: var(--cb0-bg); } .cb0 .big, .cb0 .tagword { color: var(--cb0-ink); }
+.cb1 { background: var(--cb1-bg); } .cb1 .big, .cb1 .tagword { color: var(--cb1-ink); }
+.cb2 { background: var(--cb2-bg); } .cb2 .big, .cb2 .tagword { color: var(--cb2-ink); }
+.cb3 { background: var(--cb3-bg); } .cb3 .big, .cb3 .tagword { color: var(--cb3-ink); }
+.cb4 { background: var(--cb4-bg); } .cb4 .big, .cb4 .tagword { color: var(--cb4-ink); }
+.cb5 { background: var(--cb5-bg); } .cb5 .big, .cb5 .tagword { color: var(--cb5-ink); }
+
+.body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.toprow { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.time { font-family: var(--mono); font-size: 12px; color: var(--accent); }
+.price { font-family: var(--mono); font-size: 11px; color: var(--muted); border: 1px solid var(--hairline); border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
+.price.free { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+.card h3 { font-size: 16.5px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.3; }
+.where { font-size: 13px; color: var(--muted); }
+.blurb { font-size: 13.5px; color: var(--muted); line-height: 1.5; }
+.tags { margin-top: auto; padding-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+.tag { font-family: var(--mono); font-size: 10.5px; color: var(--faint); border: 1px solid var(--hairline); border-radius: 999px; padding: 2px 8px; }
+
+.loading { padding: 60px 0; text-align: center; color: var(--faint); font-family: var(--mono); font-size: 13px; }
+
+/* ---------- footer ---------- */
+footer { border-top: 1px solid var(--hairline); padding: 36px 0 52px; }
+.foot-inner { display: flex; justify-content: space-between; gap: 24px; flex-wrap: wrap; align-items: baseline; }
+.foot-left { font-size: 14.5px; color: var(--muted); max-width: 56ch; line-height: 1.7; }
+.foot-left a { color: var(--ink); font-weight: 700; text-decoration: none; border-bottom: 1.5px solid var(--hairline); }
+.foot-left a:hover { border-color: var(--ink); }
+.foot-right { font-size: 14.5px; color: var(--faint); }
+
+@media (max-width: 640px) {
+  .calhead { padding: 32px 0 24px; }
+  .grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .body { padding: 11px 12px 13px; }
+  .card h3 { font-size: 14.5px; }
+  .blurb { display: none; }
+  .media.blocked .big { font-size: 44px; }
+  .actions .btn { flex: 1; }
+}
+@media (max-width: 380px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="/">When<span class="tld">.org</span></a>
+    <nav class="nav-links">
+      <a class="about" href="/#manifesto">About When</a>
+      <a class="cta" href="webcal://when.org/teds-nyc.ics" id="subscribe-top">Subscribe</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="calhead">
+    <div class="wrap">
+      <div class="cal-url">when.org/teds-nyc</div>
+      <h1>Ted&rsquo;s NYC</h1>
+      <p class="byline">Curated by Ted &middot; things I&rsquo;d actually go to</p>
+      <div class="meta-row">
+        <span class="chip" id="follower-chip">142 followers</span>
+        <span class="chip" id="count-chip">this week</span>
+        <a class="chip" href="/teds-nyc.ics">ICS</a>
+        <a class="chip" href="/data/teds-nyc.json">JSON</a>
+      </div>
+      <div class="actions">
+        <a class="btn" href="webcal://when.org/teds-nyc.ics">Subscribe (ICS)</a>
+        <button class="btn ghost" id="copy-feed" type="button">Copy feed URL</button>
+      </div>
+      <p class="sub-hint">Subscribe once in Apple or Google Calendar and this week&rsquo;s picks, and every week after, show up automatically.</p>
+    </div>
+  </section>
+
+  <div class="viewbar">
+    <div class="wrap viewbar-inner">
+      <div class="seg" role="tablist" aria-label="Calendar view">
+        <button type="button" id="view-week" class="on">Week</button>
+        <button type="button" id="view-day">Day</button>
+        <button type="button" id="view-month" disabled title="soon">Month</button>
+      </div>
+      <div class="daynav" id="daynav">
+        <button type="button" id="day-prev" aria-label="Previous day">&larr;</button>
+        <span class="daylabel" id="day-label"></span>
+        <button type="button" id="day-next" aria-label="Next day">&rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <section class="days">
+    <div class="wrap" id="days-root">
+      <p class="loading">loading the week&hellip;</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot-inner">
+    <p class="foot-left">Ted&rsquo;s NYC is a <a href="/">When</a> calendar: a web page, an ICS feed, and a JSON API, all from one list of events. Listings link to the venues that host them.</p>
+    <p class="foot-right">New York, this week</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var TZ = 'America/New_York';
+  var FEED_URL = 'https://when.org/teds-nyc.ics';
+  var state = { view: 'week', dayIndex: 0, days: [] };
+
+  function nyToday() {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(new Date());
+  }
+  function dateKey(ev) { return ev.start.slice(0, 10); }
+  function fmtTime(ev) {
+    var h = parseInt(ev.start.slice(11, 13), 10);
+    var m = ev.start.slice(14, 16);
+    var ap = h >= 12 ? 'P' : 'A';
+    var hh = h % 12; if (hh === 0) hh = 12;
+    return hh + ':' + m + ap + 'M';
+  }
+  function dayName(key, todayKey) {
+    var d = new Date(key + 'T12:00:00-04:00');
+    var wd = new Intl.DateTimeFormat('en-US', { weekday: 'long', timeZone: TZ }).format(d);
+    var t = new Date(todayKey + 'T12:00:00-04:00');
+    var diff = Math.round((d - t) / 86400000);
+    if (diff === 0) return 'Today';
+    if (diff === 1) return 'Tomorrow';
+    return wd;
+  }
+  function dayDate(key) {
+    var d = new Date(key + 'T12:00:00-04:00');
+    return new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: TZ })
+      .format(d).toUpperCase().replace(/,/g, '');
+  }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function hashHue(id) {
+    var h = 0;
+    for (var i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+    return h % 6;
+  }
+  function blockMedia(ev) {
+    var cb = 'cb' + hashHue(ev.id);
+    var word = (ev.tags && ev.tags[0]) || 'event';
+    var letter = ev.title.charAt(0).toUpperCase();
+    return '<div class="media blocked ' + cb + '"><span class="tagword">' + esc(word) + '</span><span class="big">' + esc(letter) + '</span></div>';
+  }
+  function cardHTML(ev) {
+    var media;
+    if (ev.image) {
+      media = '<div class="media"><img src="' + esc(ev.image) + '" alt="' + esc(ev.title) + '" loading="lazy" referrerpolicy="no-referrer" data-eid="' + esc(ev.id) + '"></div>';
+    } else {
+      media = blockMedia(ev);
+    }
+    var price = ev.price || '';
+    var isFree = /^free/i.test(price);
+    var tags = (ev.tags || []).map(function (t) { return '<span class="tag">' + esc(t) + '</span>'; }).join('');
+    return '<a class="card" href="' + esc(ev.url) + '" target="_blank" rel="noopener">' +
+      media +
+      '<div class="body">' +
+        '<div class="toprow"><span class="time">' + fmtTime(ev) + '</span>' +
+        (price ? '<span class="price' + (isFree ? ' free' : '') + '">' + esc(price) + '</span>' : '') + '</div>' +
+        '<h3>' + esc(ev.title) + '</h3>' +
+        '<div class="where">' + esc(ev.venue) + ' &middot; ' + esc(ev.neighborhood) + '</div>' +
+        '<p class="blurb">' + esc(ev.blurb) + '</p>' +
+        '<div class="tags">' + tags + '</div>' +
+      '</div></a>';
+  }
+  function dayHTML(day, todayKey) {
+    var cards = day.events.map(cardHTML).join('');
+    return '<div class="dayhead"><span class="dname">' + esc(dayName(day.key, todayKey)) + '</span>' +
+      '<span class="ddate">' + esc(dayDate(day.key)) + '</span>' +
+      '<span class="dcount">' + day.events.length + (day.events.length === 1 ? ' pick' : ' picks') + '</span></div>' +
+      '<div class="grid">' + cards + '</div>';
+  }
+  function render() {
+    var root = document.getElementById('days-root');
+    var todayKey = nyToday();
+    var html = '';
+    if (state.view === 'week') {
+      state.days.forEach(function (day) { html += dayHTML(day, todayKey); });
+    } else {
+      var day = state.days[state.dayIndex];
+      if (day) html = dayHTML(day, todayKey);
+    }
+    root.innerHTML = html || '<p class="loading">nothing on the calendar yet</p>';
+    hookImageFallbacks();
+    var nav = document.getElementById('daynav');
+    nav.className = 'daynav' + (state.view === 'day' ? ' show' : '');
+    if (state.view === 'day' && state.days[state.dayIndex]) {
+      document.getElementById('day-label').textContent = dayDate(state.days[state.dayIndex].key);
+      document.getElementById('day-prev').disabled = state.dayIndex === 0;
+      document.getElementById('day-next').disabled = state.dayIndex === state.days.length - 1;
+    }
+    document.getElementById('view-week').className = state.view === 'week' ? 'on' : '';
+    document.getElementById('view-day').className = state.view === 'day' ? 'on' : '';
+  }
+  function hookImageFallbacks() {
+    var eventsById = {};
+    state.days.forEach(function (d) { d.events.forEach(function (e) { eventsById[e.id] = e; }); });
+    document.querySelectorAll('.media img[data-eid]').forEach(function (img) {
+      img.addEventListener('error', function () {
+        var ev = eventsById[img.getAttribute('data-eid')];
+        if (!ev) return;
+        var media = img.parentElement;
+        var tmp = document.createElement('div');
+        tmp.innerHTML = blockMedia(ev);
+        media.replaceWith(tmp.firstChild);
+      }, { once: true });
+    });
+  }
+  function injectJsonLd(events) {
+    var ld = events.map(function (ev) {
+      var obj = {
+        '@context': 'https://schema.org',
+        '@type': 'Event',
+        name: ev.title,
+        description: ev.blurb,
+        startDate: ev.start,
+        eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+        location: {
+          '@type': 'Place',
+          name: ev.venue,
+          address: { '@type': 'PostalAddress', addressLocality: 'New York', addressRegion: 'NY', addressCountry: 'US' }
+        },
+        url: ev.url
+      };
+      if (ev.end) obj.endDate = ev.end;
+      if (ev.image) obj.image = ev.image;
+      if (ev.price && /^free/i.test(ev.price)) {
+        obj.offers = { '@type': 'Offer', price: '0', priceCurrency: 'USD', url: ev.url };
+      }
+      return obj;
+    });
+    var s = document.createElement('script');
+    s.type = 'application/ld+json';
+    s.textContent = JSON.stringify(ld);
+    document.head.appendChild(s);
+  }
+
+  document.getElementById('view-week').addEventListener('click', function () { state.view = 'week'; render(); });
+  document.getElementById('view-day').addEventListener('click', function () {
+    state.view = 'day';
+    var todayKey = nyToday();
+    var idx = state.days.findIndex(function (d) { return d.key >= todayKey; });
+    state.dayIndex = idx >= 0 ? idx : 0;
+    render();
+  });
+  document.getElementById('day-prev').addEventListener('click', function () {
+    if (state.dayIndex > 0) { state.dayIndex--; render(); }
+  });
+  document.getElementById('day-next').addEventListener('click', function () {
+    if (state.dayIndex < state.days.length - 1) { state.dayIndex++; render(); }
+  });
+  document.getElementById('copy-feed').addEventListener('click', function () {
+    var btn = this;
+    function done() {
+      btn.textContent = 'Copied';
+      setTimeout(function () { btn.textContent = 'Copy feed URL'; }, 1800);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(FEED_URL).then(done, function () { window.prompt('Feed URL:', FEED_URL); });
+    } else {
+      window.prompt('Feed URL:', FEED_URL);
+    }
+  });
+
+  fetch('/data/teds-nyc.json')
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      var events = data.events.slice().sort(function (a, b) { return a.start < b.start ? -1 : 1; });
+      var byDay = {};
+      events.forEach(function (ev) {
+        var k = dateKey(ev);
+        (byDay[k] = byDay[k] || []).push(ev);
+      });
+      state.days = Object.keys(byDay).sort().map(function (k) { return { key: k, events: byDay[k] }; });
+      document.getElementById('count-chip').textContent = events.length + ' events this week';
+      if (data.calendar && typeof data.calendar.followers === 'number') {
+        document.getElementById('follower-chip').textContent = data.calendar.followers + ' followers';
+      }
+      injectJsonLd(events);
+      render();
+    })
+    .catch(function () {
+      document.getElementById('days-root').innerHTML = '<p class="loading">could not load events. try a refresh.</p>';
+    });
+})();
+</script>
+</body>
+</html>
