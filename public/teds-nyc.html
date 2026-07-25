@@ -1382,6 +1382,7 @@ body.modal-open { overflow: hidden; }
     if (status === 403) return 'Only the calendar owner can add events.';
     if (status === 422 || (d && d.error === 'no_event')) return 'No event found on that page — try the event’s own page, not a listing.';
     if (status === 415) return 'That link isn’t a web page.';
+    if (d && d.error === 'site_blocked') return 'That site blocks automated readers — try the venue’s own event page instead.';
     if (d && d.error) return 'Could not read the page — ' + d.error + '.';
     return 'Could not read that page — check the link and try again.';
   }

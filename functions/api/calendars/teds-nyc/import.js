@@ -356,6 +356,9 @@ async function fetchPage(url) {
       signal: ctrl.signal,
       headers: { 'User-Agent': UA, Accept: 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.5' },
     });
+    if (res.status === 401 || res.status === 403 || res.status === 429) {
+      return { error: 'site_blocked', status: 502 };
+    }
     if (!res.ok) return { error: 'the page returned ' + res.status, status: 502 };
     const ct = (res.headers.get('content-type') || '').toLowerCase();
     if (ct && !ct.includes('text/html') && !ct.includes('application/xhtml')) {
