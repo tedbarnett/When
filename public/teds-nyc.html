@@ -518,6 +518,7 @@ body.modal-open { overflow: hidden; }
   var FEED_URL = 'https://when.org/teds-nyc.ics';
   var days = [];            // [{key, events:[...]}] today + upcoming, sorted asc
   var pastDays = [];        // [{key, events:[...]}] before today (NY), sorted desc
+  var anyday = [];          // multi-day runs (start–end range) overlapping this week
   var allEvents = [];
   var view = 'week';
   var dayIndex = 0;
@@ -629,6 +630,17 @@ body.modal-open { overflow: hidden; }
   }
   function ddateLabel(key) {
     return dayDate(key).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
+  }
+  function addDaysKey(key, n) {
+    /* key ± n days; noon-anchored so DST can't shift the date */
+    return new Date(dayDate(key).getTime() + n * 86400000).toISOString().slice(0, 10);
+  }
+  function rangeLabel(ev) {
+    var endK = ev.end ? ev.end.slice(0, 10) : '';
+    if (!endK) return timeLabel(ev);
+    var startK = ev.start.slice(0, 10);
+    if (startK <= nyTodayKey()) return 'THROUGH ' + ddateLabel(endK);
+    return ddateLabel(startK) + ' – ' + ddateLabel(endK);
   }
   function dateLabel(ev) {
     return dayDate(ev.start.slice(0, 10)).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase().replace(/,/g, '');
@@ -791,17 +803,30 @@ body.modal-open { overflow: hidden; }
       hideBtnHtml(ev) +
       '<span class="tile-body">' +
         ownerChipsBlock(ev) +
-        '<span class="tile-time">' + esc(timeLabel(ev)) + '</span>' +
+        '<span class="tile-time">' + esc(ev._anyday ? rangeLabel(ev) : timeLabel(ev)) + '</span>' +
         '<span class="tile-title" style="display:block">' + esc(ev.title) + '</span>' +
         venue + friendsHtml(ev) +
       '</span>' +
     '</div>';
   }
 
+  /* ---------- "any day" shelf: ongoing runs / ideas anytime this week ---------- */
+  function anydaySectionHtml() {
+    if (!anyday.length) return '';
+    var html = '<div class="dayhead">' +
+      '<span class="dname">any day<span class="dot">.</span></span>' +
+      '<span class="ddate">IDEAS ANYTIME THIS WEEK</span>' +
+      '<span class="dcount">' + anyday.length + (anyday.length === 1 ? ' PICK' : ' PICKS') + '</span>' +
+    '</div>';
+    html += '<div class="shelf" style="max-width:1140px;margin:0 auto">';
+    for (var i = 0; i < anyday.length; i++) html += tileHtml(anyday[i], 't-day');
+    return html + '</div>';
+  }
+
   /* ---------- week view ---------- */
   function renderWeek() {
     var root = document.getElementById('view-week-root');
-    if (!days.length) { root.innerHTML = emptyGeoHtml(); return; }
+    if (!days.length) { root.innerHTML = anyday.length ? anydaySectionHtml() : emptyGeoHtml(); return; }
     var day0 = days[0];
     var hero = null;
     for (var i = 0; i < day0.events.length; i++) {
@@ -847,13 +872,13 @@ body.modal-open { overflow: hidden; }
       for (i = 0; i < day.events.length; i++) html += tileHtml(day.events[i], 't-day');
       html += '</div>';
     }
-    root.innerHTML = html;
+    root.innerHTML = html + anydaySectionHtml();
   }
 
   /* ---------- day view ---------- */
   function renderDay() {
     var root = document.getElementById('view-day-root');
-    if (!days.length) { root.innerHTML = emptyGeoHtml(); return; }
+    if (!days.length) { root.innerHTML = anyday.length ? anydaySectionHtml() : emptyGeoHtml(); return; }
     if (dayIndex >= days.length) dayIndex = days.length - 1;
     var html = '<div class="day-pills">';
     for (var i = 0; i < days.length; i++) {
@@ -883,7 +908,7 @@ body.modal-open { overflow: hidden; }
       '</div>';
     }
     html += '</div>';
-    root.innerHTML = html;
+    root.innerHTML = html + anydaySectionHtml();
   }
 
   /* ---------- month view ---------- */
@@ -913,7 +938,7 @@ body.modal-open { overflow: hidden; }
       }
     }
     html += '</div><div class="month-note">Days with a vermilion count have picks — tap one to open its day view.</div></div>';
-    root.innerHTML = html;
+    root.innerHTML = html + anydaySectionHtml();
   }
 
   /* ---------- history view ---------- */
@@ -1063,6 +1088,7 @@ body.modal-open { overflow: hidden; }
       '<label>neighborhood<input name="neighborhood" value="' + esc(ev.neighborhood || '') + '" maxlength="120"></label>' +
       '<label>price<input name="price" value="' + esc(ev.price || '') + '" maxlength="60"></label>' +
       '<label>starts<input type="datetime-local" name="start" value="' + esc((ev.start || '').slice(0, 16)) + '" required></label>' +
+      '<label>ends (optional — multi-day runs land in “any day”)<input type="datetime-local" name="end" value="' + esc((ev.end || '').slice(0, 16)) + '"></label>' +
       '<label>blurb<textarea name="blurb" maxlength="600">' + esc(ev.blurb || '') + '</textarea></label>' +
       '<label>url<input type="url" name="url" value="' + esc(ev.url || '') + '" maxlength="600" placeholder="https://…"></label>' +
       '<label>image url<input type="url" name="image" value="' + esc(ev.image || '') + '" maxlength="600" placeholder="https://…"></label>' +
@@ -1107,7 +1133,7 @@ body.modal-open { overflow: hidden; }
     }
     card.innerHTML = media +
       '<div class="detail-body">' +
-        '<div class="detail-when">' + esc(dateLabel(ev)) + ' · ' + esc(timeLabel(ev)) + '</div>' +
+        '<div class="detail-when">' + (ev._anyday ? 'ANY DAY · ' + esc(rangeLabel(ev)) : esc(dateLabel(ev)) + ' · ' + esc(timeLabel(ev))) + '</div>' +
         '<h2 class="detail-title" id="detail-title-el">' + esc(ev.title) + '</h2>' +
         '<div class="detail-venue">' + esc(ev.venue) + (ev.neighborhood ? ' · ' + esc(ev.neighborhood) : '') + '</div>' +
         (ev.geo && typeof ev.geo.lat === 'number' && typeof ev.geo.lng === 'number'
@@ -1327,6 +1353,7 @@ body.modal-open { overflow: hidden; }
       '<label>neighborhood<input name="neighborhood" value="' + esc(ev.neighborhood || '') + '" maxlength="120"></label>' +
       '<label>price<input name="price" value="' + esc(ev.price || '') + '" maxlength="60"></label>' +
       '<label>starts<input type="datetime-local" name="start" value="' + esc((ev.start || '').slice(0, 16)) + '" required></label>' +
+      '<label>ends (optional — multi-day runs land in “any day”)<input type="datetime-local" name="end" value="' + esc((ev.end || '').slice(0, 16)) + '"></label>' +
       '<label>blurb<textarea name="blurb" maxlength="600">' + esc(ev.blurb || '') + '</textarea></label>' +
       '<label>url<input type="url" name="url" value="' + esc(ev.url || '') + '" maxlength="600" placeholder="https://…"></label>' +
       '<label>image url<input type="url" name="image" value="' + esc(ev.image || '') + '" maxlength="600" placeholder="https://…"></label>' +
@@ -1431,7 +1458,9 @@ body.modal-open { overflow: hidden; }
       };
       var dt = f.start.value;
       if (dt) ev.start = dt.length === 16 ? dt + ':00' + nyOffsetFor(dt) : dt;
-      if (importEv && importEv.end) ev.end = importEv.end;
+      var de = f.end.value;
+      if (de) ev.end = de.length === 16 ? de + ':00' + nyOffsetFor(de) : de;
+      else if (importEv && importEv.end) ev.end = importEv.end;
       var saveBtn = document.querySelector('#import-content .save');
       if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Adding…'; }
       fetch(OVERLAY_URL, {
@@ -1501,6 +1530,8 @@ body.modal-open { overflow: hidden; }
     };
     var dt = f.start.value;
     if (dt) fields.start = dt.length === 16 ? dt + ':00' + nyOffsetFor(dt) : dt;
+    var de = f.end.value;
+    fields.end = de ? (de.length === 16 ? de + ':00' + nyOffsetFor(de) : de) : '';
     var saveBtn = e.target.querySelector('.save');
     if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
     postOverlay({ action: 'edit', id: detailId, fields: fields }).then(function (ok) {
@@ -1640,10 +1671,20 @@ body.modal-open { overflow: hidden; }
      History deliberately ignores the filter — your past is your past. */
   function regroup() {
     var todayK = nyTodayKey();
+    var weekEndK = addDaysKey(todayK, 6);
     var byDay = {};
     var pastByDay = {};
+    anyday = [];
     allEvents.forEach(function (ev) {
       var k = ev.start.slice(0, 10);
+      var endK = ev.end ? ev.end.slice(0, 10) : '';
+      ev._anyday = false;
+      /* a "run" spans 2+ days (a late show crossing one midnight doesn't count);
+         runs overlapping this week go to the "any day" shelf, not a day column */
+      if (endK && endK >= addDaysKey(k, 2) && endK >= todayK && k <= weekEndK) {
+        if (passesGeo(ev)) { ev._anyday = true; anyday.push(ev); }
+        return;
+      }
       if (k < todayK) (pastByDay[k] = pastByDay[k] || []).push(ev);
       else if (passesGeo(ev)) (byDay[k] = byDay[k] || []).push(ev);
     });

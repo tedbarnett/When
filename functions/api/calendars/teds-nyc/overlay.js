@@ -34,6 +34,7 @@ const FIELD_RULES = {
   price: { max: 60 },
   blurb: { max: 600 },
   start: { max: 40, required: true, start: true },
+  end: { max: 40, start: true },
   url: { max: 600, url: true },
   image: { max: 600, url: true },
 };
@@ -95,7 +96,7 @@ function validateEdit(rawFields, baseEv) {
     const val = raw.trim();
     if (rule.required && !val) return { error: key + ' cannot be empty' };
     if (val.length > rule.max) return { error: key + ' too long (max ' + rule.max + ')' };
-    if (rule.start && !START_RE.test(val)) return { error: 'start must be an ISO datetime' };
+    if (rule.start && val && !START_RE.test(val)) return { error: key + ' must be an ISO datetime' };
     if (rule.url && val && !/^https?:\/\//i.test(val)) {
       return { error: key + ' must be an http(s) URL' };
     }
