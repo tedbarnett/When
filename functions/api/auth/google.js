@@ -4,7 +4,7 @@
  * redirect_uri is built from the request host so when.org and www both work.
  */
 const GOOGLE_CLIENT_ID =
-  '287432660870-nqjutd4q7ujuo8uuubippf199ndra16t.apps.googleusercontent.com';
+  '287432660870-6icdli2euf8fk6pn16ggc10t0dmfigpt.apps.googleusercontent.com';
 
 export function onRequestGet({ request }) {
   const url = new URL(request.url);

@@ -6,7 +6,7 @@
 import { createSessionCookie } from '../../../_lib/session.js';
 
 const GOOGLE_CLIENT_ID =
-  '287432660870-nqjutd4q7ujuo8uuubippf199ndra16t.apps.googleusercontent.com';
+  '287432660870-6icdli2euf8fk6pn16ggc10t0dmfigpt.apps.googleusercontent.com';
 
 function fail(message, status = 400) {
   return new Response(
