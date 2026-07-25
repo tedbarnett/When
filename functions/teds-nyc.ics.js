@@ -1,6 +1,9 @@
 // GET /teds-nyc.ics — ICS feed for the "Ted's NYC" calendar.
-// Built from the same JSON that renders the web page (public/data/teds-nyc.json),
-// so page, feed, and API never disagree.
+// Built from the same merged view that renders the web page (base JSON +
+// curator overlay from KV), so page, feed, and API never disagree.
+// Hidden events are excluded; curator edits are applied.
+
+import { loadMergedEvents } from "./_lib/calendar.js";
 
 var TZID = "America/New_York";
 
@@ -9,10 +12,13 @@ export async function onRequest(context) {
     return new Response("Method not allowed", { status: 405 });
   }
 
-  var assetUrl = new URL("/data/teds-nyc.json", context.request.url);
-  var res = await context.env.ASSETS.fetch(assetUrl);
-  if (!res.ok) return new Response("Calendar data unavailable", { status: 502 });
-  var data = await res.json();
+  var data;
+  try {
+    var origin = new URL(context.request.url).origin;
+    data = (await loadMergedEvents(context.env, origin)).data;
+  } catch (e) {
+    return new Response("Calendar data unavailable", { status: 502 });
+  }
 
   var now = utcStamp(new Date());
   var lines = [
@@ -72,7 +78,7 @@ export async function onRequest(context) {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
       "Content-Disposition": 'inline; filename="teds-nyc.ics"',
-      "Cache-Control": "public, max-age=1800",
+      "Cache-Control": "public, max-age=300",
       "Access-Control-Allow-Origin": "*"
     }
   });

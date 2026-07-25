@@ -13,3 +13,9 @@ id = "17ac37c5fa094254b2a4a80cc8241dc5"
 [[kv_namespaces]]
 binding = "WHEN_AUTH"
 id = "8a2774ff75e149898dcf46c3b09c9169"
+
+# Calendar overlay: curator hides + in-place edits layered over the static
+# JSON (key "cal:teds-nyc"). See functions/_lib/calendar.js.
+[[kv_namespaces]]
+binding = "WHEN_CAL"
+id = "dbc96d435850429a8b9ad2cdd5b50874"

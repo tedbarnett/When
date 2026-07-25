@@ -2,8 +2,13 @@
  * Per-event shareable URLs: when.org/teds-nyc/{event-id}
  * Serves the Ted's NYC browser page with that event's OG/schema markup
  * injected and the detail modal opened on load (window.__WHEN_DETAIL_ID).
- * Unknown ids redirect to /teds-nyc.
+ * Unknown ids redirect to /teds-nyc. Events use the merged view (curator
+ * edits applied); hidden events redirect to /teds-nyc for everyone but the
+ * signed-in owner.
  */
+import { loadMergedEvents } from '../_lib/calendar.js';
+import { readSession, OWNER_EMAIL } from '../_lib/session.js';
+
 export async function onRequestGet(context) {
   const { params, env, request } = context;
   const id = decodeURIComponent(params.id || '');
@@ -14,18 +19,17 @@ export async function onRequestGet(context) {
     return env.ASSETS.fetch(request);
   }
 
-  const [pageRes, dataRes] = await Promise.all([
+  const [pageRes, merged, session] = await Promise.all([
     env.ASSETS.fetch(new Request(origin + '/teds-nyc.html')),
-    env.ASSETS.fetch(new Request(origin + '/data/teds-nyc.json'))
+    loadMergedEvents(env, origin, { includeHidden: true }).catch(() => null),
+    readSession(request, env)
   ]);
   if (!pageRes.ok) return Response.redirect(origin + '/teds-nyc', 302);
 
-  let ev = null;
-  try {
-    const data = await dataRes.json();
-    ev = (data.events || []).find((e) => e.id === id) || null;
-  } catch (e) { /* fall through */ }
+  const ev = merged ? (merged.data.events || []).find((e) => e.id === id) || null : null;
   if (!ev) return Response.redirect(origin + '/teds-nyc', 302);
+  const isOwner = !!(session && session.email === OWNER_EMAIL);
+  if (ev._hidden && !isOwner) return Response.redirect(origin + '/teds-nyc', 302);
 
   let html = await pageRes.text();
 
@@ -84,7 +88,7 @@ export async function onRequestGet(context) {
   return new Response(html, {
     headers: {
       'content-type': 'text/html; charset=utf-8',
-      'cache-control': 'public, max-age=300'
+      'cache-control': ev._hidden || ev._edited ? 'no-store' : 'public, max-age=300'
     }
   });
 }

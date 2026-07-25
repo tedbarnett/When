@@ -310,6 +310,33 @@ button.mchip:hover { border-color: var(--faint); color: var(--ink); }
 .detail-actions .primary { background: var(--accent); border: none; color: #fff; font-weight: 700; font-size: 15px; text-align: center; padding: 13px 20px; border-radius: 999px; cursor: pointer; }
 .detail-actions .ghost { display: block; border: 1px solid var(--line); color: var(--ink); font-weight: 700; font-size: 15px; text-align: center; padding: 12px 20px; border-radius: 999px; text-decoration: none; }
 
+/* ---------- owner (curator) controls ---------- */
+.hide-btn { position: absolute; border-radius: 999px; background: rgba(5,6,10,.5); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border: none; color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background .15s ease; }
+.hide-btn:hover { background: rgba(255,84,38,.65); }
+.hide-btn:disabled { opacity: .5; cursor: default; }
+.tile .hide-btn { top: 45px; right: 9px; width: 30px; height: 30px; }
+.tile.t-day .hide-btn { top: 48px; right: 10px; width: 32px; height: 32px; }
+.hero .hide-btn { top: 64px; right: 14px; width: 44px; height: 44px; }
+.daycard-media .hide-btn { top: 54px; right: 12px; width: 36px; height: 36px; }
+.ev-hidden { opacity: .4; }
+.owner-chip { display: inline-block; font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; border-radius: 999px; padding: 2px 9px; border: 1px solid; }
+.owner-chip.oc-hidden { color: var(--spark); border-color: var(--spark); background: rgba(255,84,38,.12); }
+.owner-chip.oc-edited { color: var(--peri); border-color: var(--peri); background: rgba(77,99,255,.12); }
+.owner-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.owner-pill { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: transparent; color: var(--muted); font-family: var(--mono); font-size: 11px; border-radius: 999px; padding: 6px 14px; cursor: pointer; transition: border-color .15s ease, color .15s ease; }
+.owner-pill:hover { border-color: var(--faint); color: var(--ink); }
+.owner-pill:disabled { opacity: .5; cursor: default; }
+.edit-form { display: grid; gap: 9px; margin-top: 4px; }
+.edit-form label { display: grid; gap: 4px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+.edit-form input, .edit-form textarea { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; color: var(--ink); font-family: var(--sans); font-size: 13.5px; padding: 9px 12px; outline: none; width: 100%; }
+.edit-form input:focus, .edit-form textarea:focus { border-color: var(--faint); }
+.edit-form textarea { resize: vertical; min-height: 72px; line-height: 1.5; }
+.edit-err { font-family: var(--mono); font-size: 11px; color: var(--spark); min-height: 1em; }
+.edit-actions { display: flex; gap: 8px; }
+.edit-actions .save { flex: 1; background: var(--accent); border: none; color: #fff; font-weight: 700; font-size: 14px; border-radius: 999px; padding: 11px 18px; cursor: pointer; }
+.edit-actions .save:disabled { opacity: .6; cursor: default; }
+.edit-actions .cancel { border: 1px solid var(--line); background: transparent; color: var(--ink); font-weight: 700; font-size: 14px; border-radius: 999px; padding: 11px 18px; cursor: pointer; }
+
 .avatar { width: 21px; height: 21px; border-radius: 999px; background: var(--av); display: inline-flex; align-items: center; justify-content: center; margin-right: -6px; border: 1.5px solid rgba(14,15,20,.4); flex: none; }
 .avstack { display: inline-flex; align-items: center; }
 
@@ -431,6 +458,8 @@ body.modal-open { overflow: hidden; }
 
   /* ---------- state ---------- */
   var DATA_URL = '/data/teds-nyc.json';
+  var ADMIN_URL = '/api/calendars/teds-nyc/admin';
+  var OVERLAY_URL = '/api/calendars/teds-nyc/overlay';
   var FEED_URL = 'https://when.org/teds-nyc.ics';
   var days = [];            // [{key, events:[...]}] today + upcoming, sorted asc
   var pastDays = [];        // [{key, events:[...]}] before today (NY), sorted desc
@@ -445,6 +474,9 @@ body.modal-open { overflow: hidden; }
   var followed = false;
   var published = false;
   var handle = 'tedbarnett';
+  var isOwner = false;      // set from /api/me; unlocks curator controls
+  var overlay = { hidden: {}, edits: {} };
+  var editing = false;      // detail modal is in edit mode
   try {
     saved = JSON.parse(localStorage.getItem('when:saved') || '{}') || {};
     attended = JSON.parse(localStorage.getItem('when:attended') || '{}') || {};
@@ -518,6 +550,16 @@ body.modal-open { overflow: hidden; }
     return ev.price;
   }
   function showImg(ev) { return !!ev.image && !badImg[ev.id]; }
+  /* NY UTC offset (±HH:MM) for a datetime-local value — keeps edited starts DST-correct */
+  function nyOffsetFor(dtLocal) {
+    try {
+      var d = new Date(dtLocal + ':00Z');
+      var s = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', timeZoneName: 'longOffset' }).format(d);
+      var m = s.match(/GMT([+-]\d{2}):?(\d{2})?/);
+      if (m) return m[1] + ':' + (m[2] || '00');
+    } catch (e) {}
+    return '-04:00';
+  }
   function persist() {
     try {
       localStorage.setItem('when:saved', JSON.stringify(saved));
@@ -570,6 +612,25 @@ body.modal-open { overflow: hidden; }
   function saveBtnHtml(ev) {
     return '<button class="save-btn" type="button" data-save="' + esc(ev.id) + '" aria-label="' + (saved[ev.id] ? 'Remove from my calendar' : 'Add to my calendar') + '">' + (saved[ev.id] ? '✓' : '＋') + '</button>';
   }
+  /* owner-only curator affordances */
+  var EYE_OFF_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+  var EYE_ON_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+  function hideBtnHtml(ev) {
+    if (!isOwner) return '';
+    return '<button class="hide-btn" type="button" data-hide="' + esc(ev.id) + '" aria-label="' + (ev._hidden ? 'Unhide event' : 'Hide event') + '" title="' + (ev._hidden ? 'Unhide' : 'Hide from everyone but you') + '">' + (ev._hidden ? EYE_ON_SVG : EYE_OFF_SVG) + '</button>';
+  }
+  function ownerChipsHtml(ev) {
+    if (!isOwner) return '';
+    var out = '';
+    if (ev._hidden) out += '<span class="owner-chip oc-hidden">hidden</span> ';
+    if (ev._edited) out += '<span class="owner-chip oc-edited">edited</span>';
+    return out;
+  }
+  function ownerChipsBlock(ev) {
+    if (!isOwner || (!ev._hidden && !ev._edited)) return '';
+    return '<span style="display:block;margin-bottom:3px">' + ownerChipsHtml(ev) + '</span>';
+  }
+  function hiddenCls(ev) { return isOwner && ev._hidden ? ' ev-hidden' : ''; }
   function friendsHtml(ev, cls) {
     var f = friendsFor(ev.id);
     if (!f.length) return '';
@@ -579,11 +640,13 @@ body.modal-open { overflow: hidden; }
     var cb = cbIndex(ev.id);
     var bg = showImg(ev) ? '' : ' style="background:var(--cb' + cb + '-bg)"';
     var venue = kind === 't-day' ? '<div class="tile-venue">' + esc(ev.venue) + '</div>' : '';
-    return '<button class="tile ' + kind + '" type="button" data-open="' + esc(ev.id) + '"' + bg + '>' +
+    return '<button class="tile ' + kind + hiddenCls(ev) + '" type="button" data-open="' + esc(ev.id) + '"' + bg + '>' +
       mediaHtml(ev) +
       '<span class="price-chip">' + esc(priceLabel(ev)) + '</span>' +
       saveBtnHtml(ev) +
+      hideBtnHtml(ev) +
       '<span class="tile-body">' +
+        ownerChipsBlock(ev) +
         '<span class="tile-time">' + esc(timeLabel(ev)) + '</span>' +
         '<span class="tile-title" style="display:block">' + esc(ev.title) + '</span>' +
         venue + friendsHtml(ev) +
@@ -606,11 +669,13 @@ body.modal-open { overflow: hidden; }
     var cbH = cbIndex(hero.id);
     var hf = friendsFor(hero.id);
     var html = '<div class="wrap">' +
-      '<button class="hero" type="button" data-open="' + esc(hero.id) + '" style="background:var(--cb' + cbH + '-bg)">' +
+      '<button class="hero' + hiddenCls(hero) + '" type="button" data-open="' + esc(hero.id) + '" style="background:var(--cb' + cbH + '-bg)">' +
         mediaHtml(hero) +
         '<span class="price-chip">' + esc(priceLabel(hero)) + '</span>' +
         saveBtnHtml(hero) +
+        hideBtnHtml(hero) +
         '<span class="hero-body">' +
+          ownerChipsBlock(hero) +
           '<span class="hero-kicker">' + esc(timeLabel(hero)) + ' · TED&rsquo;S HEADLINE PICK</span>' +
           '<span class="hero-title">' + esc(hero.title) + '</span>' +
           '<span class="hero-venue">' + esc(hero.venue) + (hero.neighborhood ? ' · ' + esc(hero.neighborhood) : '') + '</span>' +
@@ -656,13 +721,15 @@ body.modal-open { overflow: hidden; }
     for (i = 0; i < evs.length; i++) {
       var ev = evs[i];
       var cb = cbIndex(ev.id);
-      html += '<button class="daycard" type="button" data-open="' + esc(ev.id) + '">' +
+      html += '<button class="daycard' + hiddenCls(ev) + '" type="button" data-open="' + esc(ev.id) + '">' +
         '<span class="daycard-media" style="display:block;' + (showImg(ev) ? '' : 'background:var(--cb' + cb + '-bg)') + '">' +
           mediaHtml(ev) +
           '<span class="price-chip">' + esc(priceLabel(ev)) + '</span>' +
           saveBtnHtml(ev) +
+          hideBtnHtml(ev) +
         '</span>' +
         '<span class="daycard-body" style="display:grid">' +
+          ownerChipsBlock(ev) +
           '<span class="daycard-time">' + esc(timeLabel(ev)) + '</span>' +
           '<span class="daycard-title">' + esc(ev.title) + '</span>' +
           '<span class="daycard-venue">' + esc(ev.venue) + (ev.neighborhood ? ' · ' + esc(ev.neighborhood) : '') + '</span>' +
@@ -839,23 +906,60 @@ body.modal-open { overflow: hidden; }
     for (var i = 0; i < allEvents.length; i++) if (allEvents[i].id === id) return allEvents[i];
     return null;
   }
+  function editFormHtml(ev) {
+    return '<form class="edit-form" id="edit-form">' +
+      '<label>title<input name="title" value="' + esc(ev.title) + '" required maxlength="200"></label>' +
+      '<label>venue<input name="venue" value="' + esc(ev.venue || '') + '" maxlength="200"></label>' +
+      '<label>neighborhood<input name="neighborhood" value="' + esc(ev.neighborhood || '') + '" maxlength="120"></label>' +
+      '<label>price<input name="price" value="' + esc(ev.price || '') + '" maxlength="60"></label>' +
+      '<label>starts<input type="datetime-local" name="start" value="' + esc((ev.start || '').slice(0, 16)) + '" required></label>' +
+      '<label>blurb<textarea name="blurb" maxlength="600">' + esc(ev.blurb || '') + '</textarea></label>' +
+      '<label>url<input type="url" name="url" value="' + esc(ev.url || '') + '" maxlength="600" placeholder="https://…"></label>' +
+      '<label>image url<input type="url" name="image" value="' + esc(ev.image || '') + '" maxlength="600" placeholder="https://…"></label>' +
+      '<div class="edit-err" id="edit-err"></div>' +
+      '<div class="edit-actions">' +
+        '<button class="save" type="submit">Save changes</button>' +
+        '<button class="cancel" type="button" data-edit-cancel="1">Cancel</button>' +
+      '</div>' +
+    '</form>';
+  }
   function renderDetail() {
     var card = document.getElementById('detail-card');
     var ev = findEvent(detailId);
     if (!ev) { card.innerHTML = ''; return; }
     var cb = cbIndex(ev.id);
     var f = friendsFor(ev.id);
-    card.innerHTML =
+    var media =
       '<div class="detail-media" style="' + (showImg(ev) ? '' : 'background:var(--cb' + cb + '-bg)') + '">' +
         (showImg(ev) ? '<img src="' + esc(ev.image) + '" alt="" data-imgfor="' + esc(ev.id) + '">' :
           '<div class="letter-block" style="color:var(--cb' + cb + '-ink)">' + esc(ev.title.charAt(0).toUpperCase()) + '</div>') +
         '<span class="detail-price">' + esc(priceLabel(ev)) + '</span>' +
         '<button class="x-btn" type="button" data-close="detail">×</button>' +
-      '</div>' +
+      '</div>';
+    if (isOwner && editing) {
+      card.innerHTML = media +
+        '<div class="detail-body">' +
+          '<div class="detail-when">' + esc(dateLabel(ev)) + ' · EDITING</div>' +
+          '<h2 class="detail-title" id="detail-title-el">edit event<span style="color:var(--spark)">.</span></h2>' +
+          editFormHtml(ev) +
+        '</div>';
+      return;
+    }
+    var ownerBits = '';
+    if (isOwner) {
+      ownerBits = ((ev._hidden || ev._edited) ? '<div>' + ownerChipsHtml(ev) + '</div>' : '') +
+        '<div class="owner-row">' +
+          '<button class="owner-pill" type="button" data-edit-open="1">✎ edit</button>' +
+          '<button class="owner-pill" type="button" data-hide="' + esc(ev.id) + '">' + (ev._hidden ? EYE_ON_SVG + ' unhide' : EYE_OFF_SVG + ' hide') + '</button>' +
+          (ev._edited ? '<button class="owner-pill" type="button" data-edit-reset="' + esc(ev.id) + '">↺ reset edits</button>' : '') +
+        '</div>';
+    }
+    card.innerHTML = media +
       '<div class="detail-body">' +
         '<div class="detail-when">' + esc(dateLabel(ev)) + ' · ' + esc(timeLabel(ev)) + '</div>' +
         '<h2 class="detail-title" id="detail-title-el">' + esc(ev.title) + '</h2>' +
         '<div class="detail-venue">' + esc(ev.venue) + (ev.neighborhood ? ' · ' + esc(ev.neighborhood) : '') + '</div>' +
+        ownerBits +
         (f.length ? '<div class="detail-fchip">' + avatarStack(f) + '<span class="flabel">' + esc(friendsLabel(f)) + '</span></div>' : '') +
         (ev.blurb ? '<div class="detail-blurb">' + esc(ev.blurb) + '</div>' : '') +
         '<div class="share-row"><span class="surl">when.org/teds-nyc/' + esc(ev.id) + '</span><button class="share-main" id="share-link" type="button">Share</button><button id="copy-link" type="button">Copy link</button></div>' +
@@ -890,6 +994,7 @@ body.modal-open { overflow: hidden; }
   /* ---------- routing (per-event URLs) ---------- */
   function openDetail(id, push) {
     detailId = id;
+    editing = false;
     renderDetail();
     openOverlay('detail');
     if (push !== false) {
@@ -898,6 +1003,7 @@ body.modal-open { overflow: hidden; }
   }
   function closeDetail(viaHistory) {
     detailId = null;
+    editing = false;
     closeOverlay('detail');
     if (!viaHistory) {
       try {
@@ -950,6 +1056,30 @@ body.modal-open { overflow: hidden; }
       if (sev) shareOrCopy({ title: sev.title, text: 'I was there — ' + sev.title + ' at ' + sev.venue, url: 'https://when.org/teds-nyc/' + sev.id }, shEl);
       return;
     }
+    var hdEl = t.closest ? t.closest('[data-hide]') : null;
+    if (hdEl) {
+      e.stopPropagation(); e.preventDefault();
+      var hid = hdEl.getAttribute('data-hide');
+      var hev = findEvent(hid);
+      hdEl.disabled = true;
+      postOverlay({ action: (hev && hev._hidden) ? 'unhide' : 'hide', id: hid }).then(function (ok) {
+        if (ok) loadAdminData(); else hdEl.disabled = false;
+      });
+      return;
+    }
+    var eoEl = t.closest ? t.closest('[data-edit-open]') : null;
+    if (eoEl) { e.stopPropagation(); editing = true; renderDetail(); return; }
+    var ecEl = t.closest ? t.closest('[data-edit-cancel]') : null;
+    if (ecEl) { e.stopPropagation(); editing = false; renderDetail(); return; }
+    var erEl = t.closest ? t.closest('[data-edit-reset]') : null;
+    if (erEl) {
+      e.stopPropagation();
+      erEl.disabled = true;
+      postOverlay({ action: 'reset', id: erEl.getAttribute('data-edit-reset') }).then(function (ok) {
+        if (ok) loadAdminData(); else erEl.disabled = false;
+      });
+      return;
+    }
     var openEl = t.closest ? t.closest('[data-open]') : null;
     if (openEl) { openDetail(openEl.getAttribute('data-open')); return; }
 
@@ -990,6 +1120,60 @@ body.modal-open { overflow: hidden; }
     if (t.id === 'copy-myfeed') { copyText('https://when.org/' + handle + '.ics', t); return; }
     if (t.id === 'copy-invite') { copyText('https://when.org/' + handle + '/invite/x7q3', t); return; }
     if (t.id === 'publish-btn') { published = true; persist(); renderTray(); return; }
+  });
+
+  /* ---------- owner: overlay writes + admin data ---------- */
+  function postOverlay(payload) {
+    return fetch(OVERLAY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(function (r) { return r.ok; }).catch(function () { return false; });
+  }
+  function loadAdminData() {
+    return fetch(ADMIN_URL, { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (payload) {
+        if (!payload || !payload.events) return;
+        overlay = payload.overlay || { hidden: {}, edits: {} };
+        ingest(payload);
+        renderAll();
+        if (detailId) renderDetail();
+        if (!document.getElementById('tray-backdrop').hidden) renderTray();
+        /* deep link to a hidden event resolves only once admin data lands */
+        var deep = window.__WHEN_DETAIL_ID;
+        if (deep && !detailId && findEvent(deep)) openDetail(deep, false);
+      })
+      .catch(function () {});
+  }
+  document.addEventListener('submit', function (e) {
+    if (!e.target || e.target.id !== 'edit-form') return;
+    e.preventDefault();
+    if (!detailId) return;
+    var f = e.target.elements;
+    var fields = {
+      title: f.title.value.trim(),
+      venue: f.venue.value.trim(),
+      neighborhood: f.neighborhood.value.trim(),
+      price: f.price.value.trim(),
+      blurb: f.blurb.value.trim(),
+      url: f.url.value.trim(),
+      image: f.image.value.trim()
+    };
+    var dt = f.start.value;
+    if (dt) fields.start = dt.length === 16 ? dt + ':00' + nyOffsetFor(dt) : dt;
+    var saveBtn = e.target.querySelector('.save');
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
+    postOverlay({ action: 'edit', id: detailId, fields: fields }).then(function (ok) {
+      if (ok) {
+        editing = false;
+        loadAdminData();
+      } else {
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save changes'; }
+        var err = document.getElementById('edit-err');
+        if (err) err.textContent = 'Could not save — check the fields and try again.';
+      }
+    });
   });
 
   document.addEventListener('input', function (e) {
@@ -1087,10 +1271,16 @@ body.modal-open { overflow: hidden; }
       });
     }
   }
-  fetch('/api/me').then(function (r) { return r.ok ? r.json() : null; }).then(renderAuth).catch(function () { renderAuth(null); });
+  fetch('/api/me').then(function (r) { return r.ok ? r.json() : null; }).then(function (me) {
+    renderAuth(me);
+    if (me && me.isOwner) {
+      isOwner = true;
+      loadAdminData(); /* owner sees hidden + edit chrome; re-renders when it lands */
+    }
+  }).catch(function () { renderAuth(null); });
 
   /* ---------- boot ---------- */
-  fetch(DATA_URL).then(function (r) { return r.json(); }).then(function (data) {
+  function ingest(data) {
     var events = (data.events || []).slice().sort(function (a, b) { return a.start < b.start ? -1 : 1; });
     var todayK = nyTodayKey();
     var byDay = {};
@@ -1103,12 +1293,15 @@ body.modal-open { overflow: hidden; }
     days = Object.keys(byDay).sort().map(function (k) { return { key: k, events: byDay[k] }; });
     pastDays = Object.keys(pastByDay).sort().reverse().map(function (k) { return { key: k, events: pastByDay[k] }; });
     allEvents = events;
+  }
+  fetch(DATA_URL).then(function (r) { return r.json(); }).then(function (data) {
+    ingest(data);
     renderAll();
 
     /* schema.org ItemList of Events */
     try {
       var ld = { '@context': 'https://schema.org', '@type': 'ItemList', name: "Ted's NYC", url: 'https://when.org/teds-nyc', itemListElement: [] };
-      events.forEach(function (ev, i) {
+      allEvents.forEach(function (ev, i) {
         ld.itemListElement.push({
           '@type': 'ListItem', position: i + 1,
           item: {
