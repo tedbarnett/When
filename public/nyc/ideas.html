@@ -252,17 +252,40 @@ button { font-family: inherit; }
   function passesSrc(ev) {
     return srcFilter === 'all' || evSources(ev).indexOf(srcFilter) >= 0;
   }
+  function timePart(ev, anyday) {
+    return anyday ? String(ev.end || '').slice(0, 10) : String(ev.start || '').slice(11, 16);
+  }
+  function normTitle(t) {
+    return String(t || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  }
+  /* "Kids In Motion: Alley Springfield Playground" -> "kids in motion" —
+     sources bake the location into the title, so also group on the part
+     before the colon (only when 3+ share it, so "Series: Different Show"
+     pairs don't wrongly merge). */
+  function titleBase(t) {
+    var s = String(t || '');
+    var i = s.indexOf(':');
+    return normTitle(i > 0 ? s.slice(0, i) : s);
+  }
   function groupKey(ev, anyday) {
-    return (anyday ? 'A|' : 'D|') +
-      String(ev.title || '').toLowerCase().replace(/\s+/g, ' ').trim() + '|' +
-      (anyday ? String(ev.end || '').slice(0, 10) : String(ev.start || '').slice(11, 16));
+    return (anyday ? 'A|' : 'D|') + normTitle(ev.title) + '|' + timePart(ev, anyday);
+  }
+  function baseGroupKey(ev, anyday) {
+    return (anyday ? 'A|' : 'D|') + titleBase(ev.title) + '|' + timePart(ev, anyday);
   }
   function groupList(evs, anyday) {
+    var counts = {}, i, k;
+    for (i = 0; i < (evs || []).length; i++) {
+      k = baseGroupKey(evs[i], anyday);
+      counts[k] = (counts[k] || 0) + 1;
+    }
     var map = {}, out = [];
-    for (var i = 0; i < (evs || []).length; i++) {
-      var k = groupKey(evs[i], anyday);
+    for (i = 0; i < (evs || []).length; i++) {
+      var ev = evs[i];
+      var bk = baseGroupKey(ev, anyday);
+      k = counts[bk] >= 3 ? bk : groupKey(ev, anyday);
       if (!map[k]) { map[k] = { key: k, items: [] }; out.push(map[k]); }
-      map[k].items.push(evs[i]);
+      map[k].items.push(ev);
     }
     return out;
   }
@@ -279,10 +302,21 @@ button { font-family: inherit; }
     var when = anyday
       ? 'THRU ' + esc(ddateLabel((first.end || first.start).slice(0, 10)))
       : esc(timeLabel(first));
+    /* collapsed title: full title when identical across items, else the
+       shared part before the colon */
+    var sameTitle = true;
+    for (i = 1; i < g.items.length; i++) {
+      if (g.items[i].title !== first.title) { sameTitle = false; break; }
+    }
+    var dispTitle = first.title;
+    if (!sameTitle) {
+      var ci = String(first.title || '').indexOf(':');
+      if (ci > 0) dispTitle = String(first.title).slice(0, ci).trim();
+    }
     var html = '<div class="idea-row grp-head">' +
       '<div class="idea-time">' + when + '</div>' +
       '<div class="idea-main">' +
-        '<div class="idea-title">' + esc(first.title) + '</div>' +
+        '<div class="idea-title">' + esc(dispTitle) + '</div>' +
         '<div class="idea-venue">' + g.items.length + ' locations' + (hoodTxt ? ' · ' + esc(hoodTxt) : '') + '</div>' +
         '<div class="idea-chips">' +
           (added ? '<span class="chip">✓ ' + added + ' added</span>' : '') +
@@ -343,7 +377,7 @@ button { font-family: inherit; }
       }
     }
     var html = '';
-    if (srcOrder.length > 1 || srcFilter !== 'all') {
+    if (srcOrder.length >= 1) {
       html += '<div class="filter-row">' +
         '<button class="fchip' + (srcFilter === 'all' ? ' on' : '') + '" type="button" data-srcfilter="all">all sources</button>';
       for (s = 0; s < srcOrder.length; s++) {
