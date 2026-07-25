@@ -412,6 +412,94 @@ footer { border-top: 1px solid var(--hairline); padding: 44px 0 56px; }
 .foot-left a { color: var(--ink); font-weight: 700; text-decoration: none; border-bottom: 1.5px solid var(--hairline); }
 .foot-left a:hover { border-color: var(--ink); }
 .foot-right { font-size: 14.5px; color: var(--faint); }
+.foot-right .hist-link {
+  font: inherit; color: var(--ink); font-weight: 700;
+  background: none; border: none; padding: 0; cursor: pointer;
+  border-bottom: 1.5px solid var(--hairline);
+  transition: border-color .18s ease;
+}
+.foot-right .hist-link:hover { border-color: var(--ink); }
+
+/* ---------- When.com history modal ---------- */
+.hist-backdrop {
+  position: fixed; inset: 0; z-index: 60;
+  display: grid; place-items: center; padding: 20px;
+  background: color-mix(in srgb, #0b0c10 55%, transparent);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+}
+.hist-backdrop[hidden] { display: none; }
+.hist-dialog {
+  position: relative; width: min(620px, 100%);
+  max-height: min(760px, calc(100vh - 40px));
+  max-height: min(760px, calc(100dvh - 40px));
+  overflow-y: auto; overscroll-behavior: contain;
+  background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px;
+  box-shadow: 0 32px 80px -24px color-mix(in srgb, #0b0c10 60%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hist-backdrop:not([hidden]) { animation: histFade .2s ease both; }
+  .hist-backdrop:not([hidden]) .hist-dialog { animation: histRise .3s cubic-bezier(0.16,1,0.3,1) both; }
+  @keyframes histFade { from { opacity: 0; } }
+  @keyframes histRise { from { opacity: 0; transform: translateY(14px) scale(.985); } }
+}
+.hist-x {
+  position: sticky; top: 12px; z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; margin: 12px 12px -48px auto;
+  font-family: var(--sans); font-size: 20px; line-height: 1; color: var(--muted);
+  background: var(--surface); border: 1px solid var(--hairline); border-radius: 999px;
+  cursor: pointer; transition: color .18s ease, border-color .18s ease;
+}
+.hist-x:hover { color: var(--ink); border-color: var(--faint); }
+.hist-body { padding: 30px 28px 30px; }
+.hist-logo {
+  display: inline-flex; padding: 12px 18px;
+  background: #fff; border: 1px solid var(--hairline); border-radius: 10px;
+}
+.hist-logo img { display: block; width: 108px; height: auto; }
+.hist-kicker {
+  margin-top: 18px;
+  font-family: var(--mono); font-size: 11.5px; color: var(--accent);
+  letter-spacing: .06em; text-transform: uppercase;
+}
+.hist-body h2 {
+  margin-top: 8px; font-size: clamp(23px, 5vw, 29px);
+  font-weight: 900; letter-spacing: -0.025em; line-height: 1.12;
+}
+.hist-shot { display: block; margin-top: 20px; text-decoration: none; }
+.hist-shot img {
+  display: block; width: 100%; height: auto;
+  background: #fff; border: 1px solid var(--hairline); border-radius: 10px;
+  transition: border-color .18s ease;
+}
+.hist-shot:hover img { border-color: var(--faint); }
+.hist-shot .cap {
+  display: block; margin-top: 8px;
+  font-family: var(--mono); font-size: 11px; color: var(--faint);
+}
+.hist-shot:hover .cap { color: var(--muted); }
+.hist-prose { margin-top: 20px; }
+.hist-prose p { font-size: 15.5px; color: var(--muted); }
+.hist-prose p + p { margin-top: 14px; }
+.hist-prose b { color: var(--ink); font-weight: 700; }
+.hist-quote {
+  margin-top: 24px; padding: 22px 24px;
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  border-radius: 16px;
+}
+.hist-quote blockquote {
+  font-size: 19px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.32;
+}
+.hist-quote figcaption { margin-top: 10px; font-size: 13.5px; color: var(--muted); }
+.hist-quote .aftermath {
+  margin-top: 12px;
+  font-family: var(--mono); font-size: 11.5px; color: var(--accent);
+}
+.hist-sources {
+  margin-top: 20px;
+  font-family: var(--mono); font-size: 11px; color: var(--faint); line-height: 1.8;
+}
 </style>
 </head>
 <body>
@@ -601,10 +689,93 @@ footer { border-top: 1px solid var(--hairline); padding: 44px 0 56px; }
 <footer>
   <div class="wrap foot-inner">
     <p class="foot-left">An open-source project, AGPL-licensed. Read the code, open an issue, or run your own instance: <a href="https://github.com/tedbarnett/When" rel="noopener">github.com/tedbarnett/When</a></p>
-    <p class="foot-right">From the founder of When.com (1998)</p>
+    <p class="foot-right">From the founder of <button type="button" class="hist-link" id="hist-open" aria-haspopup="dialog" aria-controls="hist-backdrop">When.com</button> (1998)</p>
   </div>
 </footer>
 
+<div class="hist-backdrop" id="hist-backdrop" hidden>
+  <div class="hist-dialog" role="dialog" aria-modal="true" aria-labelledby="hist-title" tabindex="-1">
+    <button class="hist-x" id="hist-close" type="button" aria-label="Close">&times;</button>
+    <div class="hist-body">
+      <span class="hist-logo"><img data-src="/history/whenlogo_home.gif" alt="Original When.com logo" width="135" height="108"></span>
+      <p class="hist-kicker">1998 &middot; Redwood City, California</p>
+      <h2 id="hist-title">Before When.org, there was When.com.</h2>
+      <a class="hist-shot" href="/history/when-com-homepage-19990202.png" target="_blank" rel="noopener">
+        <img data-src="/history/when-com-homepage-19990202.png" alt="The When.com homepage as captured on February 2, 1999" width="1024" height="743">
+        <span class="cap">The When.com homepage, February 2, 1999 &middot; open full-size &nearr;</span>
+      </a>
+      <div class="hist-prose">
+        <p>In 1998, When Inc. of Redwood City, California launched When.com &mdash; one of the web&rsquo;s first calendar services. Members tracked personal schedules online and subscribed to live event feeds: concerts, movie openings, TV shows, trade shows, even horoscopes &mdash; with automated crawlers refreshing event data around the clock.</p>
+        <p>In February 1999, Business 2.0 profiled founder Ted Barnett in a piece titled <b>&ldquo;Calendar Boy,&rdquo;</b> calling When.com a bid to &ldquo;create the ultimate sticky app.&rdquo; Barnett told them: <i>&ldquo;Right now, we&rsquo;re not interested in selling. We know we&rsquo;re onto something big.&rdquo;</i></p>
+        <p>Two months later, on April 5, 1999, America Online acquired When Inc. in a stock deal reported at $225&nbsp;million. AOL president Bob Pittman called it &ldquo;the perfect personalization tool,&rdquo; and When.com became &ldquo;My Calendar&rdquo; in AOL&nbsp;5.0 &mdash; the ancestor of AOL Calendar.</p>
+      </div>
+      <figure class="hist-quote">
+        <blockquote>&ldquo;Right now, we&rsquo;re not interested in selling. We know we&rsquo;re onto something big.&rdquo;</blockquote>
+        <figcaption>&mdash; Ted Barnett, Business 2.0, February 1999 (&ldquo;Calendar Boy&rdquo;)</figcaption>
+        <p class="aftermath">AOL acquired the company eight weeks later.</p>
+      </figure>
+      <p class="hist-sources">Sources: Business 2.0, Feb 1999 &middot; The New York Times, Apr 6, 1999 &middot; Salon, Sep 1999</p>
+      <!-- Placeholder until Ted supplies a scan of the "Calendar Boy" article:
+      <a class="hist-pdf" href="/history/calendar-boy.pdf" target="_blank" rel="noopener">Read the full article (PDF)</a>
+      -->
+    </div>
+  </div>
+</div>
+
+<script>
+/* When.com history modal */
+(function () {
+  var trigger = document.getElementById('hist-open');
+  var backdrop = document.getElementById('hist-backdrop');
+  if (!trigger || !backdrop) return;
+  var dialog = backdrop.querySelector('.hist-dialog');
+  var closeBtn = document.getElementById('hist-close');
+  var lastFocus = null;
+  var loaded = false;
+
+  function open() {
+    if (!loaded) {
+      /* Lazy-load images only when the modal is first opened */
+      var imgs = backdrop.querySelectorAll('img[data-src]');
+      for (var i = 0; i < imgs.length; i++) {
+        imgs[i].src = imgs[i].getAttribute('data-src');
+        imgs[i].removeAttribute('data-src');
+      }
+      loaded = true;
+    }
+    lastFocus = document.activeElement;
+    backdrop.hidden = false;
+    document.body.style.overflow = 'hidden';
+    dialog.scrollTop = 0;
+    closeBtn.focus();
+  }
+  function close() {
+    backdrop.hidden = true;
+    document.body.style.overflow = '';
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  trigger.addEventListener('click', open);
+  closeBtn.addEventListener('click', close);
+  backdrop.addEventListener('mousedown', function (e) {
+    if (e.target === backdrop) close();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (backdrop.hidden) return;
+    if (e.key === 'Escape') { close(); return; }
+    if (e.key !== 'Tab') return;
+    /* Focus trap */
+    var f = dialog.querySelectorAll('a[href], button:not([disabled])');
+    if (!f.length) return;
+    var first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && (document.activeElement === first || document.activeElement === dialog)) {
+      e.preventDefault(); last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault(); first.focus();
+    }
+  });
+})();
+</script>
 <script>
 (function () {
   var form = document.getElementById('waitlist-form');
