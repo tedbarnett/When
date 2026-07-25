@@ -101,6 +101,8 @@ button { font-family: inherit; }
 .meta-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 13px; }
 .byline { font-size: 15px; color: var(--muted); }
 .mchip { font-family: var(--mono); font-size: 11px; color: var(--faint); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
+button.mchip { background: transparent; cursor: pointer; transition: border-color .15s ease, color .15s ease; }
+button.mchip:hover { border-color: var(--faint); color: var(--ink); }
 
 /* ---------- view bar ---------- */
 .viewbar { position: sticky; top: 61px; z-index: 15; background: var(--navbg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); margin-top: 20px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
@@ -108,6 +110,9 @@ button { font-family: inherit; }
 .seg { display: inline-flex; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
 .seg button { font-weight: 700; font-size: 13.5px; padding: 7px 18px; border-radius: 999px; cursor: pointer; background: transparent; border: none; color: var(--muted); transition: background .15s ease, color .15s ease; }
 .seg button.on { background: var(--accent); color: #fff; }
+.history-link { margin-left: auto; background: transparent; border: none; cursor: pointer; font-family: var(--brico); font-weight: 800; font-size: 16px; letter-spacing: -0.04em; color: var(--muted); padding: 4px 4px; transition: color .15s ease; }
+.history-link .dot { color: var(--spark); }
+.history-link:hover, .history-link.on { color: var(--head); }
 
 /* ---------- shared card bits ---------- */
 .shelf { display: flex; gap: 12px; overflow-x: auto; padding: 0 20px 8px; scrollbar-width: none; }
@@ -202,6 +207,26 @@ button { font-family: inherit; }
 .mcell-more { font-family: var(--mono); font-size: 9px; color: var(--faint); }
 .month-note { font-size: 13px; color: var(--faint); margin-top: 14px; }
 
+/* ---------- history view ---------- */
+.hist-wrap { max-width: 660px; margin: 0 auto; padding: 24px 20px 10px; }
+.hist-stats { font-family: var(--mono); font-size: 11.5px; letter-spacing: .12em; color: var(--peri); text-transform: uppercase; }
+.hist-stats .n { color: var(--spark); font-weight: 700; }
+.hist-day { font-family: var(--mono); font-size: 11.5px; letter-spacing: .12em; color: var(--faint); padding: 24px 0 10px; }
+.hist-row { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; margin-bottom: 8px; }
+.hist-main { flex: 1; min-width: 0; cursor: pointer; }
+.hist-title { display: block; font-size: 14px; font-weight: 700; color: var(--head); line-height: 1.25; }
+.hist-meta { display: block; font-family: var(--mono); font-size: 10.5px; color: var(--faint); margin-top: 3px; }
+.hist-done { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: none; }
+.was-there { display: inline-flex; align-items: center; background: var(--spark); color: #fff; font-weight: 900; font-size: 10.5px; border-radius: 999px; padding: 3px 11px; white-space: nowrap; }
+.hist-share { background: var(--chip); border: none; color: var(--ink); font-weight: 700; font-size: 11.5px; border-radius: 999px; padding: 5px 13px; cursor: pointer; }
+.hist-ask { display: flex; align-items: center; gap: 7px; width: 100%; margin-top: 2px; padding-top: 11px; border-top: 1px dashed var(--line); }
+.hist-ask .ask-label { flex: 1; font-size: 12.5px; font-weight: 700; color: var(--muted); }
+.ask-yes { border: 1px solid var(--line); background: var(--chip); color: var(--head); font-weight: 700; font-size: 12px; border-radius: 999px; padding: 6px 14px; cursor: pointer; transition: border-color .15s ease, color .15s ease; }
+.ask-yes:hover { border-color: var(--spark); color: var(--spark); }
+.ask-no { width: 28px; height: 28px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--faint); font-size: 12px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; flex: none; }
+.ask-no:hover { border-color: var(--faint); color: var(--muted); }
+.hist-note { font-family: var(--mono); font-size: 10.5px; color: var(--faint); margin-top: 18px; line-height: 1.7; }
+
 /* ---------- footer ---------- */
 .foot { padding: 56px 20px 120px; max-width: 1140px; margin: 0 auto; }
 .foot-inner { border-top: 1px solid var(--line); padding-top: 24px; display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; font-size: 13.5px; color: var(--faint); line-height: 1.7; }
@@ -280,6 +305,7 @@ button { font-family: inherit; }
 .share-row { display: flex; align-items: center; gap: 8px; background: var(--paper); border: 1px solid var(--line); border-radius: 999px; padding: 7px 8px 7px 14px; margin-top: 6px; }
 .share-row .surl { flex: 1; min-width: 0; font-family: var(--mono); font-size: 11.5px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .share-row button { flex: none; background: var(--chip); border: none; color: var(--ink); font-weight: 700; font-size: 12px; border-radius: 999px; padding: 6px 13px; cursor: pointer; }
+.share-row button.share-main { background: var(--accent); color: #fff; }
 .detail-actions { display: grid; gap: 8px; margin-top: 8px; }
 .detail-actions .primary { background: var(--accent); border: none; color: #fff; font-weight: 700; font-size: 15px; text-align: center; padding: 13px 20px; border-radius: 999px; cursor: pointer; }
 .detail-actions .ghost { display: block; border: 1px solid var(--line); color: var(--ink); font-weight: 700; font-size: 15px; text-align: center; padding: 12px 20px; border-radius: 999px; text-decoration: none; }
@@ -335,6 +361,7 @@ body.modal-open { overflow: hidden; }
       <span class="byline">Curated by Ted · things I&rsquo;d actually go to</span>
       <span class="mchip" id="count-chip">this week</span>
       <span class="mchip" id="follower-chip">142 followers</span>
+      <button class="mchip" id="share-cal" type="button">↗ share calendar</button>
     </div>
   </div>
 
@@ -345,12 +372,14 @@ body.modal-open { overflow: hidden; }
         <button type="button" id="seg-day" role="tab" aria-selected="false">Day</button>
         <button type="button" id="seg-month" role="tab" aria-selected="false">Month</button>
       </div>
+      <button class="history-link" id="history-open" type="button">history<span class="dot">.</span></button>
     </div>
   </div>
 
   <section id="view-week-root"></section>
   <section id="view-day-root" hidden></section>
   <section id="view-month-root" hidden></section>
+  <section id="view-history-root" hidden></section>
 
   <div class="foot">
     <div class="foot-inner">
@@ -403,18 +432,23 @@ body.modal-open { overflow: hidden; }
   /* ---------- state ---------- */
   var DATA_URL = '/data/teds-nyc.json';
   var FEED_URL = 'https://when.org/teds-nyc.ics';
-  var days = [];            // [{key, events:[...]}] sorted
+  var days = [];            // [{key, events:[...]}] today + upcoming, sorted asc
+  var pastDays = [];        // [{key, events:[...]}] before today (NY), sorted desc
   var allEvents = [];
   var view = 'week';
   var dayIndex = 0;
   var detailId = null;
   var badImg = {};
   var saved = {};
+  var attended = {};        // when:attended — id -> true, independent of saved
+  var asked = {};           // when:asked — "did you go?" dismissed, don't nag
   var followed = false;
   var published = false;
   var handle = 'tedbarnett';
   try {
     saved = JSON.parse(localStorage.getItem('when:saved') || '{}') || {};
+    attended = JSON.parse(localStorage.getItem('when:attended') || '{}') || {};
+    asked = JSON.parse(localStorage.getItem('when:asked') || '{}') || {};
     followed = localStorage.getItem('when:followed') === '1';
     published = localStorage.getItem('when:published') === '1';
     handle = localStorage.getItem('when:handle') || 'tedbarnett';
@@ -451,6 +485,14 @@ body.modal-open { overflow: hidden; }
     return hh + ':' + mn + ap;
   }
   function dayDate(key) { return new Date(key + 'T12:00:00-04:00'); }
+  function nyTodayKey() {
+    /* YYYY-MM-DD for "today" in America/New_York — past/future must not follow the viewer's clock */
+    try {
+      return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+    } catch (e) {
+      return new Date().toISOString().slice(0, 10);
+    }
+  }
   function ddateLabel(key) {
     return dayDate(key).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase();
   }
@@ -479,6 +521,8 @@ body.modal-open { overflow: hidden; }
   function persist() {
     try {
       localStorage.setItem('when:saved', JSON.stringify(saved));
+      localStorage.setItem('when:attended', JSON.stringify(attended));
+      localStorage.setItem('when:asked', JSON.stringify(asked));
       localStorage.setItem('when:followed', followed ? '1' : '0');
       localStorage.setItem('when:published', published ? '1' : '0');
       localStorage.setItem('when:handle', handle);
@@ -496,6 +540,19 @@ body.modal-open { overflow: hidden; }
       btn.textContent = 'Copied ✓';
       setTimeout(function () { btn.textContent = orig; }, 1800);
     }
+  }
+  function shareOrCopy(payload, btn) {
+    /* native share sheet on mobile; everywhere else, copy the URL with the Copied ✓ pattern */
+    if (navigator.share) {
+      try { navigator.share(payload).catch(function () {}); return; } catch (e) {}
+    }
+    copyText(payload.url, btn);
+  }
+  function attendedCount() {
+    /* attended ids persist after events roll out of the weekly JSON, so the map is the year tally */
+    var n = 0;
+    for (var k in attended) if (attended[k]) n++;
+    return n;
   }
 
   /* ---------- card templates ---------- */
@@ -648,6 +705,50 @@ body.modal-open { overflow: hidden; }
     root.innerHTML = html;
   }
 
+  /* ---------- history view ---------- */
+  function histRowHtml(ev) {
+    var cb = cbIndex(ev.id);
+    var html = '<div class="hist-row">' +
+      '<span class="tray-thumb" style="' + (showImg(ev) ? '' : 'background:var(--cb' + cb + '-bg)') + '">' +
+        (showImg(ev) ? '<img src="' + esc(ev.image) + '" alt="" loading="lazy" data-imgfor="' + esc(ev.id) + '">' :
+          '<span class="letter-block" style="color:var(--cb' + cb + '-ink)">' + esc(ev.title.charAt(0).toUpperCase()) + '</span>') +
+      '</span>' +
+      '<span class="hist-main" data-open="' + esc(ev.id) + '">' +
+        '<span class="hist-title">' + esc(ev.title) + '</span>' +
+        '<span class="hist-meta">' + esc(timeLabel(ev)) + ' · ' + esc(ev.venue) + '</span>' +
+      '</span>';
+    if (attended[ev.id]) {
+      html += '<span class="hist-done">' +
+        '<span class="was-there">✓ I was there</span>' +
+        '<button class="hist-share" type="button" data-sharehist="' + esc(ev.id) + '">Share</button>' +
+      '</span>';
+    } else if (!asked[ev.id]) {
+      html += '<span class="hist-ask">' +
+        '<span class="ask-label">Did you go?</span>' +
+        '<button class="ask-yes" type="button" data-attend="' + esc(ev.id) + '">✓ I was there</button>' +
+        '<button class="ask-no" type="button" data-dismiss="' + esc(ev.id) + '" aria-label="No, dismiss">✗</button>' +
+      '</span>';
+    }
+    return html + '</div>';
+  }
+  function renderHistory() {
+    var root = document.getElementById('view-history-root');
+    var n = attendedCount();
+    var html = '<div class="hist-wrap">' +
+      '<div class="hist-stats"><span class="n">' + n + '</span> ' + (n === 1 ? 'SHOW' : 'SHOWS') + ' THIS YEAR</div>';
+    if (!pastDays.length) {
+      html += '<div class="tray-empty" style="margin-top:18px">Your history starts tonight — events you attend collect here, one “I was there” at a time.</div>';
+    } else {
+      for (var d = 0; d < pastDays.length; d++) {
+        var day = pastDays[d];
+        html += '<div class="hist-day">' + esc(dayDate(day.key).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }).toUpperCase().replace(/,/g, '')) + '</div>';
+        for (var i = 0; i < day.events.length; i++) html += histRowHtml(day.events[i]);
+      }
+    }
+    html += '<div class="hist-note">Kept on this device. Accounts &amp; sync come later.</div></div>';
+    root.innerHTML = html;
+  }
+
   /* ---------- header / chrome ---------- */
   function monthName() {
     if (!days.length) return 'month';
@@ -656,8 +757,9 @@ body.modal-open { overflow: hidden; }
   function renderChrome() {
     var titleEl = document.getElementById('view-title');
     var t = 'tonight';
-    if (view === 'day') t = dayIndex === 0 ? 'tonight' : dayDate(days[dayIndex].key).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    if (view === 'day') t = (!days.length || dayIndex === 0) ? 'tonight' : dayDate(days[dayIndex].key).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
     if (view === 'month') t = monthName();
+    if (view === 'history') t = 'history';
     titleEl.innerHTML = esc(t) + '<span class="dot">.</span>';
     var kick = 'WHEN.ORG/TEDS-NYC';
     if (days.length) kick += ' · ' + dayDate(days[0].key).toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase() + ' ' + ddateLabel(days[0].key);
@@ -674,15 +776,18 @@ body.modal-open { overflow: hidden; }
     document.getElementById('seg-week').setAttribute('aria-selected', view === 'week');
     document.getElementById('seg-day').setAttribute('aria-selected', view === 'day');
     document.getElementById('seg-month').setAttribute('aria-selected', view === 'month');
+    document.getElementById('history-open').className = 'history-link' + (view === 'history' ? ' on' : '');
     document.getElementById('view-week-root').hidden = view !== 'week';
     document.getElementById('view-day-root').hidden = view !== 'day';
     document.getElementById('view-month-root').hidden = view !== 'month';
+    document.getElementById('view-history-root').hidden = view !== 'history';
   }
 
   function renderAll() {
     renderChrome();
     if (view === 'week') renderWeek();
     else if (view === 'day') renderDay();
+    else if (view === 'history') renderHistory();
     else renderMonth();
   }
 
@@ -753,7 +858,7 @@ body.modal-open { overflow: hidden; }
         '<div class="detail-venue">' + esc(ev.venue) + (ev.neighborhood ? ' · ' + esc(ev.neighborhood) : '') + '</div>' +
         (f.length ? '<div class="detail-fchip">' + avatarStack(f) + '<span class="flabel">' + esc(friendsLabel(f)) + '</span></div>' : '') +
         (ev.blurb ? '<div class="detail-blurb">' + esc(ev.blurb) + '</div>' : '') +
-        '<div class="share-row"><span class="surl">when.org/teds-nyc/' + esc(ev.id) + '</span><button id="copy-link" type="button">Copy link</button></div>' +
+        '<div class="share-row"><span class="surl">when.org/teds-nyc/' + esc(ev.id) + '</span><button class="share-main" id="share-link" type="button">Share</button><button id="copy-link" type="button">Copy link</button></div>' +
         '<div class="detail-actions">' +
           '<button class="primary" type="button" data-save="' + esc(ev.id) + '" data-savelabel="1">' + (saved[ev.id] ? '✓ On my calendar' : '＋ Add to my calendar') + '</button>' +
           (ev.url ? '<a class="ghost" href="' + esc(ev.url) + '" target="_blank" rel="noopener">Venue site ↗</a>' : '') +
@@ -822,6 +927,29 @@ body.modal-open { overflow: hidden; }
       if (detailId) renderDetail();
       return;
     }
+    var atEl = t.closest ? t.closest('[data-attend]') : null;
+    if (atEl) {
+      e.stopPropagation(); e.preventDefault();
+      attended[atEl.getAttribute('data-attend')] = true;
+      persist();
+      renderHistory(); renderChrome();
+      return;
+    }
+    var dsEl = t.closest ? t.closest('[data-dismiss]') : null;
+    if (dsEl) {
+      e.stopPropagation(); e.preventDefault();
+      asked[dsEl.getAttribute('data-dismiss')] = true;
+      persist();
+      renderHistory();
+      return;
+    }
+    var shEl = t.closest ? t.closest('[data-sharehist]') : null;
+    if (shEl) {
+      e.stopPropagation(); e.preventDefault();
+      var sev = findEvent(shEl.getAttribute('data-sharehist'));
+      if (sev) shareOrCopy({ title: sev.title, text: 'I was there — ' + sev.title + ' at ' + sev.venue, url: 'https://when.org/teds-nyc/' + sev.id }, shEl);
+      return;
+    }
     var openEl = t.closest ? t.closest('[data-open]') : null;
     if (openEl) { openDetail(openEl.getAttribute('data-open')); return; }
 
@@ -842,6 +970,23 @@ body.modal-open { overflow: hidden; }
 
     if (t.id === 'copy-feed') { copyText(FEED_URL, t); return; }
     if (t.id === 'copy-link' && detailId) { copyText('https://when.org/teds-nyc/' + detailId, t); return; }
+    if (t.id === 'share-link' && detailId) {
+      var dev = findEvent(detailId);
+      shareOrCopy({
+        title: dev ? dev.title : 'When.org',
+        text: dev ? (dev.blurb || dev.venue || '') : '',
+        url: 'https://when.org/teds-nyc/' + detailId
+      }, t);
+      return;
+    }
+    if (t.id === 'share-cal') {
+      shareOrCopy({
+        title: 'Ted\u2019s NYC · When.org',
+        text: 'Real New York this week, hand-picked — jazz basements, free lawns, old movies, new food.',
+        url: 'https://when.org/teds-nyc'
+      }, t);
+      return;
+    }
     if (t.id === 'copy-myfeed') { copyText('https://when.org/' + handle + '.ics', t); return; }
     if (t.id === 'copy-invite') { copyText('https://when.org/' + handle + '/invite/x7q3', t); return; }
     if (t.id === 'publish-btn') { published = true; persist(); renderTray(); return; }
@@ -878,6 +1023,7 @@ body.modal-open { overflow: hidden; }
   document.getElementById('seg-week').addEventListener('click', function () { view = 'week'; renderAll(); });
   document.getElementById('seg-day').addEventListener('click', function () { view = 'day'; renderAll(); });
   document.getElementById('seg-month').addEventListener('click', function () { view = 'month'; renderAll(); });
+  document.getElementById('history-open').addEventListener('click', function () { view = 'history'; renderAll(); });
   document.getElementById('sub-open').addEventListener('click', function () { openOverlay('sub'); });
   document.getElementById('float-pill').addEventListener('click', function () { renderTray(); openOverlay('tray'); });
   document.getElementById('follow-btn').addEventListener('click', function () { followed = !followed; persist(); renderChrome(); });
@@ -946,12 +1092,16 @@ body.modal-open { overflow: hidden; }
   /* ---------- boot ---------- */
   fetch(DATA_URL).then(function (r) { return r.json(); }).then(function (data) {
     var events = (data.events || []).slice().sort(function (a, b) { return a.start < b.start ? -1 : 1; });
+    var todayK = nyTodayKey();
     var byDay = {};
+    var pastByDay = {};
     events.forEach(function (ev) {
       var k = ev.start.slice(0, 10);
-      (byDay[k] = byDay[k] || []).push(ev);
+      if (k < todayK) (pastByDay[k] = pastByDay[k] || []).push(ev);
+      else (byDay[k] = byDay[k] || []).push(ev);
     });
     days = Object.keys(byDay).sort().map(function (k) { return { key: k, events: byDay[k] }; });
+    pastDays = Object.keys(pastByDay).sort().reverse().map(function (k) { return { key: k, events: pastByDay[k] }; });
     allEvents = events;
     renderAll();
 
