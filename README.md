@@ -28,13 +28,22 @@ rebooted as open infrastructure.
 - [when.org](https://when.org) — landing page, manifesto, waitlist, and the
   When.com history
 - [when.org/teds-nyc](https://when.org/teds-nyc) — **Ted's NYC**, the first
-  curated calendar: ~26 real events across the next 7 days, week/day views,
-  real venue/press photos (never AI-generated imagery)
+  curated calendar: ~26 real geo-tagged events across the next 7 days in the
+  "tonight-first" browser — week / day / month views, borough filter chips,
+  a personal history view ("I was there"), one-tap sharing, dark/light
+  themes, real venue/press photos (never AI-generated imagery)
+- Every event has its own shareable URL —
+  `when.org/teds-nyc/{event-id}` — with per-event OG tags and
+  schema.org/Event markup
 - [when.org/teds-nyc.ics](https://when.org/teds-nyc.ics) — its live ICS
   feed; subscribe once in Apple or Google Calendar and each week's picks
   arrive automatically
 - [when.org/data/teds-nyc.json](https://when.org/data/teds-nyc.json) — the
-  same calendar as JSON
+  same calendar as JSON (merged with the curator's live edits)
+- Curator tools (owner-only, no redeploys): hide events, edit-in-place,
+  and a **paste-a-URL importer** — drop any event page link, the server
+  reads its schema.org data (AI fallback for messy pages), you review a
+  card, one tap adds it to the calendar
 
 ## What's in this repo
 
@@ -44,15 +53,23 @@ passwordless auth scaffolding, and the When.com history modal.
 ```
 public/                          static site (hand-written HTML/CSS, no build step)
 public/index.html                landing page + waitlist + history modal + menu
-public/teds-nyc.html             first curated calendar (week/day views)
-public/data/teds-nyc.json        the calendar's event data (single source of truth)
+public/teds-nyc.html             the event browser (week/day/month, history, tray)
+public/data/teds-nyc.json        base event data (KV overlay merges on top)
 public/history/                  When.com artifacts (1999 homepage, original logo)
-public/fonts/                    Satoshi (self-hosted)
-functions/teds-nyc.ics.js        builds the ICS feed from the same JSON
+public/fonts/                    Satoshi + Bricolage Grotesque (self-hosted)
+functions/teds-nyc.ics.js        ICS feed (merged, hidden events excluded)
+functions/teds-nyc/[id].js       per-event pages: OG + schema.org injection
+functions/data/teds-nyc.json.js  public JSON (merged view of base + overlay)
+functions/api/calendars/teds-nyc/overlay.js  owner writes: hide/edit/add/reset
+functions/api/calendars/teds-nyc/import.js   paste-a-URL extractor (JSON-LD + AI)
+functions/api/calendars/teds-nyc/admin.js    owner-only full view
+functions/api/me/prefs.js        account-synced saves/history/follows
 functions/api/waitlist.js        waitlist storage (Cloudflare KV)
 functions/api/auth/              sign-in: Google OAuth + magic email links
 functions/api/me.js              session check for the signed-in menu
 functions/_lib/session.js        signed-cookie sessions (HMAC, Web Crypto)
+functions/_lib/calendar.js       the merge layer: base JSON + curator overlay
+scripts/                         node test harnesses (import, overlay, prefs)
 docs/                            operational notes (DNS snapshots etc.)
 ```
 
@@ -67,8 +84,15 @@ docs/                            operational notes (DNS snapshots etc.)
   account. Signing in exists only to *save* things — following calendars,
   favorites — and sync them across devices.
 
-The full platform (calendar creation, events, venues, Stripe Connect
-payouts) comes next; see the roadmap below.
+How the curator layer works: the base week lives in git
+(`public/data/teds-nyc.json`); the curator's live changes (hidden events,
+in-place edits, imported events) live in a Cloudflare KV overlay that one
+shared module merges into every consumer — page, JSON, ICS, and per-event
+pages never disagree, and nothing requires a redeploy.
+
+The full platform (calendar creation for everyone, venues, Stripe Connect
+payouts) is tracked in [the issues](https://github.com/tedbarnett/When/issues);
+see the roadmap below.
 
 ## Design rules
 
@@ -109,18 +133,25 @@ markup on every page, no lock-in, ever.
 
 ## Roadmap
 
-- **Phase 0 (now):** manifesto, waitlist, the first hand-curated NYC
-  calendar with a live ICS feed, passwordless sign-in.
-- **Phase 1:** the event browser grows up — fun, image-forward day/week/month
-  views; more curated NYC calendars; automated supply (venue scrapers and
-  ICS importers) so calendars refresh nightly; in-place editing for
-  calendar owners.
-- **Phase 2:** calendars for everyone — create your own ("Your NYC"),
-  follow calendars, and subscribe to a *bundle*: one merged personal ICS
-  feed, a clean JSON API, and an endpoint your personal AI can query for
-  recommendations.
-- **Phase 3:** money. Stripe Connect: paid calendar subscriptions, native
-  ticketing (~1% platform fee), tips. Then New Orleans.
+- **Phase 0 ✓:** manifesto, waitlist, the first hand-curated NYC calendar
+  with a live ICS feed, passwordless sign-in.
+- **Phase 1 (mostly ✓):** the redesigned tonight-first browser
+  (week/day/month), geo filters, sharing, personal history,
+  account-synced saves, curator hide + edit-in-place, and the paste-a-URL
+  AI importer. Still open: automated nightly supply from venue scrapers
+  and ICS ingest.
+- **Phase 2:** calendars for everyone — a real publish backend
+  ([#8](https://github.com/tedbarnett/When/issues/8)) so anyone (and any
+  nightclub, band, or meetup —
+  [#12](https://github.com/tedbarnett/When/issues/12)) claims
+  `when.org/{handle}`; bundles + a personal-AI endpoint
+  ([#10](https://github.com/tedbarnett/When/issues/10)); AI-native
+  plumbing — llms.txt, welcoming robots.txt, MCP server
+  ([#11](https://github.com/tedbarnett/When/issues/11)).
+- **Phase 3:** money. Stripe Connect
+  ([#9](https://github.com/tedbarnett/When/issues/9)): paid calendar
+  subscriptions at any price the curator sets, native ticketing (~1%
+  platform fee), tips. Then New Orleans.
 
 ## License
 
