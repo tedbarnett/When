@@ -640,7 +640,7 @@ body.modal-open { overflow: hidden; }
     var cb = cbIndex(ev.id);
     var bg = showImg(ev) ? '' : ' style="background:var(--cb' + cb + '-bg)"';
     var venue = kind === 't-day' ? '<div class="tile-venue">' + esc(ev.venue) + '</div>' : '';
-    return '<button class="tile ' + kind + hiddenCls(ev) + '" type="button" data-open="' + esc(ev.id) + '"' + bg + '>' +
+    return '<div class="tile ' + kind + hiddenCls(ev) + '" role="button" tabindex="0" data-open="' + esc(ev.id) + '"' + bg + '>' +
       mediaHtml(ev) +
       '<span class="price-chip">' + esc(priceLabel(ev)) + '</span>' +
       saveBtnHtml(ev) +
@@ -651,7 +651,7 @@ body.modal-open { overflow: hidden; }
         '<span class="tile-title" style="display:block">' + esc(ev.title) + '</span>' +
         venue + friendsHtml(ev) +
       '</span>' +
-    '</button>';
+    '</div>';
   }
 
   /* ---------- week view ---------- */
@@ -669,7 +669,7 @@ body.modal-open { overflow: hidden; }
     var cbH = cbIndex(hero.id);
     var hf = friendsFor(hero.id);
     var html = '<div class="wrap">' +
-      '<button class="hero' + hiddenCls(hero) + '" type="button" data-open="' + esc(hero.id) + '" style="background:var(--cb' + cbH + '-bg)">' +
+      '<div class="hero' + hiddenCls(hero) + '" role="button" tabindex="0" data-open="' + esc(hero.id) + '" style="background:var(--cb' + cbH + '-bg)">' +
         mediaHtml(hero) +
         '<span class="price-chip">' + esc(priceLabel(hero)) + '</span>' +
         saveBtnHtml(hero) +
@@ -681,7 +681,7 @@ body.modal-open { overflow: hidden; }
           '<span class="hero-venue">' + esc(hero.venue) + (hero.neighborhood ? ' · ' + esc(hero.neighborhood) : '') + '</span>' +
           (hf.length ? '<span class="fchip">' + avatarStack(hf) + '<span class="flabel">' + esc(friendsLabel(hf)) + '</span></span>' : '') +
         '</span>' +
-      '</button>' +
+      '</div>' +
       '<div class="shelf-label">ALSO TONIGHT</div>' +
     '</div>';
 
@@ -721,7 +721,7 @@ body.modal-open { overflow: hidden; }
     for (i = 0; i < evs.length; i++) {
       var ev = evs[i];
       var cb = cbIndex(ev.id);
-      html += '<button class="daycard' + hiddenCls(ev) + '" type="button" data-open="' + esc(ev.id) + '">' +
+      html += '<div class="daycard' + hiddenCls(ev) + '" role="button" tabindex="0" data-open="' + esc(ev.id) + '">' +
         '<span class="daycard-media" style="display:block;' + (showImg(ev) ? '' : 'background:var(--cb' + cb + '-bg)') + '">' +
           mediaHtml(ev) +
           '<span class="price-chip">' + esc(priceLabel(ev)) + '</span>' +
@@ -736,7 +736,7 @@ body.modal-open { overflow: hidden; }
           (ev.blurb ? '<span class="daycard-blurb">' + esc(ev.blurb) + '</span>' : '') +
           friendsHtml(ev) +
         '</span>' +
-      '</button>';
+      '</div>';
     }
     html += '</div>';
     root.innerHTML = html;
@@ -1194,6 +1194,15 @@ body.modal-open { overflow: hidden; }
       if (!document.getElementById('tray-backdrop').hidden) renderTray();
     }
   }, true);
+
+  /* keyboard activation for div[role=button] cards (cards can't be <button> — they contain buttons) */
+  document.addEventListener('keydown', function (e) {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target && e.target.getAttribute &&
+        e.target.getAttribute('role') === 'button' && e.target.hasAttribute('data-open')) {
+      e.preventDefault();
+      e.target.click();
+    }
+  });
 
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
