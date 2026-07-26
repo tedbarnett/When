@@ -521,6 +521,7 @@ body.modal-open { overflow: hidden; }
   var days = [];            // [{key, events:[...]}] today + upcoming, sorted asc
   var pastDays = [];        // [{key, events:[...]}] before today (NY), sorted desc
   var anyday = [];          // multi-day runs (start–end range) overlapping this week
+  var hiddenEvents = [];    // owner view: hidden events, kept OFF the calendar in an owner-only shelf
   var allEvents = [];
   var view = 'week';
   var dayIndex = 0;
@@ -570,7 +571,7 @@ body.modal-open { overflow: hidden; }
   }
   function geoFilteredCount() {
     var n = 0;
-    for (var i = 0; i < allEvents.length; i++) if (passesGeo(allEvents[i])) n++;
+    for (var i = 0; i < allEvents.length; i++) if (!allEvents[i]._hidden && passesGeo(allEvents[i])) n++;
     return n;
   }
   function emptyGeoHtml() {
@@ -813,6 +814,19 @@ body.modal-open { overflow: hidden; }
     '</div>';
   }
 
+  /* ---------- owner-only shelf: hidden events, kept off the calendar ---------- */
+  function hiddenSectionHtml() {
+    if (!isOwner || !hiddenEvents.length) return '';
+    var html = '<div class="dayhead">' +
+      '<span class="dname">hidden<span class="dot">.</span></span>' +
+      '<span class="ddate">ONLY YOU SEE THIS SHELF</span>' +
+      '<span class="dcount">' + hiddenEvents.length + (hiddenEvents.length === 1 ? ' EVENT' : ' EVENTS') + '</span>' +
+    '</div>';
+    html += '<div class="shelf" style="max-width:1140px;margin:0 auto">';
+    for (var i = 0; i < hiddenEvents.length; i++) html += tileHtml(hiddenEvents[i], 't-day');
+    return html + '</div>';
+  }
+
   /* ---------- "any day" shelf: ongoing runs / ideas anytime this week ---------- */
   function anydaySectionHtml() {
     if (!anyday.length) return '';
@@ -829,13 +843,18 @@ body.modal-open { overflow: hidden; }
   /* ---------- week view ---------- */
   function renderWeek() {
     var root = document.getElementById('view-week-root');
-    if (!days.length) { root.innerHTML = anyday.length ? anydaySectionHtml() : emptyGeoHtml(); return; }
+    if (!days.length) { root.innerHTML = (anyday.length ? anydaySectionHtml() : emptyGeoHtml()) + hiddenSectionHtml(); return; }
     var day0 = days[0];
+    /* hero pick: never feature a hidden event (owner view keeps them out of
+       days[] entirely now, but guard here too so the headline slot can
+       never regress — see the owner-only hidden shelf below) */
     var hero = null;
     for (var i = 0; i < day0.events.length; i++) {
+      if (day0.events[i]._hidden) continue;
       if (day0.events[i].id === 'bandshell-jazz-0724') { hero = day0.events[i]; break; }
     }
-    if (!hero) { for (i = 0; i < day0.events.length; i++) { if (showImg(day0.events[i])) { hero = day0.events[i]; break; } } }
+    if (!hero) { for (i = 0; i < day0.events.length; i++) { if (!day0.events[i]._hidden && showImg(day0.events[i])) { hero = day0.events[i]; break; } } }
+    if (!hero) { for (i = 0; i < day0.events.length; i++) { if (!day0.events[i]._hidden) { hero = day0.events[i]; break; } } }
     if (!hero) hero = day0.events[0];
 
     var cbH = cbIndex(hero.id);
@@ -875,7 +894,7 @@ body.modal-open { overflow: hidden; }
       for (i = 0; i < day.events.length; i++) html += tileHtml(day.events[i], 't-day');
       html += '</div>';
     }
-    root.innerHTML = html + anydaySectionHtml();
+    root.innerHTML = html + anydaySectionHtml() + hiddenSectionHtml();
   }
 
   /* ---------- day view ---------- */
@@ -1679,10 +1698,19 @@ body.modal-open { overflow: hidden; }
     var byDay = {};
     var pastByDay = {};
     anyday = [];
+    hiddenEvents = [];
     allEvents.forEach(function (ev) {
       var k = ev.start.slice(0, 10);
       var endK = ev.end ? ev.end.slice(0, 10) : '';
       ev._anyday = false;
+      /* Hidden events NEVER render on the calendar itself — not the hero,
+         not the day shelves, not month/history. In the owner view they
+         collect in the owner-only "hidden" shelf at the bottom instead
+         (_hidden only exists on admin data, so this is a no-op publicly). */
+      if (ev._hidden) {
+        if (k >= todayK || (endK && endK >= todayK)) hiddenEvents.push(ev);
+        return;
+      }
       /* a "run" spans 2+ days (a late show crossing one midnight doesn't count);
          runs overlapping this week go to the "any day" shelf, not a day column */
       if (endK && endK >= addDaysKey(k, 2) && endK >= todayK && k <= weekEndK) {
