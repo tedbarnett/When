@@ -99,7 +99,7 @@ INSERT OR IGNORE INTO sources (id, tier, name, url, enabled, kind, crawl_url, no
 -- ------------------------------------- urban exploration / experiences
   ('untapped-new-york', 'C', 'Untapped New York tours', 'https://untappednewyorktours.com', 1,
    'jsonld', 'https://untappednewyorktours.com/',
-   'PRIMARY source: their own tours/experiences, Event JSON-LD verified (date-only startDate normalized to 00:00).'),
+   'PRIMARY source: their own tours/experiences. Event JSON-LD verified (date-only startDate) but evergreen tours are dateless — ok:0 between dated specials is expected.'),
   ('open-house-new-york', 'C', 'Open House New York', 'https://www.ohny.org', 0,
    'jsonld', 'https://www.ohny.org/whats-on/',
    'JS-only page (1KB loading shell), no JSON-LD; revisit around OHNY Weekend'),
