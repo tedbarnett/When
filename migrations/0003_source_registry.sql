@@ -136,4 +136,7 @@ INSERT OR IGNORE INTO sources (id, tier, name, url, enabled, kind, crawl_url, no
    'signal-only: leads, not facts — P2 (currently 403 to our UA; may need partner blessing)'),
   ('nonsense-nyc', 'D', 'Nonsense NYC', 'https://www.nonsensenyc.com', 0,
    'signal', 'https://www.nonsensenyc.com/',
-   'signal-only: leads, not facts — P2 (site is a newsletter archive; leads come from the list)');
+   'signal-only: leads, not facts — P2 (site is a newsletter archive; leads come from the list)'),
+  ('berlin-under-a', 'C', 'Berlin Under A', 'https://berlin.nyc', 0,
+   'jsonld', 'https://berlin.nyc/calendar/',
+   'calendar page has no Event JSON-LD (Yoast block only, 0 events); robots OK. NOTE: berlinnyc.com is a hijacked spam domain — real site is berlin.nyc. Shows also list on Ticketmaster venue 341249, so the ticketmaster adapter covers them.');
