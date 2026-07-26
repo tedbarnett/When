@@ -74,6 +74,19 @@ button { font-family: inherit; }
 .fchip.on { color: var(--head); border-color: var(--spark); }
 .fchip:disabled { opacity: .35; cursor: default; }
 .fchip:disabled:hover { border-color: var(--line); }
+/* desktop: categories move into a sticky vertical sidebar; mobile keeps chips */
+.cat-side { display: none; }
+.side-head { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; color: var(--faint); text-transform: uppercase; padding: 16px 10px 8px; }
+.cat-list { display: flex; flex-direction: column; gap: 2px; }
+.cat-item { background: none; border: none; text-align: left; font-family: var(--mono); font-size: 11.5px; color: var(--faint); padding: 7px 10px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
+.cat-item:hover:not(:disabled) { color: var(--ink); background: var(--chip); }
+.cat-item.on { color: var(--head); background: var(--chip); box-shadow: inset 2px 0 0 var(--spark); }
+.cat-item:disabled { opacity: .35; cursor: default; }
+@media (min-width: 900px) {
+  .day-cols { display: grid; grid-template-columns: 172px minmax(0, 1fr); gap: 26px; align-items: start; }
+  .cat-side { display: block; position: sticky; top: 130px; }
+  .filter-row.cat-row { display: none; }
+}
 .geo-row { align-items: center; }
 .zip-input { background: var(--paper); border: 1px solid var(--line); border-radius: 999px; color: var(--ink); font-family: var(--mono); font-size: 11px; padding: 5px 12px; width: 84px; outline: none; }
 .zip-input:focus { border-color: var(--faint); }
@@ -507,14 +520,17 @@ button { font-family: inherit; }
       html += '</div>';
     }
 
-    /* category chips — counts reflect the current source filter */
-    var catCounts = {};
+    /* category chips — counts reflect the current source filter. Rendered
+       twice from the same state: a horizontal chip row (mobile) and a
+       sticky vertical sidebar (desktop ≥900px) — CSS shows exactly one. */
+    var catCounts = {}, catTotal = 0;
     for (s = 0; s < everything.length; s++) {
       if (!passesSrc(everything[s])) continue;
       var cc = evCategory(everything[s]);
       catCounts[cc] = (catCounts[cc] || 0) + 1;
+      catTotal++;
     }
-    html += '<div class="filter-row">' +
+    html += '<div class="filter-row cat-row">' +
       '<button class="fchip' + (catFilter === 'all' ? ' on' : '') + '" type="button" data-catfilter="all">all categories</button>';
     for (var cIdx = 0; cIdx < CATS.length; cIdx++) {
       var cv = CATS[cIdx];
@@ -522,6 +538,16 @@ button { font-family: inherit; }
       html += '<button class="fchip' + (catFilter === cv ? ' on' : '') + '" type="button" data-catfilter="' + esc(cv) + '">' + esc(CAT_LABEL[cv]) + ' · ' + (catCounts[cv] || 0) + '</button>';
     }
     html += '</div>';
+
+    /* desktop sidebar: all categories, zero-count ones greyed (not hidden) */
+    var sideHtml = '<div class="side-head">categories</div><div class="cat-list">' +
+      '<button class="cat-item' + (catFilter === 'all' ? ' on' : '') + '" type="button" data-catfilter="all">all categories · ' + catTotal + '</button>';
+    for (cIdx = 0; cIdx < CATS.length; cIdx++) {
+      cv = CATS[cIdx];
+      var cn = catCounts[cv] || 0;
+      sideHtml += '<button class="cat-item' + (catFilter === cv ? ' on' : '') + '" type="button" data-catfilter="' + esc(cv) + '"' + (!cn && catFilter !== cv ? ' disabled' : '') + '>' + esc(CAT_LABEL[cv]) + ' · ' + cn + '</button>';
+    }
+    sideHtml += '</div>';
 
     /* borough chips — visually disabled while a zip distance filter is on */
     var center = distanceCenter();
@@ -589,7 +615,10 @@ button { font-family: inherit; }
       }
     }
     html += '</div>';
-    root.innerHTML = html;
+    root.innerHTML = '<div class="day-cols">' +
+      '<aside class="cat-side">' + sideHtml + '</aside>' +
+      '<div class="day-main">' + html + '</div>' +
+    '</div>';
   }
   function setStatus(msg, isErr) {
     document.getElementById('list-root').innerHTML =
