@@ -10,11 +10,19 @@
  *
  * Requires the TM_API_KEY secret. Without it the adapter SKIPS gracefully:
  * the source stays enabled and its last_status records 'no_key'.
+ *
+ * Venue watchlist (src/watchlist.js): before the citywide pull, each watched
+ * venue gets a dedicated full-horizon events fetch (venueId-scoped, exempt
+ * from the citywide page caps); the citywide pull then skips those venue ids
+ * so the watched fetch owns their rows under the canonical venue name.
  */
 
 import { boroughFor, nycLatLon } from '../geo.js';
+import { WATCHED_VENUES, pickVenue } from '../watchlist.js';
+import { slugify } from '../normalize.js';
 
 const API_URL = 'https://app.ticketmaster.com/discovery/v2/events.json';
+const VENUES_URL = 'https://app.ticketmaster.com/discovery/v2/venues.json';
 const NY_DMA_ID = '345';
 const PAGE_SIZE = 200;
 const MAX_PAGES = 5; // Discovery hard-caps size*(page+1) at 1000 — this is the max reach
@@ -90,6 +98,88 @@ export function mapEvent(ev, helpers) {
   };
 }
 
+async function fetchJSON(url) {
+  const res = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!res.ok) throw new Error('discovery HTTP ' + res.status);
+  return res.json();
+}
+
+/** Resolve a watchlist entry to a Discovery venue id ('' when not found). */
+async function resolveWatchedVenueId(entry, apiKey) {
+  if (entry.tm.venueId) return entry.tm.venueId;
+  const url =
+    VENUES_URL +
+    '?apikey=' + encodeURIComponent(apiKey) +
+    '&keyword=' + encodeURIComponent(entry.tm.keyword) +
+    '&stateCode=NY&size=50';
+  const data = await fetchJSON(url);
+  const hits = ((data._embedded && data._embedded.venues) || []).map((v) => ({
+    id: v.id,
+    name: v.name || '',
+    address: (v.address && v.address.line1) || '',
+    city: (v.city && v.city.name) || '',
+  }));
+  const hit = pickVenue(entry, hits);
+  return hit ? hit.id : '';
+}
+
+/** All upcoming events for one Discovery venue id (paginated to exhaustion). */
+async function fetchVenueEvents(venueId, apiKey, helpers, venueName) {
+  const out = [];
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const url =
+      API_URL +
+      '?apikey=' + encodeURIComponent(apiKey) +
+      '&venueId=' + encodeURIComponent(venueId) +
+      '&size=' + PAGE_SIZE +
+      '&page=' + page +
+      '&sort=date,asc';
+    const data = await fetchJSON(url);
+    const events = (data._embedded && data._embedded.events) || [];
+    for (const ev of events) {
+      const raw = mapEvent(ev, helpers);
+      if (raw) {
+        raw.venue = venueName; // canonical name so dedupe slugs align across sources
+        out.push(raw);
+      }
+    }
+    const pageInfo = data.page || {};
+    if (events.length < PAGE_SIZE || page + 1 >= (pageInfo.totalPages || 0)) break;
+  }
+  return out;
+}
+
+/**
+ * Venue watchlist pass: dedicated full-horizon fetch per watched venue,
+ * exempt from the citywide caps. Per-venue try/catch so a bad lookup never
+ * kills the run. Returns candidates, the set of watched Discovery venue ids
+ * (so the citywide pull can skip them — the watched fetch owns those shows,
+ * under the canonical venue name), and a compact status note.
+ */
+async function fetchWatchedVenues(env, helpers) {
+  const candidates = [];
+  const venueIds = new Set();
+  const notes = [];
+  for (const entry of WATCHED_VENUES) {
+    const key = slugify(entry.venue);
+    try {
+      const venueId = await resolveWatchedVenueId(entry, env.TM_API_KEY);
+      if (!venueId) {
+        notes.push(key + '=?');
+        continue;
+      }
+      venueIds.add(venueId);
+      const events = await fetchVenueEvents(venueId, env.TM_API_KEY, helpers, entry.venue);
+      candidates.push(...events);
+      notes.push(key + '=' + venueId + ':' + events.length);
+    } catch (err) {
+      notes.push(key + '=err');
+      console.error('ticketmaster watchlist failed', entry.venue, err);
+    }
+  }
+  return { candidates, venueIds, note: notes.join(',') };
+}
+
 /**
  * Run the adapter. Without TM_API_KEY: logs + returns status 'no_key' with
  * zero candidates (source stays enabled; not an error).
@@ -101,7 +191,12 @@ export async function run(env, helpers) {
     return { candidates: [], status: 'no_key' };
   }
 
-  const candidates = [];
+  // Watchlist first: full forward calendar for watched venues, and the id
+  // set the citywide pull uses to skip their events (avoids duplicate rows
+  // under Ticketmaster's own venue naming).
+  const watch = await fetchWatchedVenues(env, helpers);
+  const candidates = [...watch.candidates];
+
   for (let page = 0; page < MAX_PAGES; page++) {
     const url =
       API_URL +
@@ -110,16 +205,19 @@ export async function run(env, helpers) {
       '&size=' + PAGE_SIZE +
       '&page=' + page +
       '&sort=date,asc';
-    const res = await fetch(url, { headers: { Accept: 'application/json' } });
-    if (!res.ok) throw new Error('discovery HTTP ' + res.status);
-    const data = await res.json();
+    const data = await fetchJSON(url);
     const events = (data._embedded && data._embedded.events) || [];
     for (const ev of events) {
+      const venueObj =
+        (ev._embedded && Array.isArray(ev._embedded.venues) && ev._embedded.venues[0]) || {};
+      if (venueObj.id && watch.venueIds.has(venueObj.id)) continue; // watched fetch owns it
       const raw = mapEvent(ev, helpers);
       if (raw) candidates.push(raw);
     }
     const pageInfo = data.page || {};
     if (events.length < PAGE_SIZE || page + 1 >= (pageInfo.totalPages || 0)) break;
   }
-  return { candidates, status: 'ok:' + candidates.length };
+  const status =
+    'ok:' + candidates.length + (watch.note ? ' watch[' + watch.note + ']' : '');
+  return { candidates, status };
 }

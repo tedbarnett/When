@@ -11,11 +11,19 @@
  *
  * Requires the SEATGEEK_CLIENT_ID secret. Without it the adapter SKIPS
  * gracefully: the source stays enabled and last_status records 'no_key'.
+ *
+ * Venue watchlist (src/watchlist.js): before the citywide pull, each watched
+ * venue gets a dedicated full-horizon events fetch (venue.id-scoped, exempt
+ * from the citywide page caps); the citywide pull then skips those venue ids
+ * so the watched fetch owns their rows under the canonical venue name.
  */
 
 import { boroughFor, nycLatLon } from '../geo.js';
+import { WATCHED_VENUES, pickVenue } from '../watchlist.js';
+import { slugify } from '../normalize.js';
 
 const API_URL = 'https://api.seatgeek.com/2/events';
+const VENUES_URL = 'https://api.seatgeek.com/2/venues';
 const NYC_LAT = '40.7318';
 const NYC_LON = '-74.0035';
 const RANGE = '15mi';
@@ -58,6 +66,88 @@ export function mapEvent(ev, helpers) {
   };
 }
 
+async function fetchJSON(url) {
+  const res = await fetch(url, { headers: { Accept: 'application/json' } });
+  if (!res.ok) throw new Error('seatgeek HTTP ' + res.status);
+  return res.json();
+}
+
+/** Resolve a watchlist entry to a SeatGeek venue id (0 when not found). */
+async function resolveWatchedVenueId(entry, clientId) {
+  if (entry.seatgeek.venueId) return entry.seatgeek.venueId;
+  const url =
+    VENUES_URL +
+    '?client_id=' + encodeURIComponent(clientId) +
+    '&q=' + encodeURIComponent(entry.seatgeek.query) +
+    '&state=NY&per_page=25';
+  const data = await fetchJSON(url);
+  const hits = (Array.isArray(data.venues) ? data.venues : []).map((v) => ({
+    id: v.id,
+    name: v.name || '',
+    address: v.address || '',
+    city: v.city || '',
+  }));
+  const hit = pickVenue(entry, hits);
+  return hit ? hit.id : 0;
+}
+
+/** All upcoming events for one SeatGeek venue id (paginated to exhaustion). */
+async function fetchVenueEvents(venueId, clientId, helpers, venueName) {
+  const out = [];
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const url =
+      API_URL +
+      '?client_id=' + encodeURIComponent(clientId) +
+      '&venue.id=' + encodeURIComponent(venueId) +
+      '&per_page=' + PAGE_SIZE +
+      '&page=' + page +
+      '&sort=datetime_local.asc';
+    const data = await fetchJSON(url);
+    const events = Array.isArray(data.events) ? data.events : [];
+    for (const ev of events) {
+      const raw = mapEvent(ev, helpers);
+      if (raw) {
+        raw.venue = venueName; // canonical name so dedupe slugs align across sources
+        out.push(raw);
+      }
+    }
+    const total = (data.meta && data.meta.total) || 0;
+    if (events.length < PAGE_SIZE || page * PAGE_SIZE >= total) break;
+  }
+  return out;
+}
+
+/**
+ * Venue watchlist pass: dedicated full-horizon fetch per watched venue,
+ * exempt from the citywide caps. Per-venue try/catch so a bad lookup never
+ * kills the run. Returns candidates, the set of watched venue ids (so the
+ * citywide pull can skip them — the watched fetch owns those shows, under
+ * the canonical venue name), and a compact status note.
+ */
+async function fetchWatchedVenues(env, helpers) {
+  const candidates = [];
+  const venueIds = new Set();
+  const notes = [];
+  for (const entry of WATCHED_VENUES) {
+    const key = slugify(entry.venue);
+    try {
+      const venueId = await resolveWatchedVenueId(entry, env.SEATGEEK_CLIENT_ID);
+      if (!venueId) {
+        notes.push(key + '=?');
+        continue;
+      }
+      venueIds.add(venueId);
+      const events = await fetchVenueEvents(venueId, env.SEATGEEK_CLIENT_ID, helpers, entry.venue);
+      candidates.push(...events);
+      notes.push(key + '=' + venueId + ':' + events.length);
+    } catch (err) {
+      notes.push(key + '=err');
+      console.error('seatgeek watchlist failed', entry.venue, err);
+    }
+  }
+  return { candidates, venueIds, note: notes.join(',') };
+}
+
 /**
  * Run the adapter. Without SEATGEEK_CLIENT_ID: logs + returns status 'no_key'
  * with zero candidates (source stays enabled; not an error).
@@ -69,7 +159,11 @@ export async function run(env, helpers) {
     return { candidates: [], status: 'no_key' };
   }
 
-  const candidates = [];
+  // Watchlist first: full forward calendar for watched venues, and the id
+  // set the citywide pull uses to skip their events (avoids duplicate rows).
+  const watch = await fetchWatchedVenues(env, helpers);
+  const candidates = [...watch.candidates];
+
   for (let page = 1; page <= MAX_PAGES; page++) {
     const url =
       API_URL +
@@ -78,16 +172,17 @@ export async function run(env, helpers) {
       '&per_page=' + PAGE_SIZE +
       '&page=' + page +
       '&sort=datetime_local.asc';
-    const res = await fetch(url, { headers: { Accept: 'application/json' } });
-    if (!res.ok) throw new Error('seatgeek HTTP ' + res.status);
-    const data = await res.json();
+    const data = await fetchJSON(url);
     const events = Array.isArray(data.events) ? data.events : [];
     for (const ev of events) {
+      if (ev.venue && ev.venue.id && watch.venueIds.has(ev.venue.id)) continue; // watched fetch owns it
       const raw = mapEvent(ev, helpers);
       if (raw) candidates.push(raw);
     }
     const total = (data.meta && data.meta.total) || 0;
     if (events.length < PAGE_SIZE || page * PAGE_SIZE >= total) break;
   }
-  return { candidates, status: 'ok:' + candidates.length };
+  const status =
+    'ok:' + candidates.length + (watch.note ? ' watch[' + watch.note + ']' : '');
+  return { candidates, status };
 }
