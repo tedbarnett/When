@@ -703,7 +703,7 @@ body.modal-open { overflow: hidden; }
     fetch('/api/me/prefs', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ saved: truthyMap(saved), attended: truthyMap(attended), followed: followed })
+      body: JSON.stringify({ saved: truthyMap(saved), attended: truthyMap(attended), asked: truthyMap(asked), followed: followed })
     }).catch(function () {});
   }
   function schedulePrefsPush() {
@@ -720,6 +720,7 @@ body.modal-open { overflow: hidden; }
         var k;
         for (k in (remote.saved || {})) if (remote.saved[k]) saved[k] = true;
         for (k in (remote.attended || {})) if (remote.attended[k]) attended[k] = true;
+        for (k in (remote.asked || {})) if (remote.asked[k]) asked[k] = true; /* ✗ "didn't go" follows the account too */
         followed = followed || !!remote.followed;
         persist(); /* merged local + schedules the push-back */
         renderAll();
@@ -997,11 +998,22 @@ body.modal-open { overflow: hidden; }
     if (!pastDays.length) {
       html += '<div class="tray-empty" style="margin-top:18px">Your history starts tonight — events you attend collect here, one “I was there” at a time.</div>';
     } else {
+      var anyHist = false;
       for (var d = 0; d < pastDays.length; d++) {
         var day = pastDays[d];
-        html += '<div class="hist-day">' + esc(dayDate(day.key).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }).toUpperCase().replace(/,/g, '')) + '</div>';
-        for (var i = 0; i < day.events.length; i++) html += histRowHtml(day.events[i]);
+        /* ✗ on "Did you go?" means "I did NOT go" — the event leaves your
+           history for good (a later ✓ attended mark still brings it back). */
+        var rows = '';
+        for (var i = 0; i < day.events.length; i++) {
+          var pev = day.events[i];
+          if (asked[pev.id] && !attended[pev.id]) continue;
+          rows += histRowHtml(pev);
+        }
+        if (!rows) continue;
+        anyHist = true;
+        html += '<div class="hist-day">' + esc(dayDate(day.key).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }).toUpperCase().replace(/,/g, '')) + '</div>' + rows;
       }
+      if (!anyHist) html += '<div class="tray-empty" style="margin-top:18px">Your history starts tonight — events you attend collect here, one “I was there” at a time.</div>';
     }
     html += '<div class="hist-note">' + (prefsSyncOn
       ? 'Synced to your account — same history on every device.'

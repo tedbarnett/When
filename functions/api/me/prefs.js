@@ -1,11 +1,15 @@
 /**
  * /api/me/prefs — per-account saved/attended/followed sync (issue #7).
  *
- * GET  → { saved: {id:true}, attended: {id:true}, followed: bool, updated }
- *        for the signed-in user; 401 for anonymous visitors.
+ * GET  → { saved: {id:true}, attended: {id:true}, asked: {id:true},
+ *        followed: bool, updated } for the signed-in user; 401 for
+ *        anonymous visitors. `asked` = "Did you go?" dismissals (✗ =
+ *        did NOT go — excluded from the history view).
  * PUT  → replaces the whole document (client merges before writing).
- *        Validation: saved/attended must be objects of id -> true with
- *        ids ≤ 120 chars and ≤ 500 entries each; followed must be boolean.
+ *        Validation: saved/attended/asked must be objects of id -> true
+ *        with ids ≤ 120 chars and ≤ 500 entries each; followed must be
+ *        boolean. `asked` is optional — when an older cached client PUTs
+ *        without it, the stored asked map is preserved, not wiped.
  *
  * Storage: WHEN_AUTH KV, key "prefs:{email}" (reuses the auth namespace —
  * prefs are account data, same blast radius as sessions/tokens).
@@ -36,7 +40,7 @@ function cleanIdMap(v) {
 export async function onRequestGet({ request, env }) {
   const session = await readSession(request, env);
   if (!session) return json({ ok: false, error: 'unauthorized' }, 401);
-  let doc = { saved: {}, attended: {}, followed: false, updated: null };
+  let doc = { saved: {}, attended: {}, asked: {}, followed: false, updated: null };
   try {
     const raw = await env.WHEN_AUTH.get(prefsKey(session.email));
     if (raw) {
@@ -44,6 +48,7 @@ export async function onRequestGet({ request, env }) {
       doc = {
         saved: cleanIdMap(o && o.saved) || {},
         attended: cleanIdMap(o && o.attended) || {},
+        asked: cleanIdMap(o && o.asked) || {},
         followed: !!(o && o.followed),
         updated: (o && typeof o.updated === 'string' && o.updated) || null,
       };
@@ -68,9 +73,23 @@ export async function onRequestPut({ request, env }) {
   if (!saved || !attended || typeof (body && body.followed) !== 'boolean') {
     return json({ ok: false, error: 'invalid prefs' }, 400);
   }
+  let asked;
+  if (body.asked === undefined) {
+    // Older cached clients don't send asked — keep what's stored so a
+    // stale tab can't wipe "didn't go" dismissals made elsewhere.
+    asked = {};
+    try {
+      const raw = await env.WHEN_AUTH.get(prefsKey(session.email));
+      if (raw) asked = cleanIdMap(JSON.parse(raw).asked) || {};
+    } catch { /* corrupt doc: fall through with {} */ }
+  } else {
+    asked = cleanIdMap(body.asked);
+    if (!asked) return json({ ok: false, error: 'invalid prefs' }, 400);
+  }
   const doc = {
     saved,
     attended,
+    asked,
     followed: body.followed,
     updated: new Date().toISOString(),
   };
