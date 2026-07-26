@@ -1,20 +1,26 @@
-// Rerunnable category backfill for candidates still sitting at 'other'
-// (migration 0006). Re-derives a category from stored facts:
-//   - signals containing nyc-parks -> outdoor
-//   - otherwise keyword heuristics on venue/title (categorize.js)
-// Emits UPDATE statements ONLY for rows whose derived category != 'other',
-// so metadata-derived values written by ingest are never touched (dump is
-// pre-filtered to category='other' anyway).
+// Rerunnable category backfill (migration 0006; extended for the
+// tours/film/museums split). Re-derives a category from stored facts,
+// mirroring what a fresh ingest would compute:
+//   - stored metadata category (anything but ''/other) -> refineCategory
+//     (museum exhibits filed under theater, venue tours under music/sports,
+//     parks exhibits/tours/movie-nights under outdoor)
+//   - ''/other rows -> categoryFromText keyword heuristics
+// Emits UPDATE statements only for rows whose derived category changed,
+// guarded by AND category = <old> so a concurrent ingest never loses.
 //
 // Usage:
 //   npx wrangler d1 execute when-events --remote --json --command \
-//     "SELECT id,title,venue,signals FROM candidates WHERE category = 'other' AND substr(start,1,10) >= 'YYYY-MM-DD'" \
+//     "SELECT id,title,venue,category FROM candidates WHERE substr(start,1,10) >= 'YYYY-MM-DD'" \
 //     > /tmp/when-cat.json
 //   node scripts/backfill-category.mjs /tmp/when-cat.json > /tmp/when-cat.sql
 //   (review the stderr report, then)
 //   npx wrangler d1 execute when-events --remote --file /tmp/when-cat.sql
 import { readFileSync } from 'node:fs';
-import { categoryFromText } from '../workers/when-ingest/src/categorize.js';
+import {
+  categoryFromText,
+  refineCategory,
+  validCategory,
+} from '../workers/when-ingest/src/categorize.js';
 
 const dumpPath = process.argv[2];
 if (!dumpPath) {
@@ -25,23 +31,29 @@ const dump = JSON.parse(readFileSync(dumpPath, 'utf8'));
 const rows = (Array.isArray(dump) ? dump[0].results : dump.results) || [];
 
 function derive(row) {
-  try {
-    const sigs = JSON.parse(row.signals || '[]');
-    if (Array.isArray(sigs) && sigs.indexOf('nyc-parks') >= 0) return 'outdoor';
-  } catch {}
+  const stored = validCategory(row.category);
+  if (stored && stored !== 'other') return refineCategory(stored, row.title, row.venue);
   return categoryFromText(row.title, row.venue);
 }
 
 const q = (s) => "'" + String(s).replace(/'/g, "''") + "'";
-const counts = {};
+const before = {};
+const after = {};
+const moves = {};
 let updates = 0;
 for (const row of rows) {
+  const old = validCategory(row.category) || 'other';
   const cat = derive(row);
-  counts[cat] = (counts[cat] || 0) + 1;
-  if (cat === 'other') continue;
-  console.log(`UPDATE candidates SET category = ${q(cat)} WHERE id = ${q(row.id)} AND category = 'other';`);
+  before[old] = (before[old] || 0) + 1;
+  after[cat] = (after[cat] || 0) + 1;
+  if (cat === old) continue;
+  const mv = old + ' -> ' + cat;
+  moves[mv] = (moves[mv] || 0) + 1;
+  console.log(`UPDATE candidates SET category = ${q(cat)} WHERE id = ${q(row.id)} AND category = ${q(row.category || '')};`);
   updates++;
 }
 console.error(`rows in dump: ${rows.length}, updates emitted: ${updates}`);
-console.error('derived distribution:', JSON.stringify(counts));
+console.error('before:', JSON.stringify(before));
+console.error('after: ', JSON.stringify(after));
+console.error('moves: ', JSON.stringify(moves));
 if (!updates) console.error('(nothing to do — no SQL emitted)');

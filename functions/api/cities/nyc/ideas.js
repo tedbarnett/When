@@ -5,7 +5,8 @@
  *
  * Reads the D1 candidate pool (binding WHEN_EVENTS) filled by the
  * when-ingest Worker. date defaults to today in America/New_York.
- * Optional ?category=theater|live-music|comedy|sports|outdoor|other filters
+ * Optional ?category=theater|live-music|comedy|sports|outdoor|tours|film|
+ * museums|other filters
  * events/anyday server-side (prev/next stay category-agnostic — the client
  * chips filter locally anyway).
  *

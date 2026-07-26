@@ -14,11 +14,12 @@
  * The candidates column for the spec's "end" is end_at ("end" is a SQLite
  * keyword); the ideas API surfaces it as "end" in JSON.
  *
- * category (migration 0006): adapter metadata first, keyword heuristics as
+ * category (migration 0006): adapter metadata first (refined — TM/SG have
+ * no tours/film/museums buckets, see refineCategory), keyword heuristics as
  * fallback (see categorize.js). Merge only upgrades 'other' — a
  * metadata-derived category is never overwritten by a heuristic guess.
  */
-import { validCategory, categoryFromText } from './categorize.js';
+import { validCategory, categoryFromText, refineCategory } from './categorize.js';
 
 /** Mirrors slugify() in functions/api/calendars/teds-nyc/overlay.js. */
 export function slugify(s) {
@@ -333,7 +334,9 @@ export function buildCandidate(raw, sourceId, now) {
     blurb_origin: str(raw.blurb_origin, 20) || 'none',
     source: sourceId,
     source_url: str(raw.source_url, 600) || str(raw.url, 600),
-    category: validCategory(raw.category) || categoryFromText(title, venue),
+    category: validCategory(raw.category)
+      ? refineCategory(validCategory(raw.category), title, venue)
+      : categoryFromText(title, venue),
     signals: JSON.stringify([sourceId]),
     dedupe_key: key,
     first_seen: iso,

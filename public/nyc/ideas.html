@@ -278,8 +278,8 @@ button { font-family: inherit; }
   try { srcFilter = localStorage.getItem('when:ideas:src') || 'all'; } catch (e) {}
 
   /* category filter (rule-based, set at ingest — migration 0006); persisted */
-  var CATS = ['theater', 'live-music', 'comedy', 'sports', 'outdoor', 'other'];
-  var CAT_LABEL = { 'theater': 'theater', 'live-music': 'live music', 'comedy': 'comedy', 'sports': 'sports', 'outdoor': 'outdoor', 'other': 'other' };
+  var CATS = ['theater', 'live-music', 'comedy', 'sports', 'outdoor', 'tours', 'film', 'museums', 'other'];
+  var CAT_LABEL = { 'theater': 'theater', 'live-music': 'live music', 'comedy': 'comedy', 'sports': 'sports', 'outdoor': 'outdoor', 'tours': 'tours', 'film': 'film', 'museums': 'museums', 'other': 'other' };
   var catFilter = 'all';
   try { catFilter = localStorage.getItem('when:ideas:cat') || 'all'; } catch (e) {}
   if (catFilter !== 'all' && CATS.indexOf(catFilter) < 0) catFilter = 'all';
