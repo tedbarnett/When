@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sources · NYC · When.org</title>
+<meta name="description" content="Curator tool: source registry for the NYC Event Ideas pipeline — what we crawl, what's blocked, what each source produced.">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+<style>
+/* ------------------------------------------------------------------
+   when.org — Source registry (curator supply tool, issue #13 P1)
+   Same hand-written token set as ideas.html / teds-nyc.html.
+------------------------------------------------------------------- */
+@font-face { font-family:'Satoshi'; src:url('/fonts/satoshi-500.woff2') format('woff2'); font-weight:500; font-style:normal; font-display:swap; }
+@font-face { font-family:'Satoshi'; src:url('/fonts/satoshi-700.woff2') format('woff2'); font-weight:700; font-style:normal; font-display:swap; }
+@font-face { font-family:'Bricolage Grotesque'; src:url('/fonts/bricolage-var.woff2') format('woff2'); font-weight:200 800; font-style:normal; font-display:swap; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  --paper:#0e0f14; --surface:#17181d; --head:#ffffff; --ink:#ebebe7;
+  --muted:#a2a6ad; --faint:#71757d; --line:#272930;
+  --accent:#4d63ff; --peri:#9aa6ff; --spark:#ff5426;
+  --navbg:rgba(14,15,20,.84); --chip:rgba(255,255,255,.08);
+  --ok:#6bc396;
+  --mono: ui-monospace, Menlo, monospace;
+  --sans: 'Satoshi', -apple-system, 'Segoe UI', sans-serif;
+  --brico: 'Bricolage Grotesque', 'Satoshi', sans-serif;
+  font-family: var(--sans); font-weight: 500;
+  background: var(--paper); color: var(--ink);
+  -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+}
+a { color: var(--peri); } a:hover { color: var(--head); }
+::selection { background:#ff5426; color:#ffffff; }
+button { font-family: inherit; }
+
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 20px; }
+
+.nav { position: sticky; top: 0; z-index: 20; background: var(--navbg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+.nav-inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 60px; }
+.brand { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+.wordmark { font-family: var(--brico); font-weight: 800; font-size: 22px; color: var(--head); letter-spacing: -0.05em; }
+.wordmark .tld { color: var(--peri); }
+.nav-links { display: flex; gap: 8px; }
+.back-link { font-family: var(--mono); font-size: 11.5px; color: var(--muted); text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; white-space: nowrap; }
+.back-link:hover { color: var(--ink); border-color: var(--faint); }
+
+.calhead { padding-top: clamp(24px, 3.5vw, 42px); }
+.kicker { font-family: var(--mono); font-size: 11.5px; letter-spacing: .12em; color: var(--peri); text-transform: uppercase; }
+.view-title { font-family: var(--brico); font-weight: 800; font-size: clamp(42px, 7vw, 72px); letter-spacing: -0.05em; line-height: .92; color: var(--head); margin-top: 4px; }
+.view-title .dot { color: var(--spark); }
+.byline { font-size: 14.5px; color: var(--muted); margin-top: 12px; max-width: 60ch; }
+
+/* source rows */
+.sect-head { font-family: var(--brico); font-weight: 800; font-size: 22px; letter-spacing: -0.04em; color: var(--head); margin: 34px 0 2px; }
+.sect-head .dot { color: var(--spark); }
+.sect-note { font-size: 12.5px; color: var(--faint); margin-bottom: 4px; }
+.src-row { display: flex; align-items: flex-start; gap: 14px; padding: 15px 2px; border-bottom: 1px solid var(--line); }
+.src-row.off { opacity: .55; }
+.src-main { flex: 1 1 auto; min-width: 0; }
+.src-name { font-weight: 700; font-size: 15.5px; color: var(--head); line-height: 1.3; }
+.src-name a { color: inherit; text-decoration: none; }
+.src-name a:hover { color: var(--peri); }
+.src-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+.chip { font-family: var(--mono); font-size: 10.5px; color: var(--faint); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; white-space: nowrap; }
+.chip.kind { color: var(--peri); border-color: rgba(154,166,255,.35); }
+.chip.st-ok { color: var(--ok); border-color: rgba(107,195,150,.4); }
+.chip.st-bad { color: var(--spark); border-color: rgba(255,84,38,.4); }
+.chip.count { color: var(--ink); }
+.src-notes { font-size: 12.5px; color: var(--faint); margin-top: 6px; line-height: 1.45; max-width: 62ch; }
+.src-notes.err { color: var(--spark); }
+.src-actions { flex: none; padding-top: 2px; }
+.toggle { border: 1px solid var(--line); background: transparent; color: var(--faint); font-family: var(--mono); font-size: 11px; letter-spacing: .05em; border-radius: 999px; padding: 6px 14px; cursor: pointer; white-space: nowrap; transition: border-color .15s ease; }
+.toggle:hover:not(:disabled) { border-color: var(--faint); }
+.toggle:disabled { opacity: .5; cursor: default; }
+.toggle.on { color: var(--ok); border-color: rgba(107,195,150,.4); }
+
+.status-line { font-family: var(--mono); font-size: 11.5px; color: var(--faint); padding: 18px 2px; }
+.status-line.err { color: var(--spark); }
+.gate { padding: 48px 2px; max-width: 46ch; }
+.gate h2 { font-family: var(--brico); font-weight: 800; font-size: 26px; letter-spacing: -0.04em; color: var(--head); margin-bottom: 8px; }
+.gate p { font-size: 14.5px; color: var(--muted); line-height: 1.55; }
+
+.foot { border-top: 1px solid var(--line); margin-top: 40px; }
+.foot-inner { display: flex; justify-content: space-between; gap: 14px; padding: 18px 20px 40px; max-width: 860px; margin: 0 auto; font-size: 12px; color: var(--faint); }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="/"><span class="wordmark">when<span class="tld">.org</span></span></a>
+    <div class="nav-links">
+      <a class="back-link" href="/nyc/ideas">← event ideas</a>
+      <a class="back-link" href="/teds-nyc">ted&rsquo;s nyc</a>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="calhead">
+    <div class="kicker">Curator tool · New York</div>
+    <h1 class="view-title">sources<span class="dot">.</span></h1>
+    <p class="byline">The registry behind Event Ideas: licensed APIs, open data, venue pages we crawl for schema.org facts, and signal outlets. Toggle a source to start or stop its next crawl.</p>
+  </div>
+
+  <div id="app">
+    <div class="status-line" id="boot-status">checking sign-in…</div>
+  </div>
+</main>
+
+<div class="wrap" id="list-root"></div>
+
+<div class="foot">
+  <div class="foot-inner">
+    <span>Facts only — no scraped images, no copied prose, robots.txt honored. Takedown: hello@when.org</span>
+    <span>CURATORS ONLY</span>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var SOURCES_URL = '/api/cities/nyc/sources';
+  var TIERS = [
+    { key: 'A', label: 'licensed APIs', note: 'facts + licensed images, keys required' },
+    { key: 'B', label: 'open data', note: 'public feeds — zero risk' },
+    { key: 'C', label: 'venue pages', note: 'schema.org JSON-LD / ICS crawled from primary sources' },
+    { key: 'D', label: 'signals', note: 'leads, not facts — resolve-to-primary lands in P2' }
+  ];
+  var cur = null; // last payload {today, sources}
+  var busy = {};  // source id -> true while a toggle POST is in flight
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  /* "2026-07-25T22:01:33.510Z" -> "2h ago" */
+  function relTime(iso) {
+    if (!iso) return 'never';
+    var t = Date.parse(iso);
+    if (isNaN(t)) return 'never';
+    var s = Math.max(0, Math.floor((Date.now() - t) / 1000));
+    if (s < 60) return 'just now';
+    var m = Math.floor(s / 60);
+    if (m < 60) return m + 'm ago';
+    var h = Math.floor(m / 60);
+    if (h < 48) return h + 'h ago';
+    return Math.floor(h / 24) + 'd ago';
+  }
+
+  function statusClass(st) {
+    if (!st) return '';
+    if (st.indexOf('ok') === 0) return ' st-ok';
+    if (st === 'blocked' || st.indexOf('error') === 0 || st === 'robots_disallow') return ' st-bad';
+    return ''; /* no_key / signal_p2 / pending stay muted */
+  }
+
+  function rowHtml(s) {
+    var st = s.last_status || 'pending';
+    var html = '<div class="src-row' + (s.enabled ? '' : ' off') + '" data-src="' + esc(s.id) + '">' +
+      '<div class="src-main">' +
+        '<div class="src-name">' + (s.url ? '<a href="' + esc(s.url) + '" target="_blank" rel="noopener">' + esc(s.name) + '</a>' : esc(s.name)) + '</div>' +
+        '<div class="src-meta">' +
+          '<span class="chip kind">' + esc(s.kind || '?') + '</span>' +
+          '<span class="chip' + statusClass(st) + '">' + esc(st) + '</span>' +
+          '<span class="chip">' + esc(relTime(s.last_run)) + '</span>' +
+          (s.enabled ? '<span class="chip">last: ' + (s.last_count || 0) + '</span>' : '') +
+          '<span class="chip count">' + (s.candidates_upcoming || 0) + ' upcoming / ' + (s.candidates_total || 0) + ' total</span>' +
+        '</div>' +
+        (s.notes ? '<div class="src-notes">' + esc(s.notes) + '</div>' : '') +
+        (s.last_error ? '<div class="src-notes err">last error: ' + esc(s.last_error) + '</div>' : '') +
+      '</div>' +
+      '<div class="src-actions">' +
+        '<button class="toggle' + (s.enabled ? ' on' : '') + '" type="button" data-toggle="' + esc(s.id) + '"' + (busy[s.id] ? ' disabled' : '') + '>' +
+          (busy[s.id] ? '…' : (s.enabled ? 'on' : 'off')) +
+        '</button>' +
+      '</div>' +
+    '</div>';
+    return html;
+  }
+
+  function render() {
+    var root = document.getElementById('list-root');
+    var html = '';
+    for (var t = 0; t < TIERS.length; t++) {
+      var tier = TIERS[t];
+      var rows = [];
+      for (var i = 0; i < cur.sources.length; i++) {
+        if ((cur.sources[i].tier || '') === tier.key) rows.push(cur.sources[i]);
+      }
+      if (!rows.length) continue;
+      /* enabled first within each tier */
+      rows.sort(function (a, b) { return (b.enabled - a.enabled) || (a.name < b.name ? -1 : 1); });
+      var on = 0;
+      for (i = 0; i < rows.length; i++) if (rows[i].enabled) on++;
+      html += '<h2 class="sect-head">' + esc(tier.label) + '<span class="dot">.</span></h2>' +
+        '<div class="sect-note">tier ' + tier.key + ' · ' + esc(tier.note) + ' · ' + on + '/' + rows.length + ' enabled</div>';
+      for (i = 0; i < rows.length; i++) html += rowHtml(rows[i]);
+    }
+    root.innerHTML = html;
+  }
+
+  function setStatus(msg, isErr) {
+    document.getElementById('list-root').innerHTML =
+      '<div class="status-line' + (isErr ? ' err' : '') + '">' + esc(msg) + '</div>';
+  }
+
+  function load() {
+    setStatus('loading sources…');
+    fetch(SOURCES_URL, { cache: 'no-store' })
+      .then(function (r) {
+        return r.json().then(function (d) { return { s: r.status, d: d }; }, function () { return { s: r.status, d: null }; });
+      })
+      .then(function (res) {
+        if (res.s !== 200 || !res.d || !res.d.ok) {
+          if (res.s === 401 || res.s === 403) { renderGate(res.s); return; }
+          setStatus(res.d && res.d.error ? 'Could not load sources — ' + res.d.error + '.' : 'Could not load sources — try again.', true);
+          return;
+        }
+        cur = res.d;
+        render();
+      })
+      .catch(function () { setStatus('Network error — could not reach the sources API.', true); });
+  }
+
+  function findSource(id) {
+    if (!cur) return null;
+    for (var i = 0; i < cur.sources.length; i++) if (cur.sources[i].id === id) return cur.sources[i];
+    return null;
+  }
+
+  function toggle(id) {
+    var s = findSource(id);
+    if (!s || busy[id]) return;
+    var next = s.enabled ? 0 : 1;
+    busy[id] = true;
+    render();
+    fetch(SOURCES_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: id, enabled: next })
+    }).then(function (r) {
+      return r.json().then(function (d) { return { s: r.status, d: d }; }, function () { return { s: r.status, d: null }; });
+    }).then(function (res) {
+      delete busy[id];
+      if (res.s === 200 && res.d && res.d.ok && res.d.source) {
+        /* keep our richer stats; only enabled changed */
+        s.enabled = res.d.source.enabled;
+        render();
+      } else {
+        render();
+        setTimeout(function () {
+          alert(res.d && res.d.error ? 'Could not update — ' + res.d.error : 'Could not update source — try again.');
+        }, 0);
+      }
+    }).catch(function () {
+      delete busy[id];
+      render();
+      alert('Network error — could not update source.');
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    if (t && t.getAttribute && t.getAttribute('data-toggle')) toggle(t.getAttribute('data-toggle'));
+  });
+
+  /* ---------- curators-only gate (same as ideas.html) ---------- */
+  function renderGate(status) {
+    document.getElementById('list-root').innerHTML = '';
+    document.getElementById('app').innerHTML =
+      '<div class="gate"><h2>curators only<span style="color:var(--spark)">.</span></h2>' +
+      '<p>' + (status === 403
+        ? 'You&rsquo;re signed in, but this supply tool is for calendar curators.'
+        : 'Sign in as the calendar owner to manage sources.') +
+      ' Sign-in lives on the <a href="/teds-nyc">calendar page</a> — use the menu in the top right, then come back.</p></div>';
+  }
+
+  /* ---------- boot: owner gate, then load ---------- */
+  fetch('/api/me').then(function (r) { return r.ok ? r.json() : null; }).then(function (me) {
+    if (!me || !me.isOwner) { renderGate(me && me.email ? 403 : 401); return; }
+    document.getElementById('app').innerHTML = '';
+    load();
+  }).catch(function () { renderGate(401); });
+})();
+</script>
+</body>
+</html>
