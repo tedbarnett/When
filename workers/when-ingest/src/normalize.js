@@ -87,19 +87,14 @@ export function nyISOFromDate(date) {
  *   - strip trailing "presented by …" promoter noise
  *   - strip a leading "an evening with " frame (keeps the artist)
  *   - keep the first segment before a support separator: "|", " with ", ","
+ *   - strip trailing city-suffix/parenthetical noise (stripTitleNoise)
  *   - strip punctuation, a leading article (the/a/an), collapse whitespace
  * Band names containing "with"/commas split the same way on both sources, so
  * they still self-collapse; false merges would need two different same-day
  * shows at one venue sharing a headliner prefix.
  */
 export function normTitle(title) {
-  let s = String(title)
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/\bw\/\s*/g, 'with ')
-    .replace(/\(?\b(?:16|18|21)\s*\+\s*(?:event\b)?\)?/g, ' ')
-    .replace(/\s+presented by\b.*$/, ' ')
-    .replace(/^\s*an evening with\s+/, '');
+  let s = stripTitleNoise(foldTitle(title));
   s = s.split(/\s*\|\s*/)[0];
   s = s.split(/\s+with\s+/)[0];
   s = s.split(/\s*,\s*/)[0];
@@ -111,16 +106,165 @@ export function normTitle(title) {
   return s.replace(/\s+/g, ' ').trim();
 }
 
-/**
- * Venue normalization for dedupe: fold accents/punctuation and drop a leading
- * article so TM's "(Le) Poisson Rouge" keys like SG's "Le Poisson Rouge".
- * (Watched venues already ingest under a canonical name; this covers the
- * citywide rest.)
- */
-export function normVenue(venue) {
-  const s = String(venue)
+/** Shared first pass: fold accents, lowercase, "w/" -> "with", age tags, promoter noise. */
+function foldTitle(title) {
+  return String(title)
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
+    .replace(/\bw\/\s*/g, 'with ')
+    .replace(/\(?\b(?:16|18|21)\s*\+\s*(?:event\b)?\)?/g, ' ')
+    .replace(/\s+presented by\b.*$/, ' ')
+    .replace(/^\s*an evening with\s+/, '');
+}
+
+// Trailing venue-city suffixes SeatGeek (and sometimes TM) append to titles:
+// "Six the Musical - New York", "Hamilton - New York, NY", "The Moth - Brooklyn".
+const CITY_TAIL_RE =
+  /\s*[-\u2013\u2014]\s*(?:new york(?:\s*,?\s*ny)?(?:\s+city)?|nyc|ny|brooklyn|manhattan|queens|(?:the\s+)?bronx|staten island|long island)\s*[.!]*\s*$/;
+// Trailing parentheticals are location/audience noise, never the show name:
+// "(New York, NY)", "(NY)", "(No Children Under 4)", "(18 and Over)".
+const PAREN_TAIL_RE = /\s*\([^()]*\)\s*$/;
+
+/**
+ * Strip trailing city-suffix / parenthetical noise from a folded title
+ * (Ted's rule: "Six (New York, NY)", "Six: The Musical" and "Six the
+ * Musical - New York" are one show). Loops because the noise stacks:
+ * "Two Strangers (Carry a Cake Across New York) - New York". Returns the
+ * pre-strip string when stripping would empty the title.
+ */
+export function stripTitleNoise(s) {
+  let out = String(s);
+  for (;;) {
+    const next = out.replace(PAREN_TAIL_RE, '').replace(CITY_TAIL_RE, '');
+    if (next === out) break;
+    if (!next.trim()) return out.trim();
+    out = next;
+  }
+  return out.trim();
+}
+
+/** Punctuation/article collapse shared by normTitle and titleSimilarityParts. */
+function collapseWords(s) {
+  return String(s)
+    .replace(/['\u2019]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/^(?:the|a|an)\s+/, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Connector words ignored for token-set comparison, so "New York Mets vs.
+// Los Angeles Dodgers" and "Los Angeles Dodgers at New York Mets" match.
+const TOKEN_STOPWORDS = new Set([
+  'a', 'an', 'the', 'of', 'in', 'at', 'on', 'vs', 'v', 'and', 'with', 'w',
+  'for', 'to', 'by', 'presents', 'featuring', 'feat', 'ft',
+]);
+
+/**
+ * Precomputed comparison variants for one title (see titlesSimilar):
+ *   full   — noise-stripped, collapsed ("moulin rouge the musical")
+ *   core   — full minus a ": subtitle" / " - subtitle" tail ('' if none)
+ *   head   — headliner via normTitle ('' when it equals full)
+ *   tokens — full's words minus connector stopwords
+ */
+export function titleSimilarityParts(title) {
+  const s = stripTitleNoise(foldTitle(title));
+  const full = collapseWords(s);
+  const core = collapseWords(s.split(/\s+[-\u2013\u2014]\s+|\s*:\s*/)[0]);
+  const head = normTitle(title);
+  return {
+    full,
+    core: core && core !== full ? core : '',
+    head: head && head !== full ? head : '',
+    tokens: full.split(' ').filter((t) => t && !TOKEN_STOPWORDS.has(t)),
+  };
+}
+
+/**
+ * Same-event title check for Ted's "same location at same time" dedupe rule
+ * (only ever consulted for rows sharing normVenue + EXACT start). Two titles
+ * are the same event when:
+ *   1. any variant pair matches exactly — EXCEPT core-vs-core, because two
+ *      different events can share a generic colon prefix ("Ongoing Museum
+ *      Exhibit: Alice's Garden" vs "Ongoing Museum Exhibit: Still Waters");
+ *      a headliner can't play two shows at one venue at the same instant,
+ *      so head-based matches are safe at exact-start granularity
+ *   2. one full is a word-boundary substring of the other
+ *      ("death of salesman" ⊂ "arthur millers death of salesman")
+ *   3. one token set (≥2 tokens) is a subset of the other after dropping
+ *      connector words ("mets vs dodgers" = "dodgers at mets")
+ * Distinct same-slot events (Bethel Woods' four museum tours, Conference
+ * House Park's four exhibits) fail all three.
+ */
+export function titlesSimilar(a, b) {
+  const A = typeof a === 'object' && a !== null ? a : titleSimilarityParts(a);
+  const B = typeof b === 'object' && b !== null ? b : titleSimilarityParts(b);
+  if (!A.full || !B.full) return false;
+  const av = [A.full, A.core, A.head];
+  const bv = [B.full, B.core, B.head];
+  for (let i = 0; i < av.length; i++) {
+    for (let j = 0; j < bv.length; j++) {
+      if (i === 1 && j === 1) continue; // core-vs-core is ambiguous
+      if (av[i] && av[i] === bv[j]) return true;
+    }
+  }
+  const pa = ' ' + A.full + ' ';
+  const pb = ' ' + B.full + ' ';
+  if (pa.includes(pb) || pb.includes(pa)) return true;
+  const [small, big] =
+    A.tokens.length <= B.tokens.length ? [A.tokens, B.tokens] : [B.tokens, A.tokens];
+  if (small.length >= 2) {
+    const bigSet = new Set(big);
+    if (small.every((t) => bigSet.has(t))) return true;
+  }
+  return false;
+}
+
+/**
+ * Canonical-title preference when two spellings merge: a title still carrying
+ * city/parenthetical noise loses to one that doesn't ("Six: The Musical"
+ * beats "Six (New York, NY)" and "Six the Musical - New York"); ties keep
+ * the existing row's title for stability.
+ */
+export function preferTitle(existing, incoming) {
+  if (!existing) return incoming;
+  if (!incoming) return existing;
+  const noisy = (t) => {
+    const s = String(t)
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase().trim();
+    return stripTitleNoise(s) !== s;
+  };
+  const ne = noisy(existing);
+  return ne !== noisy(incoming) ? (ne ? incoming : existing) : existing;
+}
+
+// Venue city-suffix noise: TM says "Ambassador Theatre" AND "Ambassador
+// Theatre-NY" while SeatGeek says "Ambassador Theatre - New York" — one
+// building, three slot keys unless stripped. Dash/parenthesized city tails
+// only: a bare trailing "new york" must survive ("Museum of the City of
+// New York" is the venue's name).
+const VENUE_CITY_TAIL_RE =
+  /(?:\s*[-\u2013\u2014]\s*(?:new york(?:\s*,?\s*ny)?(?:\s+city)?|nyc|ny|brooklyn|manhattan|queens|(?:the\s+)?bronx|staten island)|\s*\(\s*(?:new york(?:\s*,?\s*ny)?|nyc|ny)\s*\))\s*$/;
+
+/**
+ * Venue normalization for dedupe: fold accents/punctuation, strip trailing
+ * city suffixes, and drop a leading article so TM's "(Le) Poisson Rouge"
+ * keys like SG's "Le Poisson Rouge" and "Ambassador Theatre-NY" keys like
+ * "Ambassador Theatre - New York". (Watched venues already ingest under a
+ * canonical name; this covers the citywide rest.)
+ */
+export function normVenue(venue) {
+  let s = String(venue)
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+  for (;;) {
+    const next = s.replace(VENUE_CITY_TAIL_RE, '');
+    if (next === s || !next.trim()) break;
+    s = next;
+  }
+  s = s
     .replace(/['\u2019]/g, '')
     .replace(/[^a-z0-9]+/g, ' ')
     .trim()
@@ -215,7 +359,7 @@ const INSERT_SQL =
 // lat/lon backfill NULLs only (both gated on lat so a pair never mixes rows);
 // neighborhood backfills '' — re-ingest after migration 0005 fills old rows.
 const MERGE_SQL =
-  'UPDATE candidates SET signals = ?, fetched_at = ?, ' +
+  'UPDATE candidates SET title = ?, signals = ?, fetched_at = ?, ' +
   "end_at = CASE WHEN end_at = '' THEN ? ELSE end_at END, " +
   "price = CASE WHEN price = '' THEN ? ELSE price END, " +
   "url = CASE WHEN url = '' THEN ? ELSE url END, " +
@@ -239,50 +383,101 @@ export async function upsertCandidates(db, candidates) {
   // by-id fallback — legacy rows keep their original id after the dedupe_key
   // formula changes, so a new event's key can equal an old row's id without
   // matching any dedupe_key; that must merge, not insert (PK conflict).
+  // byVenueStart backs Ted's rule: same venue + same exact start = same
+  // event (titlesSimilar guards the genuinely-different-event exceptions).
   const existing = new Map();
   const byId = new Map();
+  const byVenueStart = new Map(); // normVenue|start -> [{row, parts}]
+  const slotKey = (venue, start) => normVenue(venue) + '|' + start;
+  const addToSlot = (row) => {
+    const k = slotKey(row.venue, row.start);
+    let list = byVenueStart.get(k);
+    if (!list) byVenueStart.set(k, (list = []));
+    list.push(row);
+  };
   const { results } = await db
-    .prepare("SELECT id, dedupe_key, signals FROM candidates WHERE city = 'nyc'")
+    .prepare("SELECT id, dedupe_key, signals, title, venue, start FROM candidates WHERE city = 'nyc'")
     .all();
   for (const row of results || []) {
     existing.set(row.dedupe_key, row);
     byId.set(row.id, row);
+    addToSlot(row);
   }
+  const findInSlot = (c) => {
+    const list = byVenueStart.get(slotKey(c.venue, c.start));
+    if (!list) return null;
+    const parts = titleSimilarityParts(c.title);
+    for (const row of list) {
+      if (!row.parts) row.parts = titleSimilarityParts(row.title);
+      if (titlesSimilar(parts, row.parts)) return row;
+    }
+    return null;
+  };
 
   const stmts = [];
   let inserted = 0;
   let merged = 0;
   const seenThisBatch = new Set();
+  const pendingById = new Map(); // queued-insert candidates, mutable until flush
 
   for (const c of candidates) {
-    if (seenThisBatch.has(c.dedupe_key)) continue; // intra-batch dupe
+    if (seenThisBatch.has(c.dedupe_key)) continue; // intra-batch dupe (same key)
     seenThisBatch.add(c.dedupe_key);
-    const prior = existing.get(c.dedupe_key) || byId.get(c.dedupe_key);
-    if (prior) {
+    const prior = existing.get(c.dedupe_key) || byId.get(c.dedupe_key) || findInSlot(c);
+    if (prior && pendingById.has(prior.id)) {
+      // Same event as a not-yet-flushed insert from this batch: fold the
+      // facts into the queued candidate instead of writing a second row.
+      const p = pendingById.get(prior.id);
+      const signals = parseSignals(p.signals);
+      if (!signals.includes(c.source)) signals.push(c.source);
+      p.signals = JSON.stringify(signals);
+      p.title = prior.title = preferTitle(p.title, c.title);
+      prior.parts = null; // recompute against the kept title
+      if (!p.end_at) p.end_at = c.end_at;
+      if (!p.price) p.price = c.price;
+      if (!p.url) p.url = c.url;
+      if (!p.image) { p.image = c.image; p.image_source = c.image_source; }
+      if (!p.blurb) { p.blurb = c.blurb; p.blurb_origin = c.blurb_origin; }
+      if (!p.neighborhood) p.neighborhood = c.neighborhood;
+      if (p.lat == null) { p.lat = c.lat; p.lon = c.lon; }
+      existing.set(c.dedupe_key, prior);
+      merged++;
+    } else if (prior) {
       const signals = parseSignals(prior.signals);
       if (!signals.includes(c.source)) signals.push(c.source);
+      const title = preferTitle(prior.title, c.title);
+      prior.title = title;
+      prior.parts = null;
       stmts.push(
         db.prepare(MERGE_SQL).bind(
-          JSON.stringify(signals), c.fetched_at,
+          title, JSON.stringify(signals), c.fetched_at,
           c.end_at, c.price, c.url, c.image, c.image_source,
           c.blurb, c.blurb_origin, c.neighborhood,
           c.lat, c.lon,
           prior.id
         )
       );
+      // Later candidates in this batch may carry this row's key spelling.
+      existing.set(c.dedupe_key, prior);
       merged++;
     } else {
-      stmts.push(
-        db.prepare(INSERT_SQL).bind(
-          c.id, c.city, c.title, c.venue, c.neighborhood, c.lat, c.lon,
-          c.start, c.end_at,
-          c.price, c.url, c.image, c.image_source, c.blurb, c.blurb_origin,
-          c.source, c.source_url, c.signals, c.dedupe_key, c.first_seen,
-          c.fetched_at, c.status
-        )
-      );
+      pendingById.set(c.id, c);
+      addToSlot(c); // c has id/title/venue/start — slot-compatible
+      byId.set(c.id, c);
       inserted++;
     }
+  }
+
+  for (const c of pendingById.values()) {
+    stmts.push(
+      db.prepare(INSERT_SQL).bind(
+        c.id, c.city, c.title, c.venue, c.neighborhood, c.lat, c.lon,
+        c.start, c.end_at,
+        c.price, c.url, c.image, c.image_source, c.blurb, c.blurb_origin,
+        c.source, c.source_url, c.signals, c.dedupe_key, c.first_seen,
+        c.fetched_at, c.status
+      )
+    );
   }
 
   // D1 batch is transactional and one round trip per chunk.
