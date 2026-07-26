@@ -10,7 +10,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { buildCandidate, upsertCandidates } from '../workers/when-ingest/src/normalize.js';
 
 const sqlite = new DatabaseSync(':memory:');
-for (const f of ['0001_event_ideas.sql', '0005_geo.sql']) {
+for (const f of ['0001_event_ideas.sql', '0005_geo.sql', '0006_category.sql']) {
   sqlite.exec(readFileSync(new URL('../migrations/' + f, import.meta.url), 'utf8'));
 }
 

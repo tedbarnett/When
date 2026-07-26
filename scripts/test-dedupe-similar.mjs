@@ -120,7 +120,7 @@ check('tie keeps existing', preferTitle('MJ', 'Rush'), 'MJ');
 
 // --- end-to-end upsert on real SQLite
 const sqlite = new DatabaseSync(':memory:');
-for (const f of ['0001_event_ideas.sql', '0005_geo.sql']) {
+for (const f of ['0001_event_ideas.sql', '0005_geo.sql', '0006_category.sql']) {
   sqlite.exec(readFileSync(new URL('../migrations/' + f, import.meta.url), 'utf8'));
 }
 function makeD1(db) {

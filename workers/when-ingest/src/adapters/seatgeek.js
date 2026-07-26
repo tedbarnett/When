@@ -21,6 +21,7 @@
 import { boroughFor, nycLatLon } from '../geo.js';
 import { WATCHED_VENUES, pickVenue } from '../watchlist.js';
 import { slugify } from '../normalize.js';
+import { categoryFromSeatgeek } from '../categorize.js';
 
 const API_URL = 'https://api.seatgeek.com/2/events';
 const VENUES_URL = 'https://api.seatgeek.com/2/venues';
@@ -63,6 +64,7 @@ export function mapEvent(ev, helpers) {
     image_source: image ? 'api_licensed' : '',
     blurb: '',
     blurb_origin: 'none',
+    category: categoryFromSeatgeek(ev),
   };
 }
 

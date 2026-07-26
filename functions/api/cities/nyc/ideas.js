@@ -5,14 +5,18 @@
  *
  * Reads the D1 candidate pool (binding WHEN_EVENTS) filled by the
  * when-ingest Worker. date defaults to today in America/New_York.
+ * Optional ?category=theater|live-music|comedy|sports|outdoor|other filters
+ * events/anyday server-side (prev/next stay category-agnostic — the client
+ * chips filter locally anyway).
  *
  * Response: { ok, date, prev, next, events: […], anyday: […] }
  *   events — candidates starting on `date` with status new|added
  *   anyday — multi-day runs (end 2+ days after start) overlapping `date`
  *   prev/next — nearest dates before/after `date` that have candidates
  *   each event: { id, title, venue, neighborhood, lat, lon, start, end,
- *                 price, url, image, source, source_url, signals: [ids],
- *                 added: bool } — lat/lon are numbers or null (migration 0005)
+ *                 price, url, image, source, source_url, category,
+ *                 signals: [ids], added: bool } — lat/lon are numbers or
+ *                 null (migration 0005); category from migration 0006
  *
  * `added` = already on a curator calendar: NYC Basics (basics-nyc) and the
  * COMPOSED Ted's NYC (teds-nyc, which inherits basics) are both checked,
@@ -87,6 +91,7 @@ function rowToEvent(row, marks) {
     blurb: row.blurb,
     source: row.source,
     source_url: row.source_url,
+    category: row.category || 'other',
     signals: parseSignals(row.signals),
     status: row.status,
     added: !!addedOn,
@@ -104,6 +109,8 @@ export async function onRequestGet({ request, env }) {
   const url = new URL(request.url);
   const qDate = url.searchParams.get('date') || '';
   const date = DATE_RE.test(qDate) ? qDate : nyTodayKey();
+  const qCat = url.searchParams.get('category') || '';
+  const catOk = (ev) => !qCat || ev.category === qCat;
 
   // Already-on-calendar detection: NYC Basics first (preferred label —
   // teds-nyc inherits it), then the composed Ted's NYC (own + inherited).
@@ -144,8 +151,8 @@ export async function onRequestGet({ request, env }) {
     ).bind(date),
   ]);
 
-  const events = (dayRes.results || []).map((r) => rowToEvent(r, marks));
-  const anyday = (anydayRes.results || []).map((r) => rowToEvent(r, marks));
+  const events = (dayRes.results || []).map((r) => rowToEvent(r, marks)).filter(catOk);
+  const anyday = (anydayRes.results || []).map((r) => rowToEvent(r, marks)).filter(catOk);
   const prev = (prevRes.results && prevRes.results[0] && prevRes.results[0].d) || null;
   const next = (nextRes.results && nextRes.results[0] && nextRes.results[0].d) || null;
 

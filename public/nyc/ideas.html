@@ -277,6 +277,20 @@ button { font-family: inherit; }
   var srcFilter = 'all';
   try { srcFilter = localStorage.getItem('when:ideas:src') || 'all'; } catch (e) {}
 
+  /* category filter (rule-based, set at ingest — migration 0006); persisted */
+  var CATS = ['theater', 'live-music', 'comedy', 'sports', 'outdoor', 'other'];
+  var CAT_LABEL = { 'theater': 'theater', 'live-music': 'live music', 'comedy': 'comedy', 'sports': 'sports', 'outdoor': 'outdoor', 'other': 'other' };
+  var catFilter = 'all';
+  try { catFilter = localStorage.getItem('when:ideas:cat') || 'all'; } catch (e) {}
+  if (catFilter !== 'all' && CATS.indexOf(catFilter) < 0) catFilter = 'all';
+  function evCategory(ev) {
+    var c = ev && ev.category ? String(ev.category) : '';
+    return CATS.indexOf(c) >= 0 ? c : 'other';
+  }
+  function passesCat(ev) {
+    return catFilter === 'all' || evCategory(ev) === catFilter;
+  }
+
   /* geo-core:start — pure borough/distance helpers, extracted + unit-tested
      by scripts/test-ideas-filters.mjs (keep this block dependency-free) */
   var BOROUGH_CHIPS = ['Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island'];
@@ -449,6 +463,7 @@ button { font-family: inherit; }
         '<div class="idea-venue">' + esc(ev.venue || '—') + (ev.neighborhood ? ' · ' + esc(ev.neighborhood) : '') + '</div>' +
         '<div class="idea-chips">' +
           (ev.price ? '<span class="chip price">' + esc(ev.price) + '</span>' : '') +
+          (evCategory(ev) !== 'other' ? '<span class="chip">' + esc(CAT_LABEL[evCategory(ev)]) + '</span>' : '') +
           srcChips(ev) +
         '</div>' +
       '</div>' +
@@ -492,6 +507,22 @@ button { font-family: inherit; }
       html += '</div>';
     }
 
+    /* category chips — counts reflect the current source filter */
+    var catCounts = {};
+    for (s = 0; s < everything.length; s++) {
+      if (!passesSrc(everything[s])) continue;
+      var cc = evCategory(everything[s]);
+      catCounts[cc] = (catCounts[cc] || 0) + 1;
+    }
+    html += '<div class="filter-row">' +
+      '<button class="fchip' + (catFilter === 'all' ? ' on' : '') + '" type="button" data-catfilter="all">all categories</button>';
+    for (var cIdx = 0; cIdx < CATS.length; cIdx++) {
+      var cv = CATS[cIdx];
+      if (!catCounts[cv] && catFilter !== cv) continue; // keep an active-but-empty chip visible
+      html += '<button class="fchip' + (catFilter === cv ? ' on' : '') + '" type="button" data-catfilter="' + esc(cv) + '">' + esc(CAT_LABEL[cv]) + ' · ' + (catCounts[cv] || 0) + '</button>';
+    }
+    html += '</div>';
+
     /* borough chips — visually disabled while a zip distance filter is on */
     var center = distanceCenter();
     var distOn = !!center;
@@ -522,9 +553,9 @@ button { font-family: inherit; }
     /* compose: source filter, then borough OR distance (distance wins),
        all BEFORE collation so group counts reflect whats shown */
     var dayEvs = [];
-    for (var f = 0; f < (cur.events || []).length; f++) if (passesSrc(cur.events[f])) dayEvs.push(cur.events[f]);
+    for (var f = 0; f < (cur.events || []).length; f++) if (passesSrc(cur.events[f]) && passesCat(cur.events[f])) dayEvs.push(cur.events[f]);
     var anyEvs = [];
-    for (f = 0; f < (cur.anyday || []).length; f++) if (passesSrc(cur.anyday[f])) anyEvs.push(cur.anyday[f]);
+    for (f = 0; f < (cur.anyday || []).length; f++) if (passesSrc(cur.anyday[f]) && passesCat(cur.anyday[f])) anyEvs.push(cur.anyday[f]);
     var geoOpts = {
       center: center,
       radiusMi: parseFloat(radiusFilter),
@@ -546,7 +577,7 @@ button { font-family: inherit; }
         html += groups[i].items.length > 1 ? groupRowHtml(groups[i], false) : rowHtml(groups[i].items[0], false);
       }
     } else {
-      var anyFilter = srcFilter !== 'all' || distOn || boroughFilter !== 'all';
+      var anyFilter = srcFilter !== 'all' || catFilter !== 'all' || distOn || boroughFilter !== 'all';
       html += '<div class="empty">No ideas ' + (anyFilter ? 'matching these filters ' : '') + 'for this day' + (cur.next ? ' — try →' : '') + '.</div>';
     }
     if (anyEvs.length) {
@@ -661,6 +692,12 @@ button { font-family: inherit; }
     if (t.getAttribute && t.getAttribute('data-srcfilter')) {
       srcFilter = t.getAttribute('data-srcfilter');
       try { localStorage.setItem('when:ideas:src', srcFilter); } catch (err) {}
+      renderDay();
+      return;
+    }
+    if (t.getAttribute && t.getAttribute('data-catfilter')) {
+      catFilter = t.getAttribute('data-catfilter');
+      try { localStorage.setItem('when:ideas:cat', catFilter); } catch (err) {}
       renderDay();
       return;
     }

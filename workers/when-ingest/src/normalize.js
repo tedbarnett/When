@@ -13,7 +13,12 @@
  *
  * The candidates column for the spec's "end" is end_at ("end" is a SQLite
  * keyword); the ideas API surfaces it as "end" in JSON.
+ *
+ * category (migration 0006): adapter metadata first, keyword heuristics as
+ * fallback (see categorize.js). Merge only upgrades 'other' — a
+ * metadata-derived category is never overwritten by a heuristic guess.
  */
+import { validCategory, categoryFromText } from './categorize.js';
 
 /** Mirrors slugify() in functions/api/calendars/teds-nyc/overlay.js. */
 export function slugify(s) {
@@ -328,6 +333,7 @@ export function buildCandidate(raw, sourceId, now) {
     blurb_origin: str(raw.blurb_origin, 20) || 'none',
     source: sourceId,
     source_url: str(raw.source_url, 600) || str(raw.url, 600),
+    category: validCategory(raw.category) || categoryFromText(title, venue),
     signals: JSON.stringify([sourceId]),
     dedupe_key: key,
     first_seen: iso,
@@ -347,9 +353,9 @@ function parseSignals(s) {
 
 const INSERT_SQL =
   'INSERT INTO candidates (id, city, title, venue, neighborhood, lat, lon, start, end_at, ' +
-  'price, url, image, image_source, blurb, blurb_origin, source, source_url, ' +
+  'price, url, image, image_source, blurb, blurb_origin, source, source_url, category, ' +
   'signals, dedupe_key, first_seen, fetched_at, status) ' +
-  'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ' +
+  'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ' +
   // Last-resort guard: a concurrent run (or an id/dedupe_key mismatch the
   // by-id fallback below did not catch) must never abort the whole source.
   'ON CONFLICT(id) DO NOTHING';
@@ -369,7 +375,8 @@ const MERGE_SQL =
   "blurb_origin = CASE WHEN blurb = '' THEN ? ELSE blurb_origin END, " +
   "neighborhood = CASE WHEN neighborhood = '' THEN ? ELSE neighborhood END, " +
   'lat = CASE WHEN lat IS NULL THEN ? ELSE lat END, ' +
-  'lon = CASE WHEN lat IS NULL THEN ? ELSE lon END ' +
+  'lon = CASE WHEN lat IS NULL THEN ? ELSE lon END, ' +
+  "category = CASE WHEN category IS NULL OR category = '' OR category = 'other' THEN ? ELSE category END " +
   'WHERE id = ?';
 
 /**
@@ -440,6 +447,7 @@ export async function upsertCandidates(db, candidates) {
       if (!p.blurb) { p.blurb = c.blurb; p.blurb_origin = c.blurb_origin; }
       if (!p.neighborhood) p.neighborhood = c.neighborhood;
       if (p.lat == null) { p.lat = c.lat; p.lon = c.lon; }
+      if (!p.category || p.category === 'other') p.category = c.category;
       existing.set(c.dedupe_key, prior);
       merged++;
     } else if (prior) {
@@ -453,7 +461,7 @@ export async function upsertCandidates(db, candidates) {
           title, JSON.stringify(signals), c.fetched_at,
           c.end_at, c.price, c.url, c.image, c.image_source,
           c.blurb, c.blurb_origin, c.neighborhood,
-          c.lat, c.lon,
+          c.lat, c.lon, c.category,
           prior.id
         )
       );
@@ -474,7 +482,7 @@ export async function upsertCandidates(db, candidates) {
         c.id, c.city, c.title, c.venue, c.neighborhood, c.lat, c.lon,
         c.start, c.end_at,
         c.price, c.url, c.image, c.image_source, c.blurb, c.blurb_origin,
-        c.source, c.source_url, c.signals, c.dedupe_key, c.first_seen,
+        c.source, c.source_url, c.category, c.signals, c.dedupe_key, c.first_seen,
         c.fetched_at, c.status
       )
     );

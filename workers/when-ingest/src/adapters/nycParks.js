@@ -91,6 +91,7 @@ export function parseFeed(xml, nyISOFromLocal) {
       image_source: '',
       blurb: '', // never copy <description> prose
       blurb_origin: 'none',
+      category: 'outdoor', // Parks public events are outdoor by definition
     });
   }
   return out;
