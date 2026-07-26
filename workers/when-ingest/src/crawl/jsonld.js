@@ -20,6 +20,8 @@
  *     no bot-wall circumvention: HTTP 403 → status 'blocked', full stop.
  */
 
+import { boroughFor, nycLatLon } from '../geo.js';
+
 export const USER_AGENT = 'When.org events bot (+https://when.org/bot)';
 const FETCH_TIMEOUT_MS = 10_000;
 const MAX_BYTES = 1_500_000; // 1.5 MB page cap
@@ -240,10 +242,30 @@ export function ldEventToRaw(ld, source, helpers) {
   else if (loc && typeof loc === 'object') venue = firstString(loc.name) || '';
   if (!venue) venue = source.name || '';
 
+  // Geo facts when the page publishes them: location.geo.{latitude,longitude}
+  // (GeoCoordinates), borough from location.address postalCode first,
+  // addressLocality fallback. All optional — nulls/'' when absent.
+  let geo = { lat: null, lon: null };
+  let borough = '';
+  if (loc && typeof loc === 'object') {
+    const g = Array.isArray(loc.geo) ? loc.geo[0] : loc.geo;
+    if (g && typeof g === 'object') geo = nycLatLon(g.latitude, g.longitude);
+    const addr = Array.isArray(loc.address) ? loc.address[0] : loc.address;
+    if (addr && typeof addr === 'object') {
+      // postalCode is occasionally a number — keep scalars as-is (boroughFor
+      // stringifies), unwrap only nested objects/arrays.
+      const postal = typeof addr.postalCode === 'object' ? firstString(addr.postalCode) : addr.postalCode;
+      const cityName = typeof addr.addressLocality === 'object' ? firstString(addr.addressLocality) : addr.addressLocality;
+      borough = boroughFor(postal, cityName);
+    }
+  }
+
   return {
     title: stripHtml(firstString(ld.name)),
     venue: stripHtml(venue),
-    neighborhood: '',
+    neighborhood: borough,
+    lat: geo.lat,
+    lon: geo.lon,
     start,
     end: normalizeLdDate(ld.endDate, helpers),
     price: priceFromOffers(ld.offers),

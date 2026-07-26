@@ -13,6 +13,8 @@
  * gracefully: the source stays enabled and last_status records 'no_key'.
  */
 
+import { boroughFor, nycLatLon } from '../geo.js';
+
 const API_URL = 'https://api.seatgeek.com/2/events';
 const NYC_LAT = '40.7318';
 const NYC_LON = '-74.0035';
@@ -20,7 +22,7 @@ const RANGE = '15mi';
 const PAGE_SIZE = 100;
 const MAX_PAGES = 3;
 
-function mapEvent(ev, helpers) {
+export function mapEvent(ev, helpers) {
   const dtLocal = typeof ev.datetime_local === 'string' ? ev.datetime_local : '';
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(dtLocal)) return null;
   const start = helpers.nyISOFromLocal(dtLocal.slice(0, 16));
@@ -32,10 +34,18 @@ function mapEvent(ev, helpers) {
   const image = performer.image || '';
   const low = stats.lowest_price;
 
+  // Geo facts: venue.location.{lat,lon} (numbers), NYC-bounds checked;
+  // borough from venue.postal_code first, venue.city fallback.
+  const loc = venue.location || {};
+  const geo = nycLatLon(loc.lat, loc.lon);
+  const borough = boroughFor(venue.postal_code, venue.city);
+
   return {
     title: ev.title || ev.short_title || '',
     venue: venue.name || '',
-    neighborhood: '',
+    neighborhood: borough,
+    lat: geo.lat,
+    lon: geo.lon,
     start,
     end: '',
     price: typeof low === 'number' && low > 0 ? '$' + low + '+' : '',

@@ -10,8 +10,9 @@
  *   events — candidates starting on `date` with status new|added
  *   anyday — multi-day runs (end 2+ days after start) overlapping `date`
  *   prev/next — nearest dates before/after `date` that have candidates
- *   each event: { id, title, venue, neighborhood, start, end, price, url,
- *                 image, source, source_url, signals: [ids], added: bool }
+ *   each event: { id, title, venue, neighborhood, lat, lon, start, end,
+ *                 price, url, image, source, source_url, signals: [ids],
+ *                 added: bool } — lat/lon are numbers or null (migration 0005)
  *
  * `added` = already on a curator calendar: NYC Basics (basics-nyc) and the
  * COMPOSED Ted's NYC (teds-nyc, which inherits basics) are both checked,
@@ -75,6 +76,8 @@ function rowToEvent(row, marks) {
     title: row.title,
     venue: row.venue,
     neighborhood: row.neighborhood,
+    lat: typeof row.lat === 'number' ? row.lat : null,
+    lon: typeof row.lon === 'number' ? row.lon : null,
     start: row.start,
     end: row.end_at || '',
     price: row.price,

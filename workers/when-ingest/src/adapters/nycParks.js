@@ -13,12 +13,15 @@
  *   <event:starttime>8:00 am</event:starttime>
  *   <event:endtime>10:00 am</event:endtime>
  *   <event:location><![CDATA[…]]></event:location>
+ *   <event:coordinates>40.80897335964300000, -73.96603202819800000</event:coordinates>
  *   <description><![CDATA[<p>…]]></description>
  *
  * Legal posture (issue #13): facts only. The <description> prose is NEVER
  * copied into blurb (blurb stays '', blurb_origin 'none'), and feed images
  * are not rehosted or hotlinked. Regex parsing on purpose — no npm deps.
  */
+
+import { nycLatLon } from '../geo.js';
 
 const FEED_URL = 'https://www.nycgovparks.org/xml/events_300_rss.xml';
 const USER_AGENT = 'When.org events bot (+https://when.org/bot)';
@@ -69,10 +72,16 @@ export function parseFeed(xml, nyISOFromLocal) {
     const url = field(item, 'link');
     const boroughLetter = (field(item, 'event:parkids') || '').charAt(0).toUpperCase();
 
+    // "40.80897…, -73.96603…" -> NYC-bounds-checked lat/lon (or nulls)
+    const coordParts = field(item, 'event:coordinates').split(',');
+    const geo = nycLatLon(coordParts[0], coordParts[1]);
+
     out.push({
       title,
       venue: parkNames || location,
       neighborhood: BOROUGH[boroughLetter] || '',
+      lat: geo.lat,
+      lon: geo.lon,
       start,
       end,
       price: '', // feed carries no price facts; most Parks events are free but we don't assert it

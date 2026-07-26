@@ -12,6 +12,8 @@
  * the source stays enabled and its last_status records 'no_key'.
  */
 
+import { boroughFor, nycLatLon } from '../geo.js';
+
 const API_URL = 'https://app.ticketmaster.com/discovery/v2/events.json';
 const NY_DMA_ID = '345';
 const PAGE_SIZE = 100;
@@ -46,7 +48,7 @@ function bestImage(ev) {
   return best ? best.url : '';
 }
 
-function mapEvent(ev, helpers) {
+export function mapEvent(ev, helpers) {
   const dates = (ev.dates && ev.dates.start) || {};
   let start = '';
   if (dates.dateTime) {
@@ -64,10 +66,18 @@ function mapEvent(ev, helpers) {
     (ev._embedded && Array.isArray(ev._embedded.venues) && ev._embedded.venues[0]) || {};
   const image = bestImage(ev);
 
+  // Geo facts: venue.location.{latitude,longitude} (strings), NYC-bounds
+  // checked; borough from venue.postalCode first, venue.city.name fallback.
+  const loc = venueObj.location || {};
+  const geo = nycLatLon(loc.latitude, loc.longitude);
+  const borough = boroughFor(venueObj.postalCode, venueObj.city && venueObj.city.name);
+
   return {
     title: ev.name || '',
     venue: venueObj.name || '',
-    neighborhood: '',
+    neighborhood: borough,
+    lat: geo.lat,
+    lon: geo.lon,
     start,
     end: '',
     price: priceLabel(ev),

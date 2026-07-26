@@ -83,6 +83,12 @@ export function dedupeKey(venue, startISO, title) {
 
 const str = (v, max) => (v == null ? '' : String(v).trim().slice(0, max || 600));
 
+/* Coordinate passthrough: finite number or null (adapters already bounds-check). */
+const num = (v) => {
+  const n = typeof v === 'number' ? v : v == null || v === '' ? NaN : parseFloat(v);
+  return Number.isFinite(n) ? n : null;
+};
+
 /**
  * Build a canonical candidate row from an adapter's raw candidate.
  * Returns null when the raw facts are too thin to be useful.
@@ -103,6 +109,8 @@ export function buildCandidate(raw, sourceId, now) {
     title,
     venue,
     neighborhood: str(raw.neighborhood, 120),
+    lat: num(raw.lat),
+    lon: num(raw.lon),
     start,
     end_at: str(raw.end, 40),
     price: str(raw.price, 60),
@@ -131,13 +139,15 @@ function parseSignals(s) {
 }
 
 const INSERT_SQL =
-  'INSERT INTO candidates (id, city, title, venue, neighborhood, start, end_at, ' +
+  'INSERT INTO candidates (id, city, title, venue, neighborhood, lat, lon, start, end_at, ' +
   'price, url, image, image_source, blurb, blurb_origin, source, source_url, ' +
   'signals, dedupe_key, first_seen, fetched_at, status) ' +
-  'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+  'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
 
 // Merge path: accumulate signals, keep the earliest first_seen, refresh
 // fetched_at, and fill previously-blank facts (never overwrite existing ones).
+// lat/lon backfill NULLs only (both gated on lat so a pair never mixes rows);
+// neighborhood backfills '' — re-ingest after migration 0005 fills old rows.
 const MERGE_SQL =
   'UPDATE candidates SET signals = ?, fetched_at = ?, ' +
   "end_at = CASE WHEN end_at = '' THEN ? ELSE end_at END, " +
@@ -145,7 +155,9 @@ const MERGE_SQL =
   "url = CASE WHEN url = '' THEN ? ELSE url END, " +
   "image = CASE WHEN image = '' THEN ? ELSE image END, " +
   "image_source = CASE WHEN image = '' THEN ? ELSE image_source END, " +
-  "neighborhood = CASE WHEN neighborhood = '' THEN ? ELSE neighborhood END " +
+  "neighborhood = CASE WHEN neighborhood = '' THEN ? ELSE neighborhood END, " +
+  'lat = CASE WHEN lat IS NULL THEN ? ELSE lat END, ' +
+  'lon = CASE WHEN lat IS NULL THEN ? ELSE lon END ' +
   'WHERE id = ?';
 
 /**
@@ -178,6 +190,7 @@ export async function upsertCandidates(db, candidates) {
         db.prepare(MERGE_SQL).bind(
           JSON.stringify(signals), c.fetched_at,
           c.end_at, c.price, c.url, c.image, c.image_source, c.neighborhood,
+          c.lat, c.lon,
           prior.id
         )
       );
@@ -185,7 +198,8 @@ export async function upsertCandidates(db, candidates) {
     } else {
       stmts.push(
         db.prepare(INSERT_SQL).bind(
-          c.id, c.city, c.title, c.venue, c.neighborhood, c.start, c.end_at,
+          c.id, c.city, c.title, c.venue, c.neighborhood, c.lat, c.lon,
+          c.start, c.end_at,
           c.price, c.url, c.image, c.image_source, c.blurb, c.blurb_origin,
           c.source, c.source_url, c.signals, c.dedupe_key, c.first_seen,
           c.fetched_at, c.status
