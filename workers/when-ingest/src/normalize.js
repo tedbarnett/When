@@ -5,8 +5,8 @@
  * This module turns them into canonical rows:
  *   - start/end as ISO 8601 with the America/New_York offset, so
  *     substr(start, 1, 10) is always the NY-local date
- *   - dedupe_key = slug(venue) + '-' + YYYYMMDD + '-' + slug(title[:24])
- *     (slug mirrors overlay.js slugify)
+ *   - dedupe_key = slug(normVenue) + '-' + YYYYMMDD + '-' + slug(normTitle)
+ *     (normTitle/normVenue collapse cross-source spelling: TM vs SeatGeek)
  *   - upsert: an existing dedupe_key merges `signals` (JSON array of source
  *     ids) and keeps the earliest first_seen; new keys insert with
  *     id = dedupe_key, status 'new', city 'nyc'
@@ -75,10 +75,73 @@ export function nyISOFromDate(date) {
   );
 }
 
-/** dedupe_key = slug(venue)-YYYYMMDD-slug(title[:24]) */
+/**
+ * Cross-source title normalization for dedupe (issue #13 follow-up).
+ *
+ * Ticketmaster and SeatGeek spell the same show differently — TM bills
+ * "Fedge | Anjoli Simone | Havan" where SG bills "Fedge with Anjoli Simone,
+ * Havantepe (21+)" — and their support-act lists disagree (and truncate), so
+ * only the HEADLINER is stable across sources. Rules:
+ *   - fold accents, lowercase, "w/" -> "with"
+ *   - strip age tags: "(21+)", "18+", "16+ event"
+ *   - strip trailing "presented by …" promoter noise
+ *   - strip a leading "an evening with " frame (keeps the artist)
+ *   - keep the first segment before a support separator: "|", " with ", ","
+ *   - strip punctuation, a leading article (the/a/an), collapse whitespace
+ * Band names containing "with"/commas split the same way on both sources, so
+ * they still self-collapse; false merges would need two different same-day
+ * shows at one venue sharing a headliner prefix.
+ */
+export function normTitle(title) {
+  let s = String(title)
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\bw\/\s*/g, 'with ')
+    .replace(/\(?\b(?:16|18|21)\s*\+\s*(?:event\b)?\)?/g, ' ')
+    .replace(/\s+presented by\b.*$/, ' ')
+    .replace(/^\s*an evening with\s+/, '');
+  s = s.split(/\s*\|\s*/)[0];
+  s = s.split(/\s+with\s+/)[0];
+  s = s.split(/\s*,\s*/)[0];
+  s = s
+    .replace(/['\u2019]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/^(?:the|a|an)\s+/, '');
+  return s.replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Venue normalization for dedupe: fold accents/punctuation and drop a leading
+ * article so TM's "(Le) Poisson Rouge" keys like SG's "Le Poisson Rouge".
+ * (Watched venues already ingest under a canonical name; this covers the
+ * citywide rest.)
+ */
+export function normVenue(venue) {
+  const s = String(venue)
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/['\u2019]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/^(?:the|a|an|le|la|el|los)\s+/, '');
+  return s.replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * dedupe_key = slug(normVenue)-YYYYMMDD-slug(normTitle[:40])
+ *
+ * Local DATE only (no hour): TM and SG disagree on start times for the same
+ * show (doors vs set, e.g. 19:30 vs 20:00), so hour-bucketing misses real
+ * dupes. Same-day different shows still split on title. Caveat: an early and
+ * a late show of the SAME headliner on one day collapse to one candidate.
+ * Falls back to the legacy raw-title slug when normalization empties the
+ * title (e.g. a title that is only an age tag).
+ */
 export function dedupeKey(venue, startISO, title) {
   const day = String(startISO).slice(0, 10).replace(/-/g, '');
-  return slugify(venue) + '-' + day + '-' + slugify(String(title).slice(0, 24));
+  const t = slugify(normTitle(title)).slice(0, 40) || slugify(String(title).slice(0, 24));
+  return slugify(normVenue(venue)) + '-' + day + '-' + t;
 }
 
 const str = (v, max) => (v == null ? '' : String(v).trim().slice(0, max || 600));
@@ -142,7 +205,10 @@ const INSERT_SQL =
   'INSERT INTO candidates (id, city, title, venue, neighborhood, lat, lon, start, end_at, ' +
   'price, url, image, image_source, blurb, blurb_origin, source, source_url, ' +
   'signals, dedupe_key, first_seen, fetched_at, status) ' +
-  'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+  'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ' +
+  // Last-resort guard: a concurrent run (or an id/dedupe_key mismatch the
+  // by-id fallback below did not catch) must never abort the whole source.
+  'ON CONFLICT(id) DO NOTHING';
 
 // Merge path: accumulate signals, keep the earliest first_seen, refresh
 // fetched_at, and fill previously-blank facts (never overwrite existing ones).
@@ -155,6 +221,8 @@ const MERGE_SQL =
   "url = CASE WHEN url = '' THEN ? ELSE url END, " +
   "image = CASE WHEN image = '' THEN ? ELSE image END, " +
   "image_source = CASE WHEN image = '' THEN ? ELSE image_source END, " +
+  "blurb = CASE WHEN blurb = '' THEN ? ELSE blurb END, " +
+  "blurb_origin = CASE WHEN blurb = '' THEN ? ELSE blurb_origin END, " +
   "neighborhood = CASE WHEN neighborhood = '' THEN ? ELSE neighborhood END, " +
   'lat = CASE WHEN lat IS NULL THEN ? ELSE lat END, ' +
   'lon = CASE WHEN lat IS NULL THEN ? ELSE lon END ' +
@@ -167,12 +235,19 @@ const MERGE_SQL =
 export async function upsertCandidates(db, candidates) {
   if (!candidates.length) return { inserted: 0, merged: 0 };
 
-  // One read for the whole batch: existing rows keyed by dedupe_key.
+  // One read for the whole batch: existing rows keyed by dedupe_key, plus a
+  // by-id fallback — legacy rows keep their original id after the dedupe_key
+  // formula changes, so a new event's key can equal an old row's id without
+  // matching any dedupe_key; that must merge, not insert (PK conflict).
   const existing = new Map();
+  const byId = new Map();
   const { results } = await db
     .prepare("SELECT id, dedupe_key, signals FROM candidates WHERE city = 'nyc'")
     .all();
-  for (const row of results || []) existing.set(row.dedupe_key, row);
+  for (const row of results || []) {
+    existing.set(row.dedupe_key, row);
+    byId.set(row.id, row);
+  }
 
   const stmts = [];
   let inserted = 0;
@@ -182,14 +257,15 @@ export async function upsertCandidates(db, candidates) {
   for (const c of candidates) {
     if (seenThisBatch.has(c.dedupe_key)) continue; // intra-batch dupe
     seenThisBatch.add(c.dedupe_key);
-    const prior = existing.get(c.dedupe_key);
+    const prior = existing.get(c.dedupe_key) || byId.get(c.dedupe_key);
     if (prior) {
       const signals = parseSignals(prior.signals);
       if (!signals.includes(c.source)) signals.push(c.source);
       stmts.push(
         db.prepare(MERGE_SQL).bind(
           JSON.stringify(signals), c.fetched_at,
-          c.end_at, c.price, c.url, c.image, c.image_source, c.neighborhood,
+          c.end_at, c.price, c.url, c.image, c.image_source,
+          c.blurb, c.blurb_origin, c.neighborhood,
           c.lat, c.lon,
           prior.id
         )
