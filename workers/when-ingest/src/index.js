@@ -25,6 +25,7 @@
 
 import * as nycParks from './adapters/nycParks.js';
 import * as ticketmaster from './adapters/ticketmaster.js';
+import * as seatgeek from './adapters/seatgeek.js';
 import * as crawlJsonld from './crawl/jsonld.js';
 import * as crawlIcs from './crawl/ics.js';
 import {
@@ -39,6 +40,7 @@ import {
 const ADAPTERS = {
   'nyc-parks': nycParks,
   ticketmaster: ticketmaster,
+  seatgeek: seatgeek,
 };
 
 const HELPERS = { nyISOFromDate, nyISOFromLocal };
