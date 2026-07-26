@@ -3,23 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ted&rsquo;s NYC · When.org</title>
-<meta name="description" content="Real New York this week: jazz basements, free lawns, old movies, new food. Hand-picked, no filler. A When.org calendar: a web page, an ICS feed, and an API.">
-<link rel="canonical" href="https://when.org/teds-nyc">
+<title>NYC Basics · When.org</title>
+<meta name="description" content="The pre-cleaned New York baseline: real events from every source, minus the noise. A When.org calendar: a web page, an ICS feed, and an API.">
+<link rel="canonical" href="https://when.org/basics-nyc">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://when.org/teds-nyc">
+<meta property="og:url" content="https://when.org/basics-nyc">
 <meta property="og:site_name" content="When.org">
-<meta property="og:title" content="Ted&rsquo;s NYC · When.org">
-<meta property="og:description" content="Real New York this week, hand-picked. Subscribe once in Apple or Google Calendar and every week&rsquo;s picks arrive automatically.">
+<meta property="og:title" content="NYC Basics · When.org">
+<meta property="og:description" content="The pre-cleaned New York baseline. Subscribe once in Apple or Google Calendar and every week&rsquo;s events arrive automatically.">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Ted&rsquo;s NYC · When.org">
-<meta name="twitter:description" content="Real New York this week, hand-picked. Subscribe in any calendar app.">
+<meta name="twitter:title" content="NYC Basics · When.org">
+<meta name="twitter:description" content="The pre-cleaned New York baseline. Subscribe in any calendar app.">
 
 <style>
 /* ------------------------------------------------------------------
-   when.org — Ted's NYC event browser
+   when.org — NYC Basics event browser (generated from teds-nyc.html)
    Hand-written CSS. No framework, no build step.
    Dark by default; body[data-theme="light"] flips the tokens.
    Display voice: Bricolage Grotesque 800 lowercase + vermilion period.
@@ -424,12 +424,12 @@ body.modal-open { overflow: hidden; }
 
 <main>
   <div class="wrap calhead">
-    <div class="kicker" id="kicker">WHEN.ORG/TEDS-NYC</div>
+    <div class="kicker" id="kicker">WHEN.ORG/BASICS-NYC</div>
     <h1 class="view-title" id="view-title">tonight<span class="dot">.</span></h1>
     <div class="meta-row">
-      <span class="byline">Curated by Ted · things I&rsquo;d actually go to</span>
+      <span class="byline">The pre-cleaned NYC baseline · every curator&rsquo;s starting point</span>
       <span class="mchip" id="count-chip">this week</span>
-      <span class="mchip" id="follower-chip">142 followers</span>
+      <span class="mchip" id="follower-chip">base calendar</span>
       <button class="mchip" id="share-cal" type="button">↗ share calendar</button>
     </div>
   </div>
@@ -456,7 +456,7 @@ body.modal-open { overflow: hidden; }
 
   <div class="foot">
     <div class="foot-inner">
-      <span class="left">Ted&rsquo;s NYC is a <a href="/">when.org</a> calendar: a web page, an <a href="/teds-nyc.ics">ICS feed</a>, and a <a href="/data/teds-nyc.json">JSON API</a> from one list of events. Every event has its own link — share the good ones. Built on <a href="/basics-nyc">NYC Basics</a>.</span>
+      <span class="left">NYC Basics is a <a href="/">when.org</a> calendar: a web page, an <a href="/basics-nyc.ics">ICS feed</a>, and a <a href="/data/basics-nyc.json">JSON API</a> from one list of events. It&rsquo;s the pre-cleaned baseline that curator calendars like <a href="/teds-nyc">Ted&rsquo;s NYC</a> build on.</span>
       <span class="right">NEW YORK · THIS WEEK</span>
     </div>
   </div>
@@ -473,11 +473,11 @@ body.modal-open { overflow: hidden; }
     </div>
     <div class="sub-copy">Once, in the calendar app you already use. Every week&rsquo;s picks arrive automatically. Free forever.</div>
     <div class="sub-actions">
-      <a class="primary" href="webcal://when.org/teds-nyc.ics">Apple Calendar / iCal</a>
-      <a class="ghost" href="https://calendar.google.com/calendar/r?cid=https%3A%2F%2Fwhen.org%2Fteds-nyc.ics" target="_blank" rel="noopener">Google Calendar</a>
+      <a class="primary" href="webcal://when.org/basics-nyc.ics">Apple Calendar / iCal</a>
+      <a class="ghost" href="https://calendar.google.com/calendar/r?cid=https%3A%2F%2Fwhen.org%2Fbasics-nyc.ics" target="_blank" rel="noopener">Google Calendar</a>
       <button class="ghost" id="copy-feed" type="button">Copy feed URL</button>
     </div>
-    <div class="sub-foot">when.org/teds-nyc.ics · JSON at /data/teds-nyc.json</div>
+    <div class="sub-foot">when.org/basics-nyc.ics · JSON at /data/basics-nyc.json</div>
   </div>
 </div>
 
@@ -514,10 +514,10 @@ body.modal-open { overflow: hidden; }
   'use strict';
 
   /* ---------- state ---------- */
-  var DATA_URL = '/data/teds-nyc.json';
-  var ADMIN_URL = '/api/calendars/teds-nyc/admin';
-  var OVERLAY_URL = '/api/calendars/teds-nyc/overlay';
-  var FEED_URL = 'https://when.org/teds-nyc.ics';
+  var DATA_URL = '/data/basics-nyc.json';
+  var ADMIN_URL = '/api/calendars/basics-nyc/admin';
+  var OVERLAY_URL = '/api/calendars/basics-nyc/overlay';
+  var FEED_URL = 'https://when.org/basics-nyc.ics';
   var days = [];            // [{key, events:[...]}] today + upcoming, sorted asc
   var pastDays = [];        // [{key, events:[...]}] before today (NY), sorted desc
   var anyday = [];          // multi-day runs (start–end range) overlapping this week
@@ -591,17 +591,8 @@ body.modal-open { overflow: hidden; }
     row.hidden = false;
   }
 
-  /* Friends-going: mocked for the prototype; production = invite links + follow graph */
-  var FRIENDS = {
-    'bandshell-jazz-0724': ['Mara', 'Dev'],
-    'warm-up-ps1-0724': ['Dev', 'Kai', 'Ana'],
-    'winters-tale-0725': ['Mara'],
-    'smorgasburg-wburg-0725': ['Josh'],
-    'third-man-filmforum-0726': ['Priya', 'Sam'],
-    'truman-bryant-0727': ['Josh', 'Mara'],
-    'julieta-venegas-summerstage-0729': ['Ana'],
-    'ubb-summerstage-0730': ['Dev', 'Josh']
-  };
+  /* Friends-going: none on the base calendar (mock lives on curator pages) */
+  var FRIENDS = {};
 
   /* ---------- helpers ---------- */
   function esc(s) {
@@ -832,10 +823,8 @@ body.modal-open { overflow: hidden; }
     if (!days.length) { root.innerHTML = anyday.length ? anydaySectionHtml() : emptyGeoHtml(); return; }
     var day0 = days[0];
     var hero = null;
-    for (var i = 0; i < day0.events.length; i++) {
-      if (day0.events[i].id === 'bandshell-jazz-0724') { hero = day0.events[i]; break; }
-    }
-    if (!hero) { for (i = 0; i < day0.events.length; i++) { if (showImg(day0.events[i])) { hero = day0.events[i]; break; } } }
+    var i;
+    for (i = 0; i < day0.events.length; i++) { if (showImg(day0.events[i])) { hero = day0.events[i]; break; } }
     if (!hero) hero = day0.events[0];
 
     var cbH = cbIndex(hero.id);
@@ -848,7 +837,7 @@ body.modal-open { overflow: hidden; }
         hideBtnHtml(hero) +
         '<span class="hero-body">' +
           ownerChipsBlock(hero) +
-          '<span class="hero-kicker">' + esc(timeLabel(hero)) + ' · TED&rsquo;S HEADLINE PICK</span>' +
+          '<span class="hero-kicker">' + esc(timeLabel(hero)) + ' · HEADLINE PICK</span>' +
           '<span class="hero-title">' + esc(hero.title) + '</span>' +
           '<span class="hero-venue">' + esc(hero.venue) + (hero.neighborhood ? ' · ' + esc(hero.neighborhood) : '') + '</span>' +
           (hf.length ? '<span class="fchip">' + avatarStack(hf) + '<span class="flabel">' + esc(friendsLabel(hf)) + '</span></span>' : '') +
@@ -1002,7 +991,7 @@ body.modal-open { overflow: hidden; }
     if (view === 'month') t = monthName();
     if (view === 'history') t = 'history';
     titleEl.innerHTML = esc(t) + '<span class="dot">.</span>';
-    var kick = 'WHEN.ORG/TEDS-NYC';
+    var kick = 'WHEN.ORG/BASICS-NYC';
     if (days.length) kick += ' · ' + dayDate(days[0].key).toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase() + ' ' + ddateLabel(days[0].key);
     document.getElementById('kicker').textContent = kick;
     var geoN = geoFilteredCount();
@@ -1010,7 +999,7 @@ body.modal-open { overflow: hidden; }
       ? geoN + ' picks this week'
       : geoN + (geoN === 1 ? ' pick in ' : ' picks in ') + geoFilter;
     renderGeoRow();
-    document.getElementById('follower-chip').textContent = (followed ? 143 : 142) + ' followers';
+    document.getElementById('follower-chip').textContent = 'base calendar';
     var fb = document.getElementById('follow-btn');
     fb.textContent = followed ? '✓ Following' : 'Follow';
     var n = savedCount();
@@ -1145,7 +1134,7 @@ body.modal-open { overflow: hidden; }
         ownerBits +
         (f.length ? '<div class="detail-fchip">' + avatarStack(f) + '<span class="flabel">' + esc(friendsLabel(f)) + '</span></div>' : '') +
         (ev.blurb ? '<div class="detail-blurb">' + esc(ev.blurb) + '</div>' : '') +
-        '<div class="share-row"><span class="surl">when.org/teds-nyc/' + esc(ev.id) + '</span><button class="share-main" id="share-link" type="button">Share</button><button id="copy-link" type="button">Copy link</button></div>' +
+        '<div class="share-row"><span class="surl">when.org/basics-nyc/' + esc(ev.id) + '</span><button class="share-main" id="share-link" type="button">Share</button><button id="copy-link" type="button">Copy link</button></div>' +
         '<div class="detail-actions">' +
           '<button class="primary" type="button" data-save="' + esc(ev.id) + '" data-savelabel="1">' + (saved[ev.id] ? '✓ On my calendar' : '＋ Add to my calendar') + '</button>' +
           (ev.url ? '<a class="ghost" href="' + esc(ev.url) + '" target="_blank" rel="noopener">Venue site ↗</a>' : '') +
@@ -1182,7 +1171,7 @@ body.modal-open { overflow: hidden; }
     renderDetail();
     openOverlay('detail');
     if (push !== false) {
-      try { history.pushState({ whenDetail: id }, '', '/teds-nyc/' + encodeURIComponent(id)); } catch (e) {}
+      try { history.pushState({ whenDetail: id }, '', '/basics-nyc/' + encodeURIComponent(id)); } catch (e) {}
     }
   }
   function closeDetail(viaHistory) {
@@ -1192,12 +1181,12 @@ body.modal-open { overflow: hidden; }
     if (!viaHistory) {
       try {
         if (history.state && history.state.whenDetail) history.back();
-        else history.replaceState({}, '', '/teds-nyc');
+        else history.replaceState({}, '', '/basics-nyc');
       } catch (e) {}
     }
   }
   window.addEventListener('popstate', function (e) {
-    var m = location.pathname.match(/^\/teds-nyc\/([^\/]+)$/);
+    var m = location.pathname.match(/^\/basics-nyc\/([^\/]+)$/);
     if (m) { openDetail(decodeURIComponent(m[1]), false); }
     else if (detailId) { closeDetail(true); }
   });
@@ -1237,7 +1226,7 @@ body.modal-open { overflow: hidden; }
     if (shEl) {
       e.stopPropagation(); e.preventDefault();
       var sev = findEvent(shEl.getAttribute('data-sharehist'));
-      if (sev) shareOrCopy({ title: sev.title, text: 'I was there — ' + sev.title + ' at ' + sev.venue, url: 'https://when.org/teds-nyc/' + sev.id }, shEl);
+      if (sev) shareOrCopy({ title: sev.title, text: 'I was there — ' + sev.title + ' at ' + sev.venue, url: 'https://when.org/basics-nyc/' + sev.id }, shEl);
       return;
     }
     var hdEl = t.closest ? t.closest('[data-hide]') : null;
@@ -1300,21 +1289,21 @@ body.modal-open { overflow: hidden; }
     if (t.id === 'import-done-close') { closeOverlay('import'); return; }
 
     if (t.id === 'copy-feed') { copyText(FEED_URL, t); return; }
-    if (t.id === 'copy-link' && detailId) { copyText('https://when.org/teds-nyc/' + detailId, t); return; }
+    if (t.id === 'copy-link' && detailId) { copyText('https://when.org/basics-nyc/' + detailId, t); return; }
     if (t.id === 'share-link' && detailId) {
       var dev = findEvent(detailId);
       shareOrCopy({
         title: dev ? dev.title : 'When.org',
         text: dev ? (dev.blurb || dev.venue || '') : '',
-        url: 'https://when.org/teds-nyc/' + detailId
+        url: 'https://when.org/basics-nyc/' + detailId
       }, t);
       return;
     }
     if (t.id === 'share-cal') {
       shareOrCopy({
-        title: 'Ted\u2019s NYC · When.org',
-        text: 'Real New York this week, hand-picked — jazz basements, free lawns, old movies, new food.',
-        url: 'https://when.org/teds-nyc'
+        title: 'NYC Basics · When.org',
+        text: 'The pre-cleaned New York baseline — real events from every source, minus the noise.',
+        url: 'https://when.org/basics-nyc'
       }, t);
       return;
     }
@@ -1324,7 +1313,7 @@ body.modal-open { overflow: hidden; }
   });
 
   /* ---------- owner: paste-a-URL importer (issue #6) ---------- */
-  var IMPORT_URL = '/api/calendars/teds-nyc/import';
+  var IMPORT_URL = '/api/calendars/basics-nyc/import';
   var importState = 'input';  // input | loading | review | saving | done
   var importEv = null;        // extracted event under review
   var importSrc = '';         // 'jsonld' | 'ai'
@@ -1384,9 +1373,9 @@ body.modal-open { overflow: hidden; }
     if (importState === 'done') {
       box.innerHTML = '<div class="import-done">' +
         '<div class="live">✓ added to the calendar</div>' +
-        '<div class="durl">when.org/teds-nyc/' + esc(importedId) + '</div>' +
+        '<div class="durl">when.org/basics-nyc/' + esc(importedId) + '</div>' +
         '<div class="import-done-actions">' +
-          '<a class="primary" href="/teds-nyc/' + encodeURIComponent(importedId) + '">View event page</a>' +
+          '<a class="primary" href="/basics-nyc/' + encodeURIComponent(importedId) + '">View event page</a>' +
           '<button class="ghost" id="import-done-close" type="button">Done</button>' +
         '</div>' +
       '</div>';
@@ -1701,13 +1690,13 @@ body.modal-open { overflow: hidden; }
 
     /* schema.org ItemList of Events */
     try {
-      var ld = { '@context': 'https://schema.org', '@type': 'ItemList', name: "Ted's NYC", url: 'https://when.org/teds-nyc', itemListElement: [] };
+      var ld = { '@context': 'https://schema.org', '@type': 'ItemList', name: 'NYC Basics', url: 'https://when.org/basics-nyc', itemListElement: [] };
       allEvents.forEach(function (ev, i) {
         ld.itemListElement.push({
           '@type': 'ListItem', position: i + 1,
           item: {
             '@type': 'Event', name: ev.title, startDate: ev.start,
-            url: 'https://when.org/teds-nyc/' + ev.id,
+            url: 'https://when.org/basics-nyc/' + ev.id,
             location: { '@type': 'Place', name: ev.venue, address: (ev.neighborhood ? ev.neighborhood + ', ' : '') + 'New York, NY' },
             image: ev.image || undefined, description: ev.blurb || undefined
           }
@@ -1719,14 +1708,14 @@ body.modal-open { overflow: hidden; }
       document.head.appendChild(s);
     } catch (e) {}
 
-    /* deep link: server injects __WHEN_DETAIL_ID for /teds-nyc/{id}; also parse path */
+    /* deep link: server injects __WHEN_DETAIL_ID for /basics-nyc/{id}; also parse path */
     var deep = window.__WHEN_DETAIL_ID;
     if (!deep) {
-      var m = location.pathname.match(/^\/teds-nyc\/([^\/]+)$/);
+      var m = location.pathname.match(/^\/basics-nyc\/([^\/]+)$/);
       if (m) deep = decodeURIComponent(m[1]);
     }
     if (deep && findEvent(deep)) {
-      try { history.replaceState({ whenDetail: deep }, '', '/teds-nyc/' + encodeURIComponent(deep)); } catch (e) {}
+      try { history.replaceState({ whenDetail: deep }, '', '/basics-nyc/' + encodeURIComponent(deep)); } catch (e) {}
       openDetail(deep, false);
     }
   }).catch(function () {});
