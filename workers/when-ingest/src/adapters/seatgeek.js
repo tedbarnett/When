@@ -19,8 +19,8 @@ const API_URL = 'https://api.seatgeek.com/2/events';
 const NYC_LAT = '40.7318';
 const NYC_LON = '-74.0035';
 const RANGE = '15mi';
-const PAGE_SIZE = 250;
-const MAX_PAGES = 4; // 1000/run — pushes the citywide horizon out ~2-3 weeks
+const PAGE_SIZE = 100; // SeatGeek silently caps per_page at 100
+const MAX_PAGES = 10; // 1000/run — pushes the citywide horizon out ~2-3 weeks
 
 export function mapEvent(ev, helpers) {
   const dtLocal = typeof ev.datetime_local === 'string' ? ev.datetime_local : '';
