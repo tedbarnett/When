@@ -115,6 +115,8 @@ button { font-family: inherit; }
 .edit-form label { display: grid; gap: 4px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; color: var(--faint); }
 .edit-form input, .edit-form textarea { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; color: var(--ink); font-family: var(--sans); font-size: 14px; padding: 9px 12px; outline: none; width: 100%; }
 .edit-form input:focus, .edit-form textarea:focus { border-color: var(--faint); }
+.edit-form select { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; color: var(--ink); font-family: var(--sans); font-size: 14px; padding: 9px 12px; outline: none; width: 100%; }
+.edit-form select:focus { border-color: var(--faint); }
 .edit-form textarea { min-height: 74px; resize: vertical; }
 .edit-actions { display: flex; gap: 9px; margin-top: 12px; }
 .edit-actions .save { background: var(--accent); border: none; color: #fff; font-weight: 700; font-size: 13.5px; border-radius: 999px; padding: 9px 18px; cursor: pointer; }
@@ -131,6 +133,7 @@ button { font-family: inherit; }
     <a class="brand" href="/"><span class="wordmark">when<span class="tld">.org</span></span></a>
     <div style="display:flex;gap:8px">
       <a class="back-link" href="/nyc/sources">sources</a>
+      <a class="back-link" href="/basics-nyc">nyc basics</a>
       <a class="back-link" href="/teds-nyc">← ted&rsquo;s nyc</a>
     </div>
   </div>
@@ -183,7 +186,19 @@ button { font-family: inherit; }
 
   /* ---------- config / state ---------- */
   var IDEAS_URL = '/api/cities/nyc/ideas';
-  var OVERLAY_URL = '/api/calendars/teds-nyc/overlay';
+  /* Add targets (issue #15): NYC Basics is the default — the base layer
+     everyone builds on; Ted's NYC inherits it. Last choice is remembered. */
+  var CAL_OPTIONS = [
+    { id: 'basics-nyc', label: 'NYC Basics' },
+    { id: 'teds-nyc', label: 'Ted\u2019s NYC' }
+  ];
+  var CAL_LABEL = { 'basics-nyc': 'NYC Basics', 'teds-nyc': 'Ted\u2019s NYC' };
+  function overlayUrlFor(cal) { return '/api/calendars/' + cal + '/overlay'; }
+  var addTarget = 'basics-nyc';
+  try {
+    var savedTarget = localStorage.getItem('when:ideas:target');
+    if (savedTarget && CAL_LABEL[savedTarget]) addTarget = savedTarget;
+  } catch (e) {}
   var SOURCE_LABEL = { 'nyc-parks': 'NYC Parks', 'ticketmaster': 'Ticketmaster' };
   var cur = null;        // last API payload {date, prev, next, events, anyday}
   var addingId = null;   // candidate id open in the add sheet
@@ -355,7 +370,7 @@ button { font-family: inherit; }
       '<div class="idea-actions">' +
         (link ? '<a class="linkout" href="' + esc(link) + '" target="_blank" rel="noopener" aria-label="Open source page">↗</a>' : '') +
         (ev.added
-          ? '<span class="added-chip">✓ added</span>'
+          ? '<span class="added-chip"' + (ev.added_on && CAL_LABEL[ev.added_on] ? ' title="on ' + esc(CAL_LABEL[ev.added_on]) + '"' : '') + '>✓ added</span>'
           : '<button class="add-btn" type="button" data-add="' + esc(ev.id) + '">＋ add</button>') +
       '</div>' +
     '</div>';
@@ -452,8 +467,17 @@ button { font-family: inherit; }
   }
 
   /* ---------- add flow (mirrors teds-nyc.html import-add-form) ---------- */
+  function calPickerHtml() {
+    var html = '<label>add to calendar<select name="target" id="add-target">';
+    for (var i = 0; i < CAL_OPTIONS.length; i++) {
+      var o = CAL_OPTIONS[i];
+      html += '<option value="' + esc(o.id) + '"' + (o.id === addTarget ? ' selected' : '') + '>' + esc(o.label) + (o.id === 'basics-nyc' ? ' (base layer)' : '') + '</option>';
+    }
+    return html + '</select></label>';
+  }
   function addFormHtml(ev) {
     return '<form class="edit-form" id="ideas-add-form">' +
+      calPickerHtml() +
       '<label>title<input name="title" value="' + esc(ev.title) + '" required maxlength="200"></label>' +
       '<label>venue<input name="venue" value="' + esc(ev.venue || '') + '" required maxlength="200"></label>' +
       '<label>neighborhood<input name="neighborhood" value="' + esc(ev.neighborhood || '') + '" maxlength="120"></label>' +
@@ -486,9 +510,9 @@ button { font-family: inherit; }
     document.getElementById('add-backdrop').hidden = true;
     document.getElementById('add-content').innerHTML = '';
   }
-  function markAdded(id) {
+  function markAdded(id, target) {
     var ev = findCandidate(id);
-    if (ev) ev.added = true;
+    if (ev) { ev.added = true; ev.added_on = target || ''; }
     renderDay();
   }
 
@@ -533,9 +557,13 @@ button { font-family: inherit; }
     if (dt) ev.start = dt.length === 16 ? dt + ':00' + nyOffsetFor(dt) : dt;
     var de = f.end.value;
     if (de) ev.end = de.length === 16 ? de + ':00' + nyOffsetFor(de) : de;
+    var targetSel = f.target;
+    var target = targetSel && CAL_LABEL[targetSel.value] ? targetSel.value : 'basics-nyc';
+    addTarget = target;
+    try { localStorage.setItem('when:ideas:target', target); } catch (err) {}
     var saveBtn = e.target.querySelector('.save');
     if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Adding…'; }
-    fetch(OVERLAY_URL, {
+    fetch(overlayUrlFor(target), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'add', event: ev })
@@ -544,7 +572,7 @@ button { font-family: inherit; }
     }).then(function (res) {
       if (res.s === 200 && res.d && res.d.ok) {
         closeAdd();
-        markAdded(id);
+        markAdded(id, target);
       } else {
         if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Add to calendar'; }
         var err = document.getElementById('add-err');

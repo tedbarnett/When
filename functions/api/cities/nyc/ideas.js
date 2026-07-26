@@ -13,15 +13,17 @@
  *   each event: { id, title, venue, neighborhood, start, end, price, url,
  *                 image, source, source_url, signals: [ids], added: bool }
  *
- * `added` = already on the curator's calendar: the merged calendar
- * (base JSON + KV overlay) is matched by dedupe-style key
- * slug(venue)-YYYYMMDD-slug(title[:24]) or by exact title+date.
+ * `added` = already on a curator calendar: NYC Basics (basics-nyc) and the
+ * COMPOSED Ted's NYC (teds-nyc, which inherits basics) are both checked,
+ * matched by dedupe-style key slug(venue)-YYYYMMDD-slug(title[:24]) or by
+ * exact title+date. `added_on` names the calendar it was found on
+ * ('basics-nyc' preferred when it's on both, since teds inherits it).
  *
  * Storage note: candidates.start/end_at carry the NY offset, so
  * substr(x, 1, 10) is the NY-local date. Never use SQLite date() on them —
  * it shifts offset-suffixed values to UTC.
  */
-import { applyOverlay, loadBaseData, loadOverlay } from '../../../_lib/calendar.js';
+import { loadComposed } from '../../../_lib/calendar.js';
 import { readSession, json, OWNER_EMAIL } from '../../../_lib/session.js';
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -60,11 +62,14 @@ function parseSignals(s) {
 const SHORT_COND =
   "(end_at = '' OR substr(end_at, 1, 10) < date(substr(start, 1, 10), '+2 day'))";
 
-function rowToEvent(row, calKeys, calTitleDates) {
+function rowToEvent(row, marks) {
   const dateKey = String(row.start).slice(0, 10);
-  const added =
-    calKeys.has(calendarKey(row.venue, dateKey, row.title)) ||
-    calTitleDates.has(String(row.title).trim().toLowerCase() + '|' + dateKey);
+  const key = calendarKey(row.venue, dateKey, row.title);
+  const titleDate = String(row.title).trim().toLowerCase() + '|' + dateKey;
+  let addedOn = '';
+  for (const m of marks) {
+    if (m.keys.has(key) || m.titleDates.has(titleDate)) { addedOn = m.cal; break; }
+  }
   return {
     id: row.id,
     title: row.title,
@@ -81,7 +86,8 @@ function rowToEvent(row, calKeys, calTitleDates) {
     source_url: row.source_url,
     signals: parseSignals(row.signals),
     status: row.status,
-    added,
+    added: !!addedOn,
+    added_on: addedOn,
   };
 }
 
@@ -96,23 +102,23 @@ export async function onRequestGet({ request, env }) {
   const qDate = url.searchParams.get('date') || '';
   const date = DATE_RE.test(qDate) ? qDate : nyTodayKey();
 
-  // Already-on-calendar detection: merged calendar (base + overlay) keys.
-  const calKeys = new Set();
-  const calTitleDates = new Set();
-  try {
-    const [base, overlay] = await Promise.all([
-      loadBaseData(env, url.origin),
-      loadOverlay(env),
-    ]);
-    const merged = applyOverlay(base, overlay, { includeHidden: true });
-    for (const ev of merged.events || []) {
-      if (!ev || !ev.start) continue;
-      const k = String(ev.start).slice(0, 10);
-      calKeys.add(calendarKey(ev.venue || '', k, ev.title || ''));
-      calTitleDates.add(String(ev.title || '').trim().toLowerCase() + '|' + k);
+  // Already-on-calendar detection: NYC Basics first (preferred label —
+  // teds-nyc inherits it), then the composed Ted's NYC (own + inherited).
+  const marks = [];
+  for (const cal of ['basics-nyc', 'teds-nyc']) {
+    const m = { cal, keys: new Set(), titleDates: new Set() };
+    try {
+      const merged = await loadComposed(env, url.origin, cal, { includeHidden: true });
+      for (const ev of merged.events || []) {
+        if (!ev || !ev.start) continue;
+        const k = String(ev.start).slice(0, 10);
+        m.keys.add(calendarKey(ev.venue || '', k, ev.title || ''));
+        m.titleDates.add(String(ev.title || '').trim().toLowerCase() + '|' + k);
+      }
+    } catch {
+      // Calendar unavailable: ideas still render, just without ✓ detection.
     }
-  } catch {
-    // Calendar unavailable: ideas still render, just without ✓ detection.
+    marks.push(m);
   }
 
   const [dayRes, anydayRes, prevRes, nextRes] = await db.batch([
@@ -135,8 +141,8 @@ export async function onRequestGet({ request, env }) {
     ).bind(date),
   ]);
 
-  const events = (dayRes.results || []).map((r) => rowToEvent(r, calKeys, calTitleDates));
-  const anyday = (anydayRes.results || []).map((r) => rowToEvent(r, calKeys, calTitleDates));
+  const events = (dayRes.results || []).map((r) => rowToEvent(r, marks));
+  const anyday = (anydayRes.results || []).map((r) => rowToEvent(r, marks));
   const prev = (prevRes.results && prevRes.results[0] && prevRes.results[0].d) || null;
   const next = (nextRes.results && nextRes.results[0] && nextRes.results[0].d) || null;
 
