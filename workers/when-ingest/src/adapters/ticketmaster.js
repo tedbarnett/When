@@ -16,8 +16,8 @@ import { boroughFor, nycLatLon } from '../geo.js';
 
 const API_URL = 'https://app.ticketmaster.com/discovery/v2/events.json';
 const NY_DMA_ID = '345';
-const PAGE_SIZE = 100;
-const MAX_PAGES = 3; // Discovery caps size*page at 1000 anyway; 300/run is plenty for P0
+const PAGE_SIZE = 200;
+const MAX_PAGES = 5; // Discovery hard-caps size*(page+1) at 1000 — this is the max reach
 
 /** "$25–60" (min–max), "$25" when min == max. Empty when no price facts. */
 function priceLabel(ev) {
