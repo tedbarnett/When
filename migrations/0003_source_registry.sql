@@ -64,9 +64,6 @@ INSERT OR IGNORE INTO sources (id, tier, name, url, enabled, kind, crawl_url, no
   ('jalopy-theatre', 'C', 'Jalopy Theatre', 'https://jalopytheatre.org', 0,
    'jsonld', 'https://jalopytheatre.org/livemusic',
    'calendar is a React SPA (empty HTML shell); no JSON-LD/ICS — needs custom parser'),
-  ('berlin-under-a', 'C', 'Berlin (25 Avenue A)', 'https://berlin.nyc', 0,
-   'jsonld', 'https://berlin.nyc/calendar/',
-   'real domain is berlin.nyc (berlinundera.com/berlinnyc.com are squatted); JSON-LD is Yoast WebPage only, no Events, no ICS; calendar is TicketWeb-powered — TicketWeb is TM-owned, check Ticketmaster Discovery coverage (Tier A), else custom parser'),
 
 -- ------------------------------------------------------------------- comedy
   ('comedy-cellar', 'C', 'Comedy Cellar', 'https://www.comedycellar.com', 0,
@@ -142,4 +139,4 @@ INSERT OR IGNORE INTO sources (id, tier, name, url, enabled, kind, crawl_url, no
    'signal-only: leads, not facts — P2 (site is a newsletter archive; leads come from the list)'),
   ('berlin-under-a', 'C', 'Berlin Under A', 'https://berlin.nyc', 0,
    'jsonld', 'https://berlin.nyc/calendar/',
-   'calendar page has no Event JSON-LD (Yoast block only, 0 events); robots OK. NOTE: berlinnyc.com is a hijacked spam domain — real site is berlin.nyc. Shows also list on Ticketmaster venue 341249, so the ticketmaster adapter covers them.');
+   'calendar page has no Event JSON-LD (Yoast block only, 0 events) and no ICS; listings are TicketWeb-powered; robots OK. NOTE: berlinnyc.com and berlinundera.com are hijacked/squatted spam domains — real site is berlin.nyc. Shows also list on Ticketmaster venue 341249, so the ticketmaster adapter covers them.');
