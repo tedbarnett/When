@@ -64,6 +64,9 @@ INSERT OR IGNORE INTO sources (id, tier, name, url, enabled, kind, crawl_url, no
   ('jalopy-theatre', 'C', 'Jalopy Theatre', 'https://jalopytheatre.org', 0,
    'jsonld', 'https://jalopytheatre.org/livemusic',
    'calendar is a React SPA (empty HTML shell); no JSON-LD/ICS — needs custom parser'),
+  ('berlin-under-a', 'C', 'Berlin (25 Avenue A)', 'https://berlin.nyc', 0,
+   'jsonld', 'https://berlin.nyc/calendar/',
+   'real domain is berlin.nyc (berlinundera.com/berlinnyc.com are squatted); JSON-LD is Yoast WebPage only, no Events, no ICS; calendar is TicketWeb-powered — TicketWeb is TM-owned, check Ticketmaster Discovery coverage (Tier A), else custom parser'),
 
 -- ------------------------------------------------------------------- comedy
   ('comedy-cellar', 'C', 'Comedy Cellar', 'https://www.comedycellar.com', 0,
