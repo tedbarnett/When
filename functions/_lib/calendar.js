@@ -1,11 +1,12 @@
 /**
  * When.org calendar overlay helpers.
  *
- * The base calendar lives in the repo as a static asset
- * (public/data/teds-nyc.json). Curator changes — hidden events and in-place
- * edits — live in KV (binding WHEN_CAL) as a single overlay document:
+ * Each calendar's base lives in the repo as a static asset
+ * (public/data/<id>.json). Curator changes — hidden events, in-place edits,
+ * and curator-added events — live in KV (binding WHEN_CAL) as one overlay
+ * document per calendar:
  *
- *   key "cal:teds-nyc" = {
+ *   key "cal:<id>" = {
  *     hidden: { <eventId>: true },
  *     edits:  { <eventId>: { title?, venue?, neighborhood?, price?,
  *                            blurb?, start?, url?, image? } },
@@ -13,13 +14,38 @@
  *                            that don't exist in the base JSON } }
  *   }
  *
+ * COMPOSITION (issue #15): a calendar may declare `extends: <parentId>` in
+ * the CALENDARS registry. Its merged output is then
+ *
+ *   applyOverlay( parentPublicEvents ∪ ownBaseEvents, ownOverlay )
+ *
+ * where parentPublicEvents is the parent's own merged PUBLIC view (parent
+ * base + parent overlay, parent hides applied) and duplicate ids resolve
+ * child-wins. Inherited events behave exactly like base events for the
+ * child: the child's overlay can hide them (local hide — the parent keeps
+ * them), edit them in place, and "reset" drops the local edit while the
+ * event remains inherited. In owner/admin views (opts.includeHidden)
+ * inherited events carry _inherited: true; public output stays clean.
+ *
  * Every consumer (public JSON, ICS feed, per-event pages, admin API) merges
  * through this module so they never disagree.
  *
  * This directory is underscore-prefixed so Pages Functions never routes it.
  */
 
-export const CAL_KEY = 'cal:teds-nyc';
+/** Registry of known calendars. extends = parent calendar id (depth 1). */
+export const CALENDARS = {
+  'teds-nyc': { title: "Ted's NYC", extends: 'basics-nyc' },
+  'basics-nyc': { title: 'NYC Basics', extends: null },
+};
+
+/** KV key for a calendar's overlay document. */
+export function calKey(id) {
+  return 'cal:' + id;
+}
+
+/** Back-compat: the original single-calendar constant. */
+export const CAL_KEY = calKey('teds-nyc');
 
 /**
  * Pure merge: apply an overlay to a base calendar document.
@@ -70,12 +96,12 @@ export function applyOverlay(data, overlay, opts) {
   return { ...data, events };
 }
 
-/** Read the overlay document from KV. Always returns {hidden, edits, added}. */
-export async function loadOverlay(env) {
+/** Read a calendar's overlay document from KV. Always returns {hidden, edits, added}. */
+export async function loadOverlayFor(env, id) {
   const empty = { hidden: {}, edits: {}, added: {} };
   if (!env || !env.WHEN_CAL) return empty;
   try {
-    const raw = await env.WHEN_CAL.get(CAL_KEY);
+    const raw = await env.WHEN_CAL.get(calKey(id));
     if (!raw) return empty;
     const o = JSON.parse(raw);
     return {
@@ -88,23 +114,75 @@ export async function loadOverlay(env) {
   }
 }
 
-/** Fetch the base JSON asset (bypasses Functions routing, so no recursion). */
-export async function loadBaseData(env, origin) {
-  const res = await env.ASSETS.fetch(new URL('/data/teds-nyc.json', origin));
+/** Back-compat: Ted's NYC overlay. */
+export function loadOverlay(env) {
+  return loadOverlayFor(env, 'teds-nyc');
+}
+
+/** Fetch a calendar's base JSON asset (bypasses Functions routing, so no recursion). */
+export async function loadBaseDataFor(env, origin, id) {
+  const res = await env.ASSETS.fetch(new URL('/data/' + id + '.json', origin));
   if (!res.ok) throw new Error('calendar data unavailable');
   return res.json();
 }
 
+/** Back-compat: Ted's NYC base JSON. */
+export function loadBaseData(env, origin) {
+  return loadBaseDataFor(env, origin, 'teds-nyc');
+}
+
 /**
- * Load base data + overlay and merge.
- * Returns { data, events, overlay } where data is the full merged document.
- * opts.includeHidden=true keeps hidden events (marked) for owner views.
+ * The EFFECTIVE base for a calendar: its own base events plus, when the
+ * registry declares `extends`, the parent's merged public events (parent
+ * hides applied, parent edits baked in). Duplicate ids resolve child-wins.
+ * With opts.markInherited, inherited events carry _inherited: true (used by
+ * owner/admin views; never set for public output).
+ * Returns the base document (same envelope as the calendar's own base).
  */
-export async function loadMergedEvents(env, origin, opts) {
+export async function loadComposedBase(env, origin, id, opts) {
+  const entry = CALENDARS[id] || {};
+  const parentId = entry.extends || null;
+  const markInherited = !!(opts && opts.markInherited);
+  if (!parentId) return loadBaseDataFor(env, origin, id);
+  const [ownBase, parentBase, parentOverlay] = await Promise.all([
+    loadBaseDataFor(env, origin, id),
+    loadBaseDataFor(env, origin, parentId),
+    loadOverlayFor(env, parentId),
+  ]);
+  // Parent contributes its PUBLIC merged view: parent-hidden events are
+  // gone for subscribers, parent edits and parent-added events flow down.
+  const parentPub = applyOverlay(parentBase, parentOverlay);
+  if (!(parentPub.events || []).length) return ownBase;
+  const ownIds = {};
+  for (const e of ownBase.events || []) ownIds[e.id] = true;
+  const inherited = [];
+  for (const e of parentPub.events || []) {
+    if (ownIds[e.id]) continue; // duplicate id: the child calendar wins
+    inherited.push(markInherited ? { ...e, _inherited: true } : e);
+  }
+  return { ...ownBase, events: inherited.concat(ownBase.events || []) };
+}
+
+/**
+ * Load a calendar's composed base + its own overlay and merge.
+ * Returns { data, events, overlay } where data is the full merged document.
+ * opts.includeHidden=true keeps hidden events (marked _hidden/_edited/
+ * _added/_inherited) for owner views.
+ */
+export async function loadComposed(env, origin, id, opts) {
+  const includeHidden = !!(opts && opts.includeHidden);
   const [base, overlay] = await Promise.all([
-    loadBaseData(env, origin),
-    loadOverlay(env),
+    loadComposedBase(env, origin, id, { markInherited: includeHidden }),
+    loadOverlayFor(env, id),
   ]);
   const data = applyOverlay(base, overlay, opts);
   return { data, events: data.events, overlay };
+}
+
+/**
+ * Back-compat: Ted's NYC merged view. Since teds-nyc now extends basics-nyc,
+ * this is the composed view — a no-op while NYC Basics is empty.
+ */
+export function loadMergedEvents(env, origin, opts) {
+  return loadComposed(env, origin, 'teds-nyc', opts);
 }

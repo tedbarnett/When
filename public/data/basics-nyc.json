@@ -1,0 +1,12 @@
+{
+  "calendar": {
+    "slug": "basics-nyc",
+    "title": "NYC Basics",
+    "byline": "The pre-cleaned NYC baseline · curated on When.org",
+    "description": "The legitimately-good NYC baseline: the candidate pool minus the noise. Curator calendars build on top of it.",
+    "city": "New York",
+    "timezone": "America/New_York",
+    "followers": 0
+  },
+  "events": []
+}
