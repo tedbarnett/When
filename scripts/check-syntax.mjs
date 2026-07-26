@@ -1,9 +1,18 @@
-// Syntax-check every inline <script> in public/*.html with new Function.
+// Syntax-check every inline <script> in public/**/*.html with new Function.
 import { readFileSync, readdirSync } from 'node:fs';
 
+function walk(dir) {
+  const out = [];
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    if (e.isDirectory()) out.push(...walk(dir + '/' + e.name));
+    else if (e.name.endsWith('.html')) out.push(dir + '/' + e.name);
+  }
+  return out;
+}
+
 let bad = 0;
-for (const f of readdirSync('public').filter((f) => f.endsWith('.html'))) {
-  const html = readFileSync('public/' + f, 'utf8');
+for (const f of walk('public')) {
+  const html = readFileSync(f, 'utf8');
   const re = /(<script(?![^>]*\bsrc=)[^>]*>)([\s\S]*?)<\/script>/gi;
   let m, i = 0;
   while ((m = re.exec(html))) {
