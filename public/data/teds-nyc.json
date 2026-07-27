@@ -146,7 +146,8 @@
         "theater",
         "outdoors",
         "free"
-      ]
+      ],
+      "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Shakespeare_in_the_Park_July_2021.jpg/1280px-Shakespeare_in_the_Park_July_2021.jpg"
     },
     {
       "id": "kris-davis-vanguard-0725",
@@ -184,7 +185,8 @@
         "music",
         "outdoors",
         "free"
-      ]
+      ],
+      "image": "https://cityparksfoundation.org/wp-content/uploads/elementor/thumbs/SS40Bro_24x36-rmoc9v1twjbmzk2oh0afzv5wooxc8zno348e60ytl8.webp"
     },
     {
       "id": "summer-streets-0725",
@@ -203,7 +205,8 @@
       "tags": [
         "outdoors",
         "free"
-      ]
+      ],
+      "image": "https://www.nyc.gov/html/dot/images/pedestrians/summer-streets-2026-600px.jpg"
     },
     {
       "id": "fort-greene-jazz-0725",
@@ -223,7 +226,8 @@
         "jazz",
         "outdoors",
         "free"
-      ]
+      ],
+      "image": "https://images.squarespace-cdn.com/content/63e12e443e0bde59091188ad/1692898399107-MGX22WEZXZ8D5Z5OQL14/9-9-17+jazz+fest+side.jpg?format=1500w"
     },
     {
       "id": "smorgasburg-wburg-0725",
@@ -263,7 +267,8 @@
         "jazz",
         "free",
         "offbeat"
-      ]
+      ],
+      "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Washington_Heights_Apr_2026_23.jpg/1280px-Washington_Heights_Apr_2026_23.jpg"
     },
     {
       "id": "guelaguetza-socrates-0726",
@@ -303,7 +308,8 @@
       "tags": [
         "market",
         "offbeat"
-      ]
+      ],
+      "image": "https://grandbazaarnyc.org/wp-content/uploads/2026/04/NYC-Vintage-Fashion-Pop-up.jpg"
     },
     {
       "id": "third-man-filmforum-0726",
@@ -358,7 +364,8 @@
         "theater",
         "outdoors",
         "free"
-      ]
+      ],
+      "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/HRPKsep2021.png/1280px-HRPKsep2021.png"
     },
     {
       "id": "truman-bryant-0727",
@@ -377,7 +384,8 @@
         "film",
         "outdoors",
         "free"
-      ]
+      ],
+      "image": "https://bryantpark.org/images/cache/assets/uploads/images/meta/Movie-Nights-Bryant-Park_2019-06-24_Angelito-Jusay_142-1200x627.jpg"
     },
     {
       "id": "keyon-harrold-bluenote-0728",
@@ -412,7 +420,8 @@
       "url": "https://www.comedycellar.com/",
       "tags": [
         "comedy"
-      ]
+      ],
+      "image": "https://upload.wikimedia.org/wikipedia/commons/2/24/The_Comedy_Cellar_%2848072765427%29.jpg"
     },
     {
       "id": "julieta-venegas-summerstage-0729",
@@ -471,7 +480,8 @@
         "music",
         "outdoors",
         "free"
-      ]
+      ],
+      "image": "https://cityparksfoundation.org/wp-content/uploads/elementor/thumbs/SS40Bro_24x36-rmoc9v1twjbmzk2oh0afzv5wooxc8zno348e60ytl8.webp"
     },
     {
       "id": "atomic-habitz-bluenote-0730",
@@ -508,7 +518,8 @@
       "tags": [
         "theater",
         "offbeat"
-      ]
+      ],
+      "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Hell%27s_Kitchen_Oct_2025_51.jpg/1280px-Hell%27s_Kitchen_Oct_2025_51.jpg"
     }
   ]
 }
