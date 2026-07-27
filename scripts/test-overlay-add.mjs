@@ -116,11 +116,51 @@ await call({ action: 'reset', id: 'existing-0801' }, owner);
   check('base event survives reset', pub.events.some((e) => e.id === 'existing-0801'), true);
   check('base title restored', pub.events.find((e) => e.id === 'existing-0801').title, 'Existing');
 }
-/* legacy overlay docs (no added key) still load */
+/* remove / unremove (owner ✕: gone for EVERYONE, owner included) */
+check('remove anon -> 401', (await call({ action: 'remove', id: 'existing-0801' })).status, 401);
+check('remove non-owner -> 403', (await call({ action: 'remove', id: 'existing-0801' }, other)).status, 403);
+check('remove unknown id -> 400', (await call({ action: 'remove', id: 'nope-0801' }, owner)).status, 400);
+check('unremove unknown id -> 400', (await call({ action: 'unremove', id: 'nope-0801' }, owner)).status, 400);
+/* removing a static event: hides/edits stay put so undo restores exactly */
+await call({ action: 'hide', id: 'existing-0801' }, owner);
+await call({ action: 'edit', id: 'existing-0801', fields: { title: 'Existing (edited)' } }, owner);
+check('remove base -> 200', (await call({ action: 'remove', id: 'existing-0801' }, owner)).status, 200);
+{
+  const ov = await loadOverlay(env);
+  check('removed flag stored', ov.removed['existing-0801'], true);
+  check('removed gone from public', applyOverlay(base, ov).events.some((e) => e.id === 'existing-0801'), false);
+  check('removed gone from OWNER view too', applyOverlay(base, ov, { includeHidden: true }).events.some((e) => e.id === 'existing-0801'), false);
+  check('remove keeps hidden for undo', ov.hidden['existing-0801'], true);
+  check('remove keeps edits for undo', ov.edits['existing-0801'].title, 'Existing (edited)');
+}
+check('unremove -> 200', (await call({ action: 'unremove', id: 'existing-0801' }, owner)).status, 200);
+{
+  const ov = await loadOverlay(env);
+  check('unremove clears flag', 'existing-0801' in ov.removed, false);
+  check('unremove: still hidden from public (state restored)', applyOverlay(base, ov).events.some((e) => e.id === 'existing-0801'), false);
+  const own = applyOverlay(base, ov, { includeHidden: true }).events.find((e) => e.id === 'existing-0801');
+  check('unremove: back in owner view', !!own, true);
+  check('unremove: hide restored', own._hidden, true);
+  check('unremove: edit restored', own.title, 'Existing (edited)');
+}
+await call({ action: 'unhide', id: 'existing-0801' }, owner);
+await call({ action: 'reset', id: 'existing-0801' }, owner);
+/* remove on a curator-ADDED event deletes it outright (mirrors reset) */
+await call({ action: 'add', event: { ...newEv, id: 'removable-add-0801' } }, owner);
+check('remove added -> 200', (await call({ action: 'remove', id: 'removable-add-0801' }, owner)).status, 200);
+{
+  const ov = await loadOverlay(env);
+  check('remove deletes added entry', 'removable-add-0801' in ov.added, false);
+  check('added remove leaves removed list clean', 'removable-add-0801' in ov.removed, false);
+  check('added event gone everywhere', applyOverlay(base, ov, { includeHidden: true }).events.some((e) => e.id === 'removable-add-0801'), false);
+}
+
+/* legacy overlay docs (no added/removed keys) still load */
 kv.set(CAL_KEY, JSON.stringify({ hidden: {}, edits: {} }));
 {
   const ov = await loadOverlay(env);
   check('legacy overlay gets added:{}', JSON.stringify(ov.added), '{}');
+  check('legacy overlay gets removed:{}', JSON.stringify(ov.removed), '{}');
   check('legacy overlay merge ok', applyOverlay(base, ov).events.length, 2);
 }
 

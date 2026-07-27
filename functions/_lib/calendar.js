@@ -11,7 +11,13 @@
  *     edits:  { <eventId>: { title?, venue?, neighborhood?, price?,
  *                            blurb?, start?, url?, image? } },
  *     added:  { <eventId>: { full event object — curator-imported events
- *                            that don't exist in the base JSON } }
+ *                            that don't exist in the base JSON } },
+ *     removed: { <eventId>: true }  — events deleted from THIS calendar for
+ *                            everyone, owner included ("it was a mistake").
+ *                            Unlike hidden, removed events vanish from the
+ *                            public page, ICS, JSON API, AND owner/admin
+ *                            views; only overlay action "unremove" brings
+ *                            one back.
  *   }
  *
  * COMPOSITION (issue #15): a calendar may declare `extends: <parentId>` in
@@ -85,10 +91,14 @@ export function applyOverlay(data, overlay, opts) {
   const hidden = (overlay && overlay.hidden) || {};
   const edits = (overlay && overlay.edits) || {};
   const added = (overlay && overlay.added) || {};
+  const removed = (overlay && overlay.removed) || {};
   const events = [];
   const baseIds = {};
   for (const base of (data && data.events) || []) {
     baseIds[base.id] = true;
+    // Removed events are gone for EVERYONE, owner included — no marker,
+    // no includeHidden escape hatch. Undo goes through action "unremove".
+    if (removed[base.id]) continue;
     const isHidden = !!hidden[base.id];
     if (isHidden && !includeHidden) continue;
     const edit = edits[base.id];
@@ -103,6 +113,7 @@ export function applyOverlay(data, overlay, opts) {
   // event with the same id always wins (add enforces uniqueness anyway).
   for (const id of Object.keys(added)) {
     if (baseIds[id]) continue;
+    if (removed[id]) continue; // defensive: added events are deleted outright, but honor removed anyway
     const src = added[id];
     if (!src || typeof src !== 'object' || !src.start) continue;
     const isHidden = !!hidden[id];
@@ -121,9 +132,9 @@ export function applyOverlay(data, overlay, opts) {
   return { ...data, events };
 }
 
-/** Read a calendar's overlay document from KV. Always returns {hidden, edits, added}. */
+/** Read a calendar's overlay document from KV. Always returns {hidden, edits, added, removed}. */
 export async function loadOverlayFor(env, id) {
-  const empty = { hidden: {}, edits: {}, added: {} };
+  const empty = { hidden: {}, edits: {}, added: {}, removed: {} };
   if (!env || !env.WHEN_CAL) return empty;
   try {
     const raw = await env.WHEN_CAL.get(calKey(id));
@@ -133,6 +144,7 @@ export async function loadOverlayFor(env, id) {
       hidden: (o && typeof o.hidden === 'object' && o.hidden) || {},
       edits: (o && typeof o.edits === 'object' && o.edits) || {},
       added: (o && typeof o.added === 'object' && o.added) || {},
+      removed: (o && typeof o.removed === 'object' && o.removed) || {},
     };
   } catch {
     return empty;

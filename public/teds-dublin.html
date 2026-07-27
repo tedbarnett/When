@@ -351,6 +351,11 @@ button.mchip:hover { border-color: var(--faint); color: var(--ink); }
 .owner-pill { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: transparent; color: var(--muted); font-family: var(--mono); font-size: 11px; border-radius: 999px; padding: 6px 14px; cursor: pointer; transition: border-color .15s ease, color .15s ease; }
 .owner-pill:hover { border-color: var(--faint); color: var(--ink); }
 .owner-pill:disabled { opacity: .5; cursor: default; }
+.undo-toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 60; display: flex; align-items: center; gap: 12px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 8px 8px 8px 18px; font-family: var(--mono); font-size: 12px; box-shadow: 0 14px 36px -8px rgba(0,0,0,.55); max-width: min(92vw, 480px); }
+.undo-toast .ut-msg { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.undo-toast .ut-undo { border: 1px solid var(--faint); background: transparent; color: var(--spark); font-family: var(--mono); font-size: 12px; border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+.undo-toast .ut-undo:hover { border-color: var(--spark); }
+.undo-toast .ut-undo:disabled { opacity: .5; cursor: default; }
 .edit-form { display: grid; gap: 9px; margin-top: 4px; }
 .edit-form label { display: grid; gap: 4px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
 .edit-form input, .edit-form textarea { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; color: var(--ink); font-family: var(--sans); font-size: 13.5px; padding: 9px 12px; outline: none; width: 100%; }
@@ -1171,6 +1176,7 @@ body.modal-open { overflow: hidden; }
         '<div class="owner-row">' +
           '<button class="owner-pill" type="button" data-edit-open="1">✎ edit</button>' +
           '<button class="owner-pill" type="button" data-hide="' + esc(ev.id) + '">' + (ev._hidden ? EYE_ON_SVG + ' unhide' : EYE_OFF_SVG + ' hide') + '</button>' +
+          (ev._added ? '' : '<button class="owner-pill" type="button" data-remove="' + esc(ev.id) + '">✕ remove</button>') +
           (ev._edited && !ev._added ? '<button class="owner-pill" type="button" data-edit-reset="' + esc(ev.id) + '">↺ reset edits</button>' : '') +
           (ev._added ? '<button class="owner-pill" type="button" data-edit-reset="' + esc(ev.id) + '">✕ remove event</button>' : '') +
         '</div>';
@@ -1289,6 +1295,23 @@ body.modal-open { overflow: hidden; }
       hdEl.disabled = true;
       postOverlay({ action: (hev && hev._hidden) ? 'unhide' : 'hide', id: hid }).then(function (ok) {
         if (ok) loadAdminData(); else hdEl.disabled = false;
+      });
+      return;
+    }
+    var rmEl = t.closest ? t.closest('[data-remove]') : null;
+    if (rmEl) {
+      e.stopPropagation(); e.preventDefault();
+      var xid = rmEl.getAttribute('data-remove');
+      var xev = findEvent(xid);
+      /* remove deletes for EVERYONE (owner too) — confirm, then offer undo */
+      if (!window.confirm('Remove “' + (xev ? xev.title : xid) + '” from this calendar? It disappears for everyone — you can undo right after.')) return;
+      rmEl.disabled = true;
+      postOverlay({ action: 'remove', id: xid }).then(function (ok) {
+        if (ok) {
+          if (detailId === xid) closeDetail();
+          loadAdminData();
+          showUndoToast(xev ? xev.title : 'Event', xid);
+        } else rmEl.disabled = false;
       });
       return;
     }
@@ -1533,6 +1556,31 @@ body.modal-open { overflow: hidden; }
     }
   });
   document.getElementById('add-event-open').addEventListener('click', openImport);
+
+  /* ---------- owner: transient "Removed — undo" toast (✕ remove) ---------- */
+  var undoTimer = null;
+  function hideUndoToast() {
+    var el = document.getElementById('undo-toast');
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+    if (undoTimer) { clearTimeout(undoTimer); undoTimer = null; }
+  }
+  function showUndoToast(title, id) {
+    hideUndoToast();
+    var el = document.createElement('div');
+    el.className = 'undo-toast';
+    el.id = 'undo-toast';
+    el.setAttribute('role', 'status');
+    el.innerHTML = '<span class="ut-msg">Removed “' + esc(title) + '”</span><button class="ut-undo" type="button">undo</button>';
+    el.querySelector('.ut-undo').addEventListener('click', function () {
+      var b = this;
+      b.disabled = true;
+      postOverlay({ action: 'unremove', id: id }).then(function (ok) {
+        if (ok) { hideUndoToast(); loadAdminData(); } else b.disabled = false;
+      });
+    });
+    document.body.appendChild(el);
+    undoTimer = setTimeout(hideUndoToast, 8000);
+  }
 
   /* ---------- owner: overlay writes + admin data ---------- */
   function postOverlay(payload) {

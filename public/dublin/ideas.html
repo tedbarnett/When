@@ -495,7 +495,7 @@ button { font-family: inherit; }
         '<div class="idea-title">' + esc(dispTitle) + '</div>' +
         '<div class="idea-venue">' + g.items.length + ' locations' + (hoodTxt ? ' · ' + esc(hoodTxt) : '') + '</div>' +
         '<div class="idea-chips">' +
-          (added ? '<span class="chip">✓ ' + added + ' added</span>' : '') +
+          (added ? '<span class="chip">✓ ' + added + ' on calendar</span>' : '') +
           srcChips(first) +
         '</div>' +
       '</div>' +
@@ -529,7 +529,7 @@ button { font-family: inherit; }
       '<div class="idea-actions">' +
         (link ? '<a class="linkout" href="' + esc(link) + '" target="_blank" rel="noopener" aria-label="Open source page">↗</a>' : '') +
         (ev.added
-          ? '<span class="added-chip"' + (ev.added_on && CAL_LABEL[ev.added_on] ? ' title="on ' + esc(CAL_LABEL[ev.added_on]) + '"' : '') + '>✓ added</span>'
+          ? '<span class="added-chip"' + (ev.added_on && CAL_LABEL[ev.added_on] ? ' title="on ' + esc(CAL_LABEL[ev.added_on]) + '"' : '') + '>✓ on calendar</span>'
           : '<button class="add-btn" type="button" data-add="' + esc(ev.id) + '">＋ add</button>') +
       '</div>' +
     '</div>';

@@ -52,7 +52,7 @@ export function makeAdminHandler(calId) {
 
 /* ---------------- overlay ---------------- */
 
-const ACTIONS = { hide: 1, unhide: 1, edit: 1, reset: 1, add: 1 };
+const ACTIONS = { hide: 1, unhide: 1, edit: 1, reset: 1, add: 1, remove: 1, unremove: 1 };
 
 const FIELD_RULES = {
   title: { max: 200, required: true },
@@ -155,6 +155,15 @@ function validateEdit(rawFields, baseEv) {
  *                                             title/start/venue; id is
  *                                             slugified + de-duped against
  *                                             base, added, AND inherited ids.
+ *   { action: "remove", id }                — delete the event from THIS
+ *       calendar for everyone, owner included ("it was a mistake"). On a
+ *       curator-ADDED event this deletes the added entry outright (same as
+ *       reset); on a base or inherited event it lands on the overlay's
+ *       removed list — hides/edits are left in place so an unremove
+ *       restores the event exactly as it was. Inherited events: LOCAL
+ *       removal — the parent calendar keeps the event.
+ *   { action: "unremove", id }              — take it back off the removed
+ *                                             list (the undo).
  *
  * 401 without a session, 403 for signed-in non-owners, 400 on bad input.
  * Returns { ok: true, overlay } on success ({ ok, id, event, overlay } for add).
@@ -209,13 +218,27 @@ export function makeOverlayHandler(calId) {
     if (typeof id !== 'string' || !id || id.length > 200) {
       return json({ ok: false, error: 'missing or invalid id' }, 400);
     }
-    // hide/edit/reset apply to base events, inherited events, AND
-    // curator-added events
+    // hide/edit/reset/remove apply to base events, inherited events, AND
+    // curator-added events. unremove additionally accepts any id already on
+    // the removed list (the base asset may have changed underneath it).
     const addedEv = overlay.added[id];
     const baseEv = (base.events || []).find((e) => e.id === id) || addedEv;
-    if (!baseEv) return json({ ok: false, error: 'unknown event id' }, 400);
+    if (!baseEv && !(action === 'unremove' && overlay.removed[id])) {
+      return json({ ok: false, error: 'unknown event id' }, 400);
+    }
 
-    if (action === 'hide') {
+    if (action === 'remove') {
+      if (addedEv) {
+        // curator-added events are deleted outright (mirrors reset)
+        delete overlay.added[id];
+        delete overlay.hidden[id];
+        delete overlay.edits[id];
+      } else {
+        overlay.removed[id] = true;
+      }
+    } else if (action === 'unremove') {
+      delete overlay.removed[id];
+    } else if (action === 'hide') {
       overlay.hidden[id] = true;
     } else if (action === 'unhide') {
       delete overlay.hidden[id];
