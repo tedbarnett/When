@@ -8,11 +8,54 @@
 
 import { loadComposed } from './calendar.js';
 
-var TZID = "America/New_York";
+// Per-zone VTIMEZONE blocks + the city name appended to LOCATION lines.
+// Events are authored as local wall time with the zone's offset baked into
+// the ISO string, so the feed only needs the zone's standing DST rules.
+var TZINFO = {
+  "America/New_York": {
+    cityLabel: "New York",
+    vtimezone: [
+      "BEGIN:DAYLIGHT",
+      "TZOFFSETFROM:-0500",
+      "TZOFFSETTO:-0400",
+      "TZNAME:EDT",
+      "DTSTART:19700308T020000",
+      "RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU",
+      "END:DAYLIGHT",
+      "BEGIN:STANDARD",
+      "TZOFFSETFROM:-0400",
+      "TZOFFSETTO:-0500",
+      "TZNAME:EST",
+      "DTSTART:19701101T020000",
+      "RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU",
+      "END:STANDARD"
+    ]
+  },
+  "Europe/Dublin": {
+    cityLabel: "Dublin",
+    vtimezone: [
+      "BEGIN:DAYLIGHT",
+      "TZOFFSETFROM:+0000",
+      "TZOFFSETTO:+0100",
+      "TZNAME:IST",
+      "DTSTART:19700329T010000",
+      "RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=-1SU",
+      "END:DAYLIGHT",
+      "BEGIN:STANDARD",
+      "TZOFFSETFROM:+0100",
+      "TZOFFSETTO:+0000",
+      "TZNAME:GMT",
+      "DTSTART:19701025T020000",
+      "RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU",
+      "END:STANDARD"
+    ]
+  }
+};
 
 /**
  * makeIcsHandler('teds-nyc', { calName: "Ted's NYC", prodId: 'Teds NYC',
- * filename: 'teds-nyc.ics', fallbackDesc: 'Curated NYC events' })
+ * filename: 'teds-nyc.ics', fallbackDesc: 'Curated NYC events',
+ * tzid: 'America/New_York' (default) })
  * -> { onRequest } serving GET /<id>.ics
  */
 export function makeIcsHandler(calId, opts) {
@@ -20,6 +63,8 @@ export function makeIcsHandler(calId, opts) {
   var prodId = (opts && opts.prodId) || calName;
   var filename = (opts && opts.filename) || calId + ".ics";
   var fallbackDesc = (opts && opts.fallbackDesc) || "Curated NYC events";
+  var TZID = (opts && opts.tzid && TZINFO[opts.tzid]) ? opts.tzid : "America/New_York";
+  var tzinfo = TZINFO[TZID];
 
   async function onRequest(context) {
     if (context.request.method !== "GET" && context.request.method !== "HEAD") {
@@ -46,23 +91,8 @@ export function makeIcsHandler(calId, opts) {
       "X-WR-TIMEZONE:" + TZID,
       "REFRESH-INTERVAL;VALUE=DURATION:PT12H",
       "BEGIN:VTIMEZONE",
-      "TZID:" + TZID,
-      "BEGIN:DAYLIGHT",
-      "TZOFFSETFROM:-0500",
-      "TZOFFSETTO:-0400",
-      "TZNAME:EDT",
-      "DTSTART:19700308T020000",
-      "RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU",
-      "END:DAYLIGHT",
-      "BEGIN:STANDARD",
-      "TZOFFSETFROM:-0400",
-      "TZOFFSETTO:-0500",
-      "TZNAME:EST",
-      "DTSTART:19701101T020000",
-      "RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU",
-      "END:STANDARD",
-      "END:VTIMEZONE"
-    ];
+      "TZID:" + TZID
+    ].concat(tzinfo.vtimezone, ["END:VTIMEZONE"]);
 
     for (var i = 0; i < data.events.length; i++) {
       var ev = data.events[i];
@@ -80,7 +110,7 @@ export function makeIcsHandler(calId, opts) {
       lines.push("DTEND;TZID=" + TZID + ":" + end);
       lines.push("SUMMARY:" + escapeText(ev.title));
       lines.push("DESCRIPTION:" + escapeText(descParts.join("\n")));
-      lines.push("LOCATION:" + escapeText([ev.venue, ev.neighborhood, "New York"].filter(Boolean).join(", ")));
+      lines.push("LOCATION:" + escapeText([ev.venue, ev.neighborhood, tzinfo.cityLabel].filter(Boolean).join(", ")));
       if (ev.url) lines.push("URL:" + ev.url);
       lines.push("END:VEVENT");
     }

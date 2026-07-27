@@ -1,0 +1,951 @@
+{
+  "calendar": {
+    "slug": "teds-dublin",
+    "title": "Ted's Dublin",
+    "byline": "Curated by Ted · things I’d actually go to",
+    "description": "Real Dublin this week: gigs, Georgian theatres, castle tours, seaside markets. Hand-picked, no filler.",
+    "city": "Dublin",
+    "timezone": "Europe/Dublin",
+    "followers": 1
+  },
+  "events": [
+    {
+      "id": "riverdance-30-the-new-generation-0617",
+      "title": "Riverdance 30 – The New Generation",
+      "blurb": "The 30th-anniversary edition of the Irish dance phenomenon runs all summer at its home theatre, with matinee and evening shows most days.",
+      "venue": "Gaiety Theatre",
+      "neighborhood": "City Centre",
+      "geo": {
+        "lat": 53.3403,
+        "lng": -6.261
+      },
+      "start": "2026-06-17T00:00:00+01:00",
+      "end": "2026-09-06T23:00:00+01:00",
+      "price": "From €44.45",
+      "url": "https://www.visitdublin.com/riverdance-30-the-new-generation-gaiety",
+      "image": "",
+      "tags": [
+        "theater"
+      ]
+    },
+    {
+      "id": "the-brightening-air-by-conor-mcpherson-0717",
+      "title": "The Brightening Air by Conor McPherson",
+      "blurb": "McPherson directs his own award-winning play about siblings in a 1980s rural Irish homestead, a Gate presentation of the Old Vic production.",
+      "venue": "Gate Theatre",
+      "neighborhood": "City Centre",
+      "geo": {
+        "lat": 53.3527,
+        "lng": -6.2604
+      },
+      "start": "2026-07-17T19:30:00+01:00",
+      "end": "2026-08-30T23:00:00+01:00",
+      "price": "",
+      "url": "https://gatetheatre.ie/production/the-brightening-air-2026/",
+      "image": "",
+      "tags": [
+        "theater"
+      ]
+    },
+    {
+      "id": "summer-in-dublin-free-weekend-street-eve-0718",
+      "title": "Summer in Dublin – Free Weekend Street Events",
+      "blurb": "Dublin City Council's free weekend series turns Parliament Street into a family playground with street performers, interactive shows and workshops.",
+      "venue": "Parliament Street",
+      "neighborhood": "Temple Bar",
+      "start": "2026-07-18T00:00:00+01:00",
+      "end": "2026-08-09T23:00:00+01:00",
+      "price": "Free",
+      "url": "https://www.visitdublin.com/summer-in-dublin-2026",
+      "image": "",
+      "tags": [
+        "outdoor"
+      ]
+    },
+    {
+      "id": "rembrandt-to-matisse-a-celebration-of-eu-0728",
+      "title": "Rembrandt to Matisse – A Celebration of European Prints and Drawings",
+      "blurb": "Admission-free exhibition of around fifty of the Gallery's finest European works on paper, running 27 June to 8 November 2026.",
+      "venue": "National Gallery of Ireland",
+      "neighborhood": "City Centre",
+      "geo": {
+        "lat": 53.341,
+        "lng": -6.2523
+      },
+      "start": "2026-07-28T00:00:00+01:00",
+      "end": "2026-11-08T23:00:00+01:00",
+      "price": "Free",
+      "url": "https://www.nationalgallery.ie/art-and-artists/exhibitions/Rembrandt-Matisse-celebration-european-works-paper",
+      "image": "",
+      "tags": [
+        "museums"
+      ]
+    },
+    {
+      "id": "common-ground-ireland-and-the-eu-0728",
+      "title": "Common Ground: Ireland and the EU",
+      "blurb": "New multimedia exhibition timed to Ireland's EU presidency, exploring Irish influence in Europe, on show 1 July to 31 December 2026.",
+      "venue": "EPIC The Irish Emigration Museum",
+      "neighborhood": "Docklands",
+      "geo": {
+        "lat": 53.3489,
+        "lng": -6.2488
+      },
+      "start": "2026-07-28T00:00:00+01:00",
+      "end": "2026-12-31T23:00:00+01:00",
+      "price": "",
+      "url": "https://epicchq.com/event/new-exhibition-common-ground/",
+      "image": "",
+      "tags": [
+        "museums"
+      ]
+    },
+    {
+      "id": "making-a-show-of-myself-0728",
+      "title": "Making A Show of Myself",
+      "blurb": "Moth Grand Slam champion Mary Kate O Flanagan performs six true stories in a solo show fresh from an off-Broadway run.",
+      "venue": "Smock Alley Theatre (Boys' School)",
+      "neighborhood": "Temple Bar",
+      "geo": {
+        "lat": 53.345,
+        "lng": -6.2705
+      },
+      "start": "2026-07-28T00:00:00+01:00",
+      "end": "2026-08-01T23:00:00+01:00",
+      "price": "",
+      "url": "https://smockalley.com/making-a-show-of-myself/",
+      "image": "",
+      "tags": [
+        "theater"
+      ]
+    },
+    {
+      "id": "gaze-international-lgbtqia-film-festival-0728",
+      "title": "GAZE International LGBTQIA Film Festival",
+      "blurb": "Ireland's long-running queer film festival, founded in 1992, screens features and shorts across two city cinemas.",
+      "venue": "Light House Cinema & IFI",
+      "neighborhood": "Smithfield",
+      "geo": {
+        "lat": 53.348,
+        "lng": -6.278
+      },
+      "start": "2026-07-28T00:00:00+01:00",
+      "end": "2026-08-03T23:00:00+01:00",
+      "price": "",
+      "url": "https://dublin.ie/whats-on/listings/gaze-international-lgbtq-film-festival/",
+      "image": "",
+      "tags": [
+        "film"
+      ]
+    },
+    {
+      "id": "a-new-form-of-beauty-dublin-youth-cultur-0728",
+      "title": "A New Form of Beauty: Dublin Youth Culture, Street Style and Subculture 1960s-1990s",
+      "blurb": "Photographic exhibition of Dublin street style and subcultures from the 1960s to 1990s, in its final month at Collins Barracks.",
+      "venue": "National Museum of Ireland – Decorative Arts & History, Collins Barracks",
+      "neighborhood": "Smithfield",
+      "start": "2026-07-28T00:00:00+01:00",
+      "end": "2026-08-31T23:00:00+01:00",
+      "price": "Free",
+      "url": "https://www.museum.ie/en-IE/Museums/Decorative-Arts-History/Exhibitions/A-new-form-of-Beauty-Photographic-Exhibition",
+      "image": "",
+      "tags": [
+        "museums"
+      ]
+    },
+    {
+      "id": "historical-walking-tours-of-dublin-the-o-0728",
+      "title": "Historical Walking Tours of Dublin (The Original Tour)",
+      "blurb": "Two-hour tour led by history professionals covering the English conquest through the peace process, running daily in season since 1986.",
+      "venue": "Departs Trinity College area",
+      "neighborhood": "City Centre",
+      "geo": {
+        "lat": 53.3438,
+        "lng": -6.2546
+      },
+      "start": "2026-07-28T11:00:00+01:00",
+      "end": "2026-08-12T23:00:00+01:00",
+      "price": "",
+      "url": "https://historicaltours.ie/",
+      "image": "",
+      "tags": [
+        "tours"
+      ]
+    },
+    {
+      "id": "dublin-literary-pub-crawl-0728",
+      "title": "Dublin Literary Pub Crawl",
+      "blurb": "Actor-led nightly summer walk through four historic pubs and Trinity College, performing Joyce, Beckett, Wilde and Behan along the way.",
+      "venue": "The Duke Pub, 9 Duke Street (start point)",
+      "neighborhood": "City Centre",
+      "geo": {
+        "lat": 53.3421,
+        "lng": -6.2593
+      },
+      "start": "2026-07-28T19:15:00+01:00",
+      "end": "2026-08-12T23:00:00+01:00",
+      "price": "€20-22",
+      "url": "https://dublinpubcrawl.com/",
+      "image": "",
+      "tags": [
+        "tours"
+      ]
+    },
+    {
+      "id": "fawlty-towers-the-play-0728",
+      "title": "Fawlty Towers – The Play",
+      "blurb": "John Cleese's stage adaptation of the classic sitcom plays a five-night Dublin run after a sold-out West End season.",
+      "venue": "Bord Gáis Energy Theatre",
+      "neighborhood": "Grand Canal Dock",
+      "geo": {
+        "lat": 53.3444,
+        "lng": -6.2402
+      },
+      "start": "2026-07-28T19:30:00+01:00",
+      "price": "€30+",
+      "url": "https://www.bordgaisenergytheatre.ie/show/fawlty-towers/",
+      "image": "",
+      "tags": [
+        "theater"
+      ]
+    },
+    {
+      "id": "fawlty-towers-the-play-0729",
+      "title": "Fawlty Towers – The Play",
+      "blurb": "John Cleese's stage adaptation of the classic sitcom plays a five-night Dublin run after a sold-out West End season.",
+      "venue": "Bord Gáis Energy Theatre",
+      "neighborhood": "Grand Canal Dock",
+      "geo": {
+        "lat": 53.3444,
+        "lng": -6.2402
+      },
+      "start": "2026-07-29T19:30:00+01:00",
+      "price": "€30+",
+      "url": "https://www.bordgaisenergytheatre.ie/show/fawlty-towers/",
+      "image": "",
+      "tags": [
+        "theater"
+      ]
+    },
+    {
+      "id": "glu-0729",
+      "title": "Glu",
+      "blurb": "Mid-week headline show on Whelan's main stage from rising act Glu.",
+      "venue": "Whelan's (Main Venue)",
+      "neighborhood": "Portobello",
+      "geo": {
+        "lat": 53.335,
+        "lng": -6.265
+      },
+      "start": "2026-07-29T19:30:00+01:00",
+      "price": "€21.50",
+      "url": "https://www.whelanslive.com/event/glu/",
+      "image": "",
+      "tags": [
+        "live-music"
+      ]
+    },
+    {
+      "id": "dublin-by-dusk-late-opening-at-epic-0730",
+      "title": "Dublin by Dusk: Late Opening at EPIC",
+      "blurb": "EPIC stays open late on Thursday 30 July as part of the city-wide Dublin by Dusk initiative.",
+      "venue": "EPIC The Irish Emigration Museum",
+      "neighborhood": "Docklands",
+      "geo": {
+        "lat": 53.3489,
+        "lng": -6.2488
+      },
+      "start": "2026-07-30T17:30:00+01:00",
+      "price": "€10",
+      "url": "https://epicchq.com/event/late-openings-dublin-by-dusk-epic/",
+      "image": "",
+      "tags": [
+        "museums"
+      ]
+    },
+    {
+      "id": "julian-marley-0730",
+      "title": "Julian Marley",
+      "blurb": "Reggae artist and son of Bob Marley brings his live band to Abbey Street.",
+      "venue": "The Academy",
+      "neighborhood": "City Centre",
+      "geo": {
+        "lat": 53.3486,
+        "lng": -6.26
+      },
+      "start": "2026-07-30T19:00:00+01:00",
+      "price": "",
+      "url": "https://fme-booking.com/concerts/julian-marley-dublin-2026-07-30/",
+      "image": "",
+      "tags": [
+        "live-music"
+      ]
+    },
+    {
+      "id": "fawlty-towers-the-play-0730",
+      "title": "Fawlty Towers – The Play",
+      "blurb": "John Cleese's stage adaptation of the classic sitcom plays a five-night Dublin run after a sold-out West End season.",
+      "venue": "Bord Gáis Energy Theatre",
+      "neighborhood": "Grand Canal Dock",
+      "geo": {
+        "lat": 53.3444,
+        "lng": -6.2402
+      },
+      "start": "2026-07-30T19:30:00+01:00",
+      "price": "€30+",
+      "url": "https://www.bordgaisenergytheatre.ie/show/fawlty-towers/",
+      "image": "",
+      "tags": [
+        "theater"
+      ]
+    },
+    {
+      "id": "fawlty-towers-the-play-0731",
+      "title": "Fawlty Towers – The Play",
+      "blurb": "John Cleese's stage adaptation of the classic sitcom plays a five-night Dublin run after a sold-out West End season.",
+      "venue": "Bord Gáis Energy Theatre",
+      "neighborhood": "Grand Canal Dock",
+      "geo": {
+        "lat": 53.3444,
+        "lng": -6.2402
+      },
+      "start": "2026-07-31T19:30:00+01:00",
+      "price": "€30+",
+      "url": "https://www.bordgaisenergytheatre.ie/show/fawlty-towers/",
+      "image": "",
+      "tags": [
+        "theater"
+      ]
+    },
+    {
+      "id": "clara-rose-band-blues-roots-brass-festiv-0731",
+      "title": "Clara Rose Band – Blues, Roots & Brass Festival",
+      "blurb": "Free-entry blues set opening the weekend of Whelan's Blues, Roots & Brass Festival.",
+      "venue": "Whelan's (Main Venue)",
+      "neighborhood": "Portobello",
+      "geo": {
+        "lat": 53.335,
+        "lng": -6.265
+      },
+      "start": "2026-07-31T20:30:00+01:00",
+      "price": "Free",
+      "url": "https://www.whelanslive.com/event/clara-rose-band/",
+      "image": "",
+      "tags": [
+        "live-music"
+      ]
+    },
+    {
+      "id": "rainforest-takeover-august-bank-holiday--0801",
+      "title": "Rainforest Takeover – August Bank Holiday Weekend",
+      "blurb": "Three days of rainforest-themed activities across the zoo, including a self-guided Rainforest Ranger Trail with a VIP experience prize for kids.",
+      "venue": "Dublin Zoo",
+      "neighborhood": "Phoenix Park",
+      "geo": {
+        "lat": 53.3559,
+        "lng": -6.3055
+      },
+      "start": "2026-08-01T00:00:00+01:00",
+      "end": "2026-08-03T23:00:00+01:00",
+      "price": "",
+      "url": "https://www.dublinzoo.ie/events/august-bank-holiday-weekend/",
+      "image": "",
+      "tags": [
+        "outdoor"
+      ]
+    },
+    {
+      "id": "free-august-tours-of-the-archaeology-col-0801",
+      "title": "Free August Tours of the Archaeology Collection",
+      "blurb": "Guide-led free tours of the archaeology collection run throughout August; no booking, first come first served, kids welcome with an adult.",
+      "venue": "National Museum of Ireland – Archaeology, Kildare Street",
+      "neighborhood": "City Centre",
+      "start": "2026-08-01T00:00:00+01:00",
+      "end": "2026-08-29T23:00:00+01:00",
+      "price": "Free",
+      "url": "https://www.visitdublin.com/august-tours-at-the-national-museum-of-ireland-kildare-street-2026",
+      "image": "",
+      "tags": [
+        "tours"
+      ]
+    },
+    {
+      "id": "howth-market-0801",
+      "title": "Howth Market",
+      "blurb": "Up to 25 stalls of fresh food, artisan produce and crafts by the harbour, open Saturdays, Sundays and bank holidays 9am-6pm (incl. Mon 3 Aug).",
+      "venue": "Howth Market, Harbour Road",
+      "neighborhood": "Howth",
+      "geo": {
+        "lat": 53.3877,
+        "lng": -6.0654
+      },
+      "start": "2026-08-01T09:00:00+01:00",
+      "price": "Free",
+      "url": "http://howthmarket.ie/",
+      "image": "",
+      "tags": [
+        "other"
+      ]
+    },
+    {
+      "id": "pierce-oleary-vs-mark-chamberlain-ibo-wo-0801",
+      "title": "Pierce O'Leary vs Mark Chamberlain – IBO World Title Boxing",
+      "blurb": "Dublin's unbeaten O'Leary makes the first defence of his IBO super-lightweight belt in a rescheduled hometown headliner.",
+      "venue": "3Arena",
+      "neighborhood": "Docklands",
+      "geo": {
+        "lat": 53.3478,
+        "lng": -6.2288
+      },
+      "start": "2026-08-01T17:00:00+01:00",
+      "price": "",
+      "url": "https://queensberry.co.uk/pages/pierce-oleary-vs-mark-chamberlain-no-turning-back",
+      "image": "",
+      "tags": [
+        "sports"
+      ]
+    },
+    {
+      "id": "fawlty-towers-the-play-0801",
+      "title": "Fawlty Towers – The Play",
+      "blurb": "John Cleese's stage adaptation of the classic sitcom plays a five-night Dublin run after a sold-out West End season.",
+      "venue": "Bord Gáis Energy Theatre",
+      "neighborhood": "Grand Canal Dock",
+      "geo": {
+        "lat": 53.3444,
+        "lng": -6.2402
+      },
+      "start": "2026-08-01T19:30:00+01:00",
+      "price": "€30+",
+      "url": "https://www.bordgaisenergytheatre.ie/show/fawlty-towers/",
+      "image": "",
+      "tags": [
+        "theater"
+      ]
+    },
+    {
+      "id": "fred-armisen-comedy-for-musicians-but-ev-0801",
+      "title": "Fred Armisen: Comedy for Musicians But Everyone Is Welcome",
+      "blurb": "The SNL and Portlandia alum mixes character comedy with musicianship for one Dublin night.",
+      "venue": "Vicar Street",
+      "neighborhood": "City Centre",
+      "geo": {
+        "lat": 53.3432,
+        "lng": -6.2782
+      },
+      "start": "2026-08-01T20:00:00+01:00",
+      "price": "€44+",
+      "url": "https://www.ticketmaster.ie/fred-armisen-comedy-for-musicians-but-everyone-is-welcome-dublin-01-08-2026/event/180064E2BD369C9D",
+      "image": "",
+      "tags": [
+        "comedy"
+      ]
+    },
+    {
+      "id": "dublin-blues-cartel-blues-roots-brass-fe-0801",
+      "title": "Dublin Blues Cartel – Blues, Roots & Brass Festival",
+      "blurb": "Free Saturday-night blues showcase as part of Whelan's roots festival weekend.",
+      "venue": "Whelan's (Main Venue)",
+      "neighborhood": "Portobello",
+      "geo": {
+        "lat": 53.335,
+        "lng": -6.265
+      },
+      "start": "2026-08-01T20:00:00+01:00",
+      "price": "Free",
+      "url": "https://www.whelanslive.com/event/dublin-blues-cartel/",
+      "image": "",
+      "tags": [
+        "live-music"
+      ]
+    },
+    {
+      "id": "laughter-lounge-saturday-night-live-come-0801",
+      "title": "Laughter Lounge: Saturday Night Live Comedy",
+      "blurb": "Four-headliner club bill with Rory O'Hanlon, Darren Gaffney, Paul Marsh and MC Steve Cummins, with table service throughout.",
+      "venue": "The Laughter Lounge",
+      "neighborhood": "City Centre",
+      "geo": {
+        "lat": 53.348,
+        "lng": -6.256
+      },
+      "start": "2026-08-01T20:30:00+01:00",
+      "price": "€31",
+      "url": "https://laughterlounge.com/products/saturday-night-live-1st-august-2026",
+      "image": "",
+      "tags": [
+        "comedy"
+      ]
+    },
+    {
+      "id": "howth-market-0802",
+      "title": "Howth Market",
+      "blurb": "Up to 25 stalls of fresh food, artisan produce and crafts by the harbour, open Saturdays, Sundays and bank holidays 9am-6pm (incl. Mon 3 Aug).",
+      "venue": "Howth Market, Harbour Road",
+      "neighborhood": "Howth",
+      "geo": {
+        "lat": 53.3877,
+        "lng": -6.0654
+      },
+      "start": "2026-08-02T09:00:00+01:00",
+      "price": "Free",
+      "url": "http://howthmarket.ie/",
+      "image": "",
+      "tags": [
+        "other"
+      ]
+    },
+    {
+      "id": "peoples-park-market-0802",
+      "title": "People's Park Market",
+      "blurb": "Sunday food and craft market (11am-4pm) in a Victorian seaside park with a playground and tearoom, near the DART.",
+      "venue": "People's Park",
+      "neighborhood": "Dun Laoghaire",
+      "geo": {
+        "lat": 53.2937,
+        "lng": -6.1312
+      },
+      "start": "2026-08-02T11:00:00+01:00",
+      "price": "Free",
+      "url": "https://www.dunlaoghairetown.ie/peoples-park-market-dun-laoghaire",
+      "image": "",
+      "tags": [
+        "other"
+      ]
+    },
+    {
+      "id": "tg4-all-ireland-ladies-football-finals-0802",
+      "title": "TG4 All-Ireland Ladies Football Finals",
+      "blurb": "Junior, Intermediate and Senior ladies football deciders played back-to-back, with the senior final throwing in at 16:15.",
+      "venue": "Croke Park",
+      "neighborhood": "Drumcondra",
+      "geo": {
+        "lat": 53.3607,
+        "lng": -6.2511
+      },
+      "start": "2026-08-02T11:45:00+01:00",
+      "price": "€30",
+      "url": "https://irelandme.com/events/tg4-all-ireland-ladies-football-final-2026-08-02/",
+      "image": "",
+      "tags": [
+        "sports"
+      ]
+    },
+    {
+      "id": "bohemians-v-galway-united-league-of-irel-0802",
+      "title": "Bohemians v Galway United (League of Ireland Premier Division)",
+      "blurb": "Title-chasing Bohs host Galway United at Dalymount on bank holiday Sunday evening.",
+      "venue": "Dalymount Park",
+      "neighborhood": "Phibsborough",
+      "geo": {
+        "lat": 53.3609,
+        "lng": -6.2723
+      },
+      "start": "2026-08-02T19:00:00+01:00",
+      "price": "",
+      "url": "https://bohemianfc.ticketco.events/ie/en/e/bohemian_fc_vs_galway_united_fc_073126",
+      "image": "",
+      "tags": [
+        "sports"
+      ]
+    },
+    {
+      "id": "mundy-blues-roots-brass-festival-0802",
+      "title": "Mundy – Blues, Roots & Brass Festival",
+      "blurb": "The 'July' and 'Galway Girl' singer-songwriter closes the festival weekend on the main stage.",
+      "venue": "Whelan's (Main Venue)",
+      "neighborhood": "Portobello",
+      "geo": {
+        "lat": 53.335,
+        "lng": -6.265
+      },
+      "start": "2026-08-02T20:00:00+01:00",
+      "price": "€30",
+      "url": "https://www.whelanslive.com/event/mundy/",
+      "image": "",
+      "tags": [
+        "live-music"
+      ]
+    },
+    {
+      "id": "whelans-indie-club-bank-holiday-sunday-0802",
+      "title": "Whelan's Indie Club – Bank Holiday Sunday",
+      "blurb": "Late-night indie club night with no work the next morning thanks to the August bank holiday; door entry only.",
+      "venue": "Whelan's",
+      "neighborhood": "Portobello",
+      "geo": {
+        "lat": 53.335,
+        "lng": -6.265
+      },
+      "start": "2026-08-02T22:30:00+01:00",
+      "price": "€10",
+      "url": "https://www.whelanslive.com/event/whelans-indie-club-bank-holiday-sunday/",
+      "image": "",
+      "tags": [
+        "other"
+      ]
+    },
+    {
+      "id": "howth-market-0803",
+      "title": "Howth Market",
+      "blurb": "Up to 25 stalls of fresh food, artisan produce and crafts by the harbour, open Saturdays, Sundays and bank holidays 9am-6pm (incl. Mon 3 Aug).",
+      "venue": "Howth Market, Harbour Road",
+      "neighborhood": "Howth",
+      "geo": {
+        "lat": 53.3877,
+        "lng": -6.0654
+      },
+      "start": "2026-08-03T09:00:00+01:00",
+      "price": "Free",
+      "url": "http://howthmarket.ie/",
+      "image": "",
+      "tags": [
+        "other"
+      ]
+    },
+    {
+      "id": "northlane-with-graphic-nature-0803",
+      "title": "Northlane (with Graphic Nature)",
+      "blurb": "Australian metalcore outfit headlines an 18+ bank holiday Monday show.",
+      "venue": "The Academy",
+      "neighborhood": "City Centre",
+      "geo": {
+        "lat": 53.3486,
+        "lng": -6.26
+      },
+      "start": "2026-08-03T19:00:00+01:00",
+      "price": "€35+",
+      "url": "https://www.ticketmaster.ie/northlane-dublin-03-08-2026/event/18006348E589E2F5",
+      "image": "",
+      "tags": [
+        "live-music"
+      ]
+    },
+    {
+      "id": "gallagher-dublin-horse-show-0805",
+      "title": "Gallagher Dublin Horse Show",
+      "blurb": "Five days of top-level showjumping including the 100th Aga Khan Nations' Cup and a €1m Rolex Grand Prix.",
+      "venue": "RDS",
+      "neighborhood": "Ballsbridge",
+      "geo": {
+        "lat": 53.3277,
+        "lng": -6.2296
+      },
+      "start": "2026-08-05T00:00:00+01:00",
+      "end": "2026-08-09T23:00:00+01:00",
+      "price": "",
+      "url": "https://www.dublinhorseshow.com/",
+      "image": "",
+      "tags": [
+        "sports"
+      ]
+    },
+    {
+      "id": "cryptopsy-0805",
+      "title": "Cryptopsy",
+      "blurb": "Canadian technical death metal veterans play a rare Dublin club date.",
+      "venue": "Whelan's (Main Venue)",
+      "neighborhood": "Portobello",
+      "geo": {
+        "lat": 53.335,
+        "lng": -6.265
+      },
+      "start": "2026-08-05T19:00:00+01:00",
+      "price": "€29.50",
+      "url": "https://www.whelanslive.com/event/cryptopsy/",
+      "image": "",
+      "tags": [
+        "live-music"
+      ]
+    },
+    {
+      "id": "arsenal-v-real-betis-pre-season-friendly-0805",
+      "title": "Arsenal v Real Betis (Pre-Season Friendly)",
+      "blurb": "Arsenal's first pre-season trip to Ireland since 2018 and Betis's first-ever Dublin match.",
+      "venue": "Aviva Stadium",
+      "neighborhood": "Ballsbridge",
+      "geo": {
+        "lat": 53.3352,
+        "lng": -6.2281
+      },
+      "start": "2026-08-05T19:30:00+01:00",
+      "price": "",
+      "url": "https://www.avivastadium.ie/whats-on/pre-season-friendly-arsenal-v-real-betis",
+      "image": "",
+      "tags": [
+        "sports"
+      ]
+    },
+    {
+      "id": "carnival-de-leop-evening-racing-0806",
+      "title": "Carnival de Leop – Evening Racing",
+      "blurb": "Thursday-evening flat racing with post-racing carnival entertainment at Leopardstown's summer series.",
+      "venue": "Leopardstown Racecourse",
+      "neighborhood": "Dun Laoghaire",
+      "geo": {
+        "lat": 53.3277,
+        "lng": -6.2296
+      },
+      "start": "2026-08-06T18:00:00+01:00",
+      "price": "",
+      "url": "https://www.leopardstown.com/carnivaldeleop2026",
+      "image": "",
+      "tags": [
+        "sports"
+      ]
+    },
+    {
+      "id": "tony-cantwell-comedy-0806",
+      "title": "Tony Cantwell (Comedy)",
+      "blurb": "Irish comedian and podcaster works out new material in Whelan's smallest room.",
+      "venue": "Little Whelan's",
+      "neighborhood": "Portobello",
+      "geo": {
+        "lat": 53.335,
+        "lng": -6.265
+      },
+      "start": "2026-08-06T20:00:00+01:00",
+      "price": "€13.50",
+      "url": "https://www.whelanslive.com/event/tony-cantwell-06-08-26/",
+      "image": "",
+      "tags": [
+        "comedy"
+      ]
+    },
+    {
+      "id": "shamrock-rovers-v-dundalk-league-of-irel-0807",
+      "title": "Shamrock Rovers v Dundalk (League of Ireland Premier Division)",
+      "blurb": "The Hoops host Dundalk under the Friday night lights in Tallaght.",
+      "venue": "Tallaght Stadium",
+      "neighborhood": "Tallaght",
+      "geo": {
+        "lat": 53.2842,
+        "lng": -6.3742
+      },
+      "start": "2026-08-07T20:00:00+01:00",
+      "price": "",
+      "url": "https://tallaghtstadium.ie/events/shamrock-rovers-v-dundalk-11/",
+      "image": "",
+      "tags": [
+        "sports"
+      ]
+    },
+    {
+      "id": "dunluvly-0807",
+      "title": "Dunluvly",
+      "blurb": "Emerging Irish act plays an intimate Friday-night upstairs show.",
+      "venue": "Whelan's (Upstairs)",
+      "neighborhood": "Portobello",
+      "geo": {
+        "lat": 53.335,
+        "lng": -6.265
+      },
+      "start": "2026-08-07T20:00:00+01:00",
+      "price": "€14",
+      "url": "https://www.whelanslive.com/event/dunluvly/",
+      "image": "",
+      "tags": [
+        "live-music"
+      ]
+    },
+    {
+      "id": "howth-market-0808",
+      "title": "Howth Market",
+      "blurb": "Up to 25 stalls of fresh food, artisan produce and crafts by the harbour, open Saturdays, Sundays and bank holidays 9am-6pm (incl. Mon 3 Aug).",
+      "venue": "Howth Market, Harbour Road",
+      "neighborhood": "Howth",
+      "geo": {
+        "lat": 53.3877,
+        "lng": -6.0654
+      },
+      "start": "2026-08-08T09:00:00+01:00",
+      "price": "Free",
+      "url": "http://howthmarket.ie/",
+      "image": "",
+      "tags": [
+        "other"
+      ]
+    },
+    {
+      "id": "limehouse-lizzy-thin-lizzy-tribute-0808",
+      "title": "Limehouse Lizzy (Thin Lizzy Tribute)",
+      "blurb": "Long-running Thin Lizzy tribute act celebrates Phil Lynott's catalogue in his home city.",
+      "venue": "Whelan's (Main Venue)",
+      "neighborhood": "Portobello",
+      "geo": {
+        "lat": 53.335,
+        "lng": -6.265
+      },
+      "start": "2026-08-08T20:00:00+01:00",
+      "price": "€27.50",
+      "url": "https://www.whelanslive.com/event/limehouse-lizzy/",
+      "image": "",
+      "tags": [
+        "live-music"
+      ]
+    },
+    {
+      "id": "miss-kaninna-0808",
+      "title": "Miss Kaninna",
+      "blurb": "Australian First Nations soul and hip-hop artist makes her Dublin club debut.",
+      "venue": "Whelan's (Upstairs)",
+      "neighborhood": "Portobello",
+      "geo": {
+        "lat": 53.335,
+        "lng": -6.265
+      },
+      "start": "2026-08-08T20:00:00+01:00",
+      "price": "€21.50",
+      "url": "https://www.whelanslive.com/event/miss-kaninna/",
+      "image": "",
+      "tags": [
+        "live-music"
+      ]
+    },
+    {
+      "id": "laughter-lounge-saturday-night-live-come-0808",
+      "title": "Laughter Lounge: Saturday Night Live Comedy",
+      "blurb": "Stacked weekend club bill featuring Jack Hester, Martin Angolo, Gar Murran and Shane Clifford.",
+      "venue": "The Laughter Lounge",
+      "neighborhood": "City Centre",
+      "geo": {
+        "lat": 53.348,
+        "lng": -6.256
+      },
+      "start": "2026-08-08T20:30:00+01:00",
+      "price": "€31",
+      "url": "https://laughterlounge.com/products/saturday-night-live-8th-august-2026",
+      "image": "",
+      "tags": [
+        "comedy"
+      ]
+    },
+    {
+      "id": "howth-market-0809",
+      "title": "Howth Market",
+      "blurb": "Up to 25 stalls of fresh food, artisan produce and crafts by the harbour, open Saturdays, Sundays and bank holidays 9am-6pm (incl. Mon 3 Aug).",
+      "venue": "Howth Market, Harbour Road",
+      "neighborhood": "Howth",
+      "geo": {
+        "lat": 53.3877,
+        "lng": -6.0654
+      },
+      "start": "2026-08-09T09:00:00+01:00",
+      "price": "Free",
+      "url": "http://howthmarket.ie/",
+      "image": "",
+      "tags": [
+        "other"
+      ]
+    },
+    {
+      "id": "peoples-park-market-0809",
+      "title": "People's Park Market",
+      "blurb": "Sunday food and craft market (11am-4pm) in a Victorian seaside park with a playground and tearoom, near the DART.",
+      "venue": "People's Park",
+      "neighborhood": "Dun Laoghaire",
+      "geo": {
+        "lat": 53.2937,
+        "lng": -6.1312
+      },
+      "start": "2026-08-09T11:00:00+01:00",
+      "price": "Free",
+      "url": "https://www.dunlaoghairetown.ie/peoples-park-market-dun-laoghaire",
+      "image": "",
+      "tags": [
+        "other"
+      ]
+    },
+    {
+      "id": "sepultura-celebrating-life-through-death-0809",
+      "title": "Sepultura: Celebrating Life Through Death – Final European Show",
+      "blurb": "The Brazilian metal legends play their last-ever European concert, joined by Biohazard, Bloodbath, Sacred Reich and Crypta.",
+      "venue": "3Arena",
+      "neighborhood": "Docklands",
+      "geo": {
+        "lat": 53.3478,
+        "lng": -6.2288
+      },
+      "start": "2026-08-09T16:00:00+01:00",
+      "price": "",
+      "url": "https://3arena.ie/events/sepultura",
+      "image": "",
+      "tags": [
+        "live-music"
+      ]
+    },
+    {
+      "id": "annie-the-musical-0811",
+      "title": "Annie the Musical",
+      "blurb": "The family-favourite musical about the plucky Depression-era orphan opens its Dublin week during the window.",
+      "venue": "Bord Gáis Energy Theatre",
+      "neighborhood": "Docklands",
+      "geo": {
+        "lat": 53.3444,
+        "lng": -6.2402
+      },
+      "start": "2026-08-11T00:00:00+01:00",
+      "end": "2026-08-16T23:00:00+01:00",
+      "price": "From €29.80",
+      "url": "https://www.bordgaisenergytheatre.ie/show/annie-2/",
+      "image": "",
+      "tags": [
+        "theater"
+      ]
+    },
+    {
+      "id": "joji-solaris-tour-0811",
+      "title": "Joji: SOLARIS Tour",
+      "blurb": "The 'Glimpse of Us' singer brings his new immersive arena production to Dublin, supported by Tommy Richman.",
+      "venue": "3Arena",
+      "neighborhood": "Docklands",
+      "geo": {
+        "lat": 53.3478,
+        "lng": -6.2288
+      },
+      "start": "2026-08-11T18:30:00+01:00",
+      "price": "",
+      "url": "https://3arena.ie/events/joji",
+      "image": "",
+      "tags": [
+        "live-music"
+      ]
+    },
+    {
+      "id": "manchester-united-v-leeds-united-pre-sea-0812",
+      "title": "Manchester United v Leeds United (Pre-Season Friendly)",
+      "blurb": "A rare club-football Roses rivalry match staged at the 82,000-capacity home of the GAA.",
+      "venue": "Croke Park",
+      "neighborhood": "Drumcondra",
+      "geo": {
+        "lat": 53.3607,
+        "lng": -6.2511
+      },
+      "start": "2026-08-12T19:30:00+01:00",
+      "price": "",
+      "url": "https://www.manutd.com/en/news/man-utd-announce-croke-park-friendly-against-leeds-united-in-dublin",
+      "image": "",
+      "tags": [
+        "sports"
+      ]
+    },
+    {
+      "id": "grada-whelans-trad-folk-festival-0812",
+      "title": "Gráda – Whelan's Trad & Folk Festival",
+      "blurb": "Reunited contemporary trad band opens Whelan's annual Trad & Folk Festival.",
+      "venue": "Whelan's (Main Venue)",
+      "neighborhood": "Portobello",
+      "geo": {
+        "lat": 53.335,
+        "lng": -6.265
+      },
+      "start": "2026-08-12T20:00:00+01:00",
+      "price": "€23.50",
+      "url": "https://www.whelanslive.com/event/grada/",
+      "image": "",
+      "tags": [
+        "live-music"
+      ]
+    }
+  ]
+}

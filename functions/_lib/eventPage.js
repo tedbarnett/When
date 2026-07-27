@@ -16,12 +16,15 @@ import { readSession, OWNER_EMAIL } from './session.js';
  *   calLabel: 'Ted’s NYC',
  *   fallbackDesc: 'A pick from Ted’s NYC on When.org.',
  *   organizer: { '@type': 'Person', name: 'Ted (Ted’s NYC on When.org)' },
+ *   cityName: 'New York', cityAddress: 'New York, NY',   // schema.org Place
  * }) -> { onRequestGet }
  */
 export function makeEventPageHandler(calId, opts) {
   const calLabel = (opts && opts.calLabel) || calId;
   const fallbackDesc = (opts && opts.fallbackDesc) || `A pick from ${calLabel} on When.org.`;
   const organizerBase = (opts && opts.organizer) || { '@type': 'Organization', name: calLabel };
+  const cityName = (opts && opts.cityName) || 'New York';
+  const cityAddress = (opts && opts.cityAddress) || 'New York, NY';
   const pagePath = '/' + calId;
 
   async function onRequestGet(context) {
@@ -87,8 +90,8 @@ export function makeEventPageHandler(calId, opts) {
       eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
       location: {
         '@type': 'Place',
-        name: ev.venue || 'New York',
-        address: (ev.neighborhood ? ev.neighborhood + ', ' : '') + 'New York, NY'
+        name: ev.venue || cityName,
+        address: (ev.neighborhood ? ev.neighborhood + ', ' : '') + cityAddress
       },
       ...(ev.image ? { image: [ev.image] } : {}),
       ...(ev.blurb ? { description: ev.blurb } : {}),

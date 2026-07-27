@@ -37,6 +37,31 @@
 export const CALENDARS = {
   'teds-nyc': { title: "Ted's NYC", extends: 'basics-nyc' },
   'basics-nyc': { title: 'NYC Basics', extends: null },
+  'teds-dublin': { title: "Ted's Dublin", extends: null },
+};
+
+/**
+ * Registry of known cities (multi-city support). Each entry:
+ *   label     — display name
+ *   timeZone  — IANA zone; "today" and day-bucketing for the city's ideas
+ *               pool use THIS zone, never the viewer's clock
+ *   calendars — calendar ids checked for the ideas "added" detection,
+ *               preferred label first (base layers before composers)
+ *   page      — the city's flagship calendar path
+ */
+export const CITIES = {
+  nyc: {
+    label: 'New York',
+    timeZone: 'America/New_York',
+    calendars: ['basics-nyc', 'teds-nyc'],
+    page: '/teds-nyc',
+  },
+  dublin: {
+    label: 'Dublin',
+    timeZone: 'Europe/Dublin',
+    calendars: ['teds-dublin'],
+    page: '/teds-dublin',
+  },
 };
 
 /** KV key for a calendar's overlay document. */
