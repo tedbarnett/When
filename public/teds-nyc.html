@@ -84,6 +84,11 @@ button { font-family: inherit; }
 .menu-panel .mi { display: block; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: var(--ink); font-weight: 700; font-size: 14px; }
 .menu-panel .mi:hover { background: var(--chip); color: var(--head); }
 .menu-panel .mi .hint { font-family: var(--mono); font-size: 10.5px; color: var(--faint); margin-left: 6px; font-weight: 500; }
+.menu-panel .mi .tick { float: right; color: var(--spark); font-weight: 900; }
+.menu-panel .mi.on { color: var(--head); background: var(--chip); }
+.menu-panel .mi.soon { color: var(--faint); cursor: default; }
+.menu-panel .mi.soon:hover { background: transparent; color: var(--faint); }
+.menu-label { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); padding: 8px 12px 3px; }
 .menu-div { height: 1px; background: var(--line); margin: 7px 4px; }
 .owner-badge { font-family: var(--mono); font-size: 10.5px; color: var(--spark); padding: 2px 12px 6px; }
 .auth-form { padding: 6px 12px 10px; display: grid; gap: 7px; }
@@ -101,8 +106,6 @@ button { font-family: inherit; }
 .meta-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 13px; }
 .byline { font-size: 15px; color: var(--muted); }
 .mchip { font-family: var(--mono); font-size: 11px; color: var(--faint); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
-select.mchip.city-switch { background: transparent; cursor: pointer; -webkit-appearance: none; appearance: none; color: var(--ink); padding-right: 22px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%23888'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; }
-select.mchip.city-switch:hover { border-color: var(--faint); }
 button.mchip { background: transparent; cursor: pointer; transition: border-color .15s ease, color .15s ease; }
 button.mchip:hover { border-color: var(--faint); color: var(--ink); }
 
@@ -413,6 +416,12 @@ body.modal-open { overflow: hidden; }
       <div class="menu-wrap">
         <button class="menu-btn" id="menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu-panel" aria-haspopup="true"><span class="bar"></span><span class="bar"></span></button>
         <div class="menu-panel" id="menu-panel" hidden>
+          <div class="menu-label" id="menu-city-label">Current city</div>
+          <a class="mi city-opt on" data-city="nyc" href="/teds-nyc" aria-current="true">New York<span class="tick">✓</span></a>
+          <a class="mi city-opt" data-city="dublin" href="/teds-dublin">Dublin</a>
+          <span class="mi soon" aria-disabled="true">New Orleans<span class="hint">coming soon</span></span>
+          <span class="mi soon" aria-disabled="true">Reykjavik<span class="hint">coming soon</span></span>
+          <div class="menu-div" role="separator"></div>
           <a class="mi" href="/">Home</a>
           <a class="mi" href="/#manifesto">About</a>
           <a class="mi" href="https://github.com/tedbarnett/When" rel="noopener">GitHub</a>
@@ -430,10 +439,6 @@ body.modal-open { overflow: hidden; }
     <h1 class="view-title" id="view-title">tonight<span class="dot">.</span></h1>
     <div class="meta-row">
       <span class="byline">Curated by Ted · things I&rsquo;d actually go to</span>
-      <select class="mchip city-switch" id="city-switch" aria-label="Switch city">
-        <option value="/teds-nyc" selected>New York</option>
-        <option value="/teds-dublin">Dublin</option>
-      </select>
       <span class="mchip" id="count-chip">this week</span>
       <span class="mchip" id="follower-chip">142 followers</span>
       <button class="mchip" id="share-cal" type="button">↗ share calendar</button>
@@ -1659,6 +1664,16 @@ body.modal-open { overflow: hidden; }
       menuBtn.setAttribute('aria-expanded', 'false');
     }
   });
+  /* Current City (in the menu): clicking a city remembers it, then navigates */
+  (function () {
+    var opts = menuPanel.querySelectorAll('a.city-opt');
+    for (var ci = 0; ci < opts.length; ci++) {
+      opts[ci].addEventListener('click', function () {
+        try { localStorage.setItem('when:city', this.getAttribute('data-city')); } catch (e) {}
+      });
+    }
+    try { localStorage.setItem('when:city', 'nyc'); } catch (e) {}
+  })();
   function authLoggedOut() {
     return '<a class="btn-google mi" href="/api/auth/google">Sign in with Google</a>' +
       '<form class="auth-form" id="email-auth-form">' +
@@ -1741,9 +1756,6 @@ body.modal-open { overflow: hidden; }
     days = Object.keys(byDay).sort().map(function (k) { return { key: k, events: byDay[k] }; });
     pastDays = Object.keys(pastByDay).sort().reverse().map(function (k) { return { key: k, events: pastByDay[k] }; });
   }
-  /* City switcher (Bandsintown-style): jump between Ted's city calendars */
-  var citySel = document.getElementById('city-switch');
-  if (citySel) citySel.onchange = function () { if (this.value) location.href = this.value; };
 
   fetch(DATA_URL).then(function (r) { return r.json(); }).then(function (data) {
     ingest(data);

@@ -45,6 +45,28 @@ button { font-family: inherit; }
 .back-link { font-family: var(--mono); font-size: 11.5px; color: var(--muted); text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; white-space: nowrap; }
 .back-link:hover { color: var(--ink); border-color: var(--faint); }
 
+/* hamburger menu — same chrome as the calendar pages */
+.menu-wrap { position: relative; }
+.menu-btn { width: 34px; height: 34px; border-radius: 999px; border: 1px solid var(--line); background: transparent; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; transition: border-color .15s ease; }
+.menu-btn:hover { border-color: var(--faint); }
+.menu-btn .bar { width: 13px; height: 1.5px; background: var(--ink); border-radius: 2px; }
+.menu-panel { position: absolute; right: 0; top: 44px; min-width: 230px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 8px; box-shadow: 0 24px 60px -20px rgba(0,0,0,.6); z-index: 40; }
+.menu-panel .mi { display: block; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: var(--ink); font-weight: 700; font-size: 14px; }
+.menu-panel .mi:hover { background: var(--chip); color: var(--head); }
+.menu-panel .mi .hint { font-family: var(--mono); font-size: 10.5px; color: var(--faint); margin-left: 6px; font-weight: 500; }
+.menu-panel .mi .tick { float: right; color: var(--spark); font-weight: 900; }
+.menu-panel .mi.on { color: var(--head); background: var(--chip); }
+.menu-panel .mi.soon { color: var(--faint); cursor: default; }
+.menu-panel .mi.soon:hover { background: transparent; color: var(--faint); }
+.menu-label { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); padding: 8px 12px 3px; }
+.menu-div { height: 1px; background: var(--line); margin: 7px 4px; }
+.btn-google { display: block; text-align: center; background: var(--chip); border-radius: 999px; color: var(--head); font-weight: 700; font-size: 13px; text-decoration: none; padding: 9px 14px; }
+.auth-form { padding: 6px 12px 10px; display: grid; gap: 7px; }
+.auth-form input { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; color: var(--ink); font-family: var(--sans); font-size: 13.5px; padding: 9px 12px; outline: none; width: 100%; }
+.auth-form input:focus { border-color: var(--faint); }
+.auth-form .send { background: var(--accent); border: none; color: #fff; font-weight: 700; font-size: 13px; border-radius: 999px; padding: 9px 14px; cursor: pointer; }
+.auth-note { font-size: 11.5px; color: var(--faint); line-height: 1.5; padding: 0 2px; }
+
 .calhead { padding-top: clamp(24px, 3.5vw, 42px); }
 .kicker { font-family: var(--mono); font-size: 11.5px; letter-spacing: .12em; color: var(--peri); text-transform: uppercase; }
 .view-title { font-family: var(--brico); font-weight: 800; font-size: clamp(42px, 7vw, 72px); letter-spacing: -0.05em; line-height: .92; color: var(--head); margin-top: 4px; }
@@ -156,11 +178,25 @@ button { font-family: inherit; }
 <div class="nav">
   <div class="wrap nav-inner">
     <a class="brand" href="/"><span class="wordmark">when<span class="tld">.org</span></span></a>
-    <div style="display:flex;gap:8px">
-      <a class="back-link" href="/dublin/ideas">dublin ideas</a>
-      <a class="back-link" href="/nyc/sources">sources</a>
-      <a class="back-link" href="/basics-nyc">nyc basics</a>
+    <div style="display:flex;gap:8px;align-items:center">
       <a class="back-link" href="/teds-nyc">← ted&rsquo;s nyc</a>
+      <div class="menu-wrap">
+        <button class="menu-btn" id="menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu-panel" aria-haspopup="true"><span class="bar"></span><span class="bar"></span></button>
+        <div class="menu-panel" id="menu-panel" hidden>
+          <div class="menu-label">Current city</div>
+          <a class="mi city-opt on" data-city="nyc" href="/nyc/ideas" aria-current="true">New York<span class="tick">✓</span></a>
+          <a class="mi city-opt" data-city="dublin" href="/dublin/ideas">Dublin</a>
+          <span class="mi soon" aria-disabled="true">New Orleans<span class="hint">coming soon</span></span>
+          <span class="mi soon" aria-disabled="true">Reykjavik<span class="hint">coming soon</span></span>
+          <div class="menu-div" role="separator"></div>
+          <a class="mi" href="/teds-nyc">Ted&rsquo;s NYC <span class="hint">calendar</span></a>
+          <a class="mi" href="/nyc/sources">Sources</a>
+          <a class="mi" href="/basics-nyc">NYC Basics</a>
+          <a class="mi" href="/">Home</a>
+          <div class="menu-div" role="separator"></div>
+          <div class="menu-auth" id="menu-auth"><a class="mi" href="/api/auth/google">Log in</a></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -656,7 +692,7 @@ button { font-family: inherit; }
       '<p>' + (status === 403
         ? 'You&rsquo;re signed in, but this supply tool is for calendar curators.'
         : 'Sign in as the calendar owner to review event ideas.') +
-      ' Sign-in lives on the <a href="/teds-nyc">calendar page</a> — use the menu in the top right, then come back.</p></div>';
+      ' Use the ☰ menu in the top right to sign in, then reload this page.</p></div>';
   }
 
   /* ---------- add flow (mirrors teds-nyc.html import-add-form) ---------- */
@@ -849,6 +885,75 @@ button { font-family: inherit; }
     document.getElementById('app').innerHTML = '';
     load(dateFromUrl(), false);
   }).catch(function () { renderGate(401); });
+})();
+</script>
+<script>
+/* Hamburger menu + sign-in (same chrome as the calendar pages) */
+(function () {
+  var menuBtn = document.getElementById('menu-btn');
+  var menuPanel = document.getElementById('menu-panel');
+  if (!menuBtn || !menuPanel) return;
+  menuBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    var open = !menuPanel.hidden;
+    menuPanel.hidden = open;
+    menuBtn.setAttribute('aria-expanded', String(!open));
+  });
+  document.addEventListener('click', function (e) {
+    if (!menuPanel.hidden && !menuPanel.contains(e.target) && e.target !== menuBtn) {
+      menuPanel.hidden = true;
+      menuBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !menuPanel.hidden) {
+      menuPanel.hidden = true;
+      menuBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+  /* Current City: clicking a city remembers it, then navigates */
+  var opts = menuPanel.querySelectorAll('a.city-opt');
+  for (var ci = 0; ci < opts.length; ci++) {
+    opts[ci].addEventListener('click', function () {
+      try { localStorage.setItem('when:city', this.getAttribute('data-city')); } catch (e) {}
+    });
+  }
+  function escT(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function renderAuth(me) {
+    var box = document.getElementById('menu-auth');
+    if (me && me.email) {
+      box.innerHTML = '<div class="mi" style="cursor:default">' + escT(me.name || me.email) +
+        (me.isOwner ? '<span class="hint">✦ owner</span>' : '') + '</div>' +
+        '<a class="mi" href="/api/auth/logout">Sign out</a>';
+    } else {
+      box.innerHTML = '<a class="btn-google mi" href="/api/auth/google">Sign in with Google</a>' +
+        '<form class="auth-form" id="email-auth-form">' +
+          '<input type="email" name="email" placeholder="you@example.com" required autocomplete="email">' +
+          '<button class="send" type="submit">Send sign-in link</button>' +
+          '<div class="auth-note" id="auth-note">No passwords — we email you a magic link.</div>' +
+        '</form>';
+      var f = document.getElementById('email-auth-form');
+      if (f) f.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var em = f.email.value.trim();
+        if (!em) return;
+        fetch('/api/auth/email', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: em })
+        }).then(function (r) { return r.json(); }).then(function () {
+          document.getElementById('auth-note').textContent = 'Check your email — sign-in link sent.';
+        }).catch(function () {
+          document.getElementById('auth-note').textContent = 'Could not send — try again.';
+        });
+      });
+    }
+  }
+  fetch('/api/me').then(function (r) { return r.ok ? r.json() : null; })
+    .then(renderAuth).catch(function () { renderAuth(null); });
 })();
 </script>
 </body>

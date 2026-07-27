@@ -178,6 +178,11 @@ header.nav {
 }
 .menu-panel .mi:hover { background: var(--chip); color: var(--head); }
 .menu-panel .mi .hint { font-family: var(--mono); font-size: 11px; color: var(--faint); font-weight: 500; }
+.menu-panel .mi .tick { color: var(--spark); font-weight: 900; }
+.menu-panel .mi.on { color: var(--head); background: var(--chip); }
+.menu-panel .mi.soon { color: var(--faint); cursor: default; }
+.menu-panel .mi.soon:hover { background: transparent; color: var(--faint); }
+.menu-label { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); padding: 8px 14px 3px; }
 .menu-div { height: 1px; background: var(--line); margin: 8px 4px; }
 .menu-auth { padding: 4px 4px 6px; }
 .menu-auth .btn-google {
@@ -521,7 +526,12 @@ footer { border-top: 1px solid var(--line); }
       </button>
     </nav>
     <div class="menu-panel" id="menu-panel" hidden>
-      <a class="mi" href="/teds-nyc">Ted&rsquo;s NYC <span class="hint">calendar</span></a>
+      <div class="menu-label">Current city</div>
+      <a class="mi city-opt" data-city="nyc" href="/teds-nyc">New York <span class="hint">ted&rsquo;s calendar</span></a>
+      <a class="mi city-opt" data-city="dublin" href="/teds-dublin">Dublin <span class="hint">ted&rsquo;s calendar</span></a>
+      <span class="mi soon" aria-disabled="true">New Orleans <span class="hint">coming soon</span></span>
+      <span class="mi soon" aria-disabled="true">Reykjavik <span class="hint">coming soon</span></span>
+      <div class="menu-div" role="separator"></div>
       <a class="mi" href="/#manifesto">Manifesto</a>
       <a class="mi" href="https://github.com/tedbarnett/When" rel="noopener">GitHub</a>
       <div class="menu-div" role="separator"></div>
@@ -855,6 +865,27 @@ footer { border-top: 1px solid var(--line); }
     var a = e.target.closest && e.target.closest('a.mi, a.btn-google');
     if (a) setOpen(false);
   });
+
+  /* Current City: mark the remembered city; remember new picks */
+  (function () {
+    var saved = null;
+    try { saved = localStorage.getItem('when:city'); } catch (e) {}
+    var opts = panel.querySelectorAll('a.city-opt');
+    for (var ci = 0; ci < opts.length; ci++) {
+      var opt = opts[ci];
+      if (opt.getAttribute('data-city') === (saved || 'nyc')) {
+        opt.className += ' on';
+        opt.setAttribute('aria-current', 'true');
+        var tick = document.createElement('span');
+        tick.className = 'tick';
+        tick.textContent = '✓';
+        opt.appendChild(tick);
+      }
+      opt.addEventListener('click', function () {
+        try { localStorage.setItem('when:city', this.getAttribute('data-city')); } catch (e) {}
+      });
+    }
+  })();
 
   var authBox = document.getElementById('menu-auth');
   function escText(s) {
