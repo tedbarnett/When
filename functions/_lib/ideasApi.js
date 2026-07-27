@@ -24,7 +24,12 @@
  * `added` = already on one of the city's curator calendars (CITIES
  * registry, preferred label first), matched by dedupe-style key
  * slug(venue)-YYYYMMDD-slug(title[:24]) or by exact title+date. `added_on`
- * names the calendar it was found on.
+ * names the calendar it was found on; `added_id` is the CALENDAR event's
+ * id (candidate ids never match calendar ids — overlay writes like
+ * action:remove must target added_id). `added_added` marks a match that is
+ * a curator-ADDED overlay entry (remove deletes it outright, so undo must
+ * re-add); for those, `added_event` carries the add-payload fields needed
+ * to re-add the exact same event.
  *
  * Storage note: candidates.start/end_at carry the city's local offset, so
  * substr(x, 1, 10) is the city-local date. Never use SQLite date() on
@@ -71,13 +76,27 @@ function parseSignals(s) {
 const SHORT_COND =
   "(end_at = '' OR substr(end_at, 1, 10) < date(substr(start, 1, 10), '+2 day'))";
 
+/** Add-payload fields (mirrors calendarApi ADD_RULES) for undo re-add. */
+const ADD_FIELDS = ['title', 'venue', 'neighborhood', 'price', 'blurb', 'start', 'end', 'url', 'image'];
+
+function addPayloadOf(calEv) {
+  const out = {};
+  for (const k of ADD_FIELDS) {
+    const v = calEv[k];
+    if (typeof v === 'string' && v) out[k] = v;
+  }
+  return out;
+}
+
 function rowToEvent(row, marks) {
   const dateKey = String(row.start).slice(0, 10);
   const key = calendarKey(row.venue, dateKey, row.title);
   const titleDate = String(row.title).trim().toLowerCase() + '|' + dateKey;
   let addedOn = '';
+  let match = null;
   for (const m of marks) {
-    if (m.keys.has(key) || m.titleDates.has(titleDate)) { addedOn = m.cal; break; }
+    const hit = m.keys.get(key) || m.titleDates.get(titleDate);
+    if (hit) { addedOn = m.cal; match = hit; break; }
   }
   return {
     id: row.id,
@@ -100,6 +119,9 @@ function rowToEvent(row, marks) {
     status: row.status,
     added: !!addedOn,
     added_on: addedOn,
+    added_id: match ? String(match.id || '') : '',
+    added_added: !!(match && match._added),
+    added_event: match && match._added ? addPayloadOf(match) : null,
   };
 }
 
@@ -125,14 +147,18 @@ export function makeIdeasHandler(city) {
     // (preferred label first — base layers before the calendars composing them).
     const marks = [];
     for (const cal of calendars) {
-      const m = { cal, keys: new Set(), titleDates: new Set() };
+      // Maps keep the matched CALENDAR event so the client can target overlay
+      // writes (remove/unremove) at the calendar id, not the candidate id.
+      const m = { cal, keys: new Map(), titleDates: new Map() };
       try {
         const merged = await loadComposed(env, url.origin, cal, { includeHidden: true });
         for (const ev of merged.events || []) {
           if (!ev || !ev.start) continue;
           const k = String(ev.start).slice(0, 10);
-          m.keys.add(calendarKey(ev.venue || '', k, ev.title || ''));
-          m.titleDates.add(String(ev.title || '').trim().toLowerCase() + '|' + k);
+          const kk = calendarKey(ev.venue || '', k, ev.title || '');
+          const td = String(ev.title || '').trim().toLowerCase() + '|' + k;
+          if (!m.keys.has(kk)) m.keys.set(kk, ev);
+          if (!m.titleDates.has(td)) m.titleDates.set(td, ev);
         }
       } catch {
         // Calendar unavailable: ideas still render, just without ✓ detection.

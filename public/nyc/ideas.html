@@ -136,6 +136,14 @@ button { font-family: inherit; }
 .add-btn { border: 1px dashed var(--spark); background: transparent; color: var(--spark); font-family: var(--mono); font-size: 11px; letter-spacing: .05em; border-radius: 999px; padding: 6px 14px; cursor: pointer; white-space: nowrap; transition: background .15s ease; }
 .add-btn:hover { background: rgba(255,84,38,.1); }
 .added-chip { font-family: var(--mono); font-size: 11px; color: #6bc396; border: 1px solid rgba(107,195,150,.4); border-radius: 999px; padding: 6px 14px; white-space: nowrap; }
+button.added-chip { background: transparent; cursor: pointer; transition: border-color .15s ease, background .15s ease; }
+button.added-chip:hover { border-color: #6bc396; background: rgba(107,195,150,.08); }
+button.added-chip:disabled { opacity: .5; cursor: default; }
+.undo-toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 60; display: flex; align-items: center; gap: 12px; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 8px 8px 8px 18px; font-family: var(--mono); font-size: 12px; box-shadow: 0 14px 36px -8px rgba(0,0,0,.55); max-width: min(92vw, 480px); }
+.undo-toast .ut-msg { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.undo-toast .ut-undo { border: 1px solid var(--faint); background: transparent; color: var(--spark); font-family: var(--mono); font-size: 12px; border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+.undo-toast .ut-undo:hover { border-color: var(--spark); }
+.undo-toast .ut-undo:disabled { opacity: .5; cursor: default; }
 .sect-head { font-family: var(--brico); font-weight: 800; font-size: 22px; letter-spacing: -0.04em; color: var(--head); margin: 30px 0 4px; }
 .sect-head .dot { color: var(--spark); }
 .sect-note { font-size: 12.5px; color: var(--faint); margin-bottom: 6px; }
@@ -521,7 +529,9 @@ button { font-family: inherit; }
       '<div class="idea-actions">' +
         (link ? '<a class="linkout" href="' + esc(link) + '" target="_blank" rel="noopener" aria-label="Open source page">↗</a>' : '') +
         (ev.added
-          ? '<span class="added-chip"' + (ev.added_on && CAL_LABEL[ev.added_on] ? ' title="on ' + esc(CAL_LABEL[ev.added_on]) + '"' : '') + '>✓ on calendar</span>'
+          ? (ev.added_id
+              ? '<button class="added-chip" type="button" data-oncal="' + esc(ev.id) + '" title="on ' + esc(CAL_LABEL[ev.added_on] || ev.added_on) + ' — tap to remove">✓ on calendar</button>'
+              : '<span class="added-chip"' + (ev.added_on && CAL_LABEL[ev.added_on] ? ' title="on ' + esc(CAL_LABEL[ev.added_on]) + '"' : '') + '>✓ on calendar</span>')
           : '<button class="add-btn" type="button" data-add="' + esc(ev.id) + '">＋ add</button>') +
       '</div>' +
     '</div>';
@@ -740,16 +750,119 @@ button { font-family: inherit; }
     document.getElementById('add-backdrop').hidden = true;
     document.getElementById('add-content').innerHTML = '';
   }
-  function markAdded(id, target) {
+  function markAdded(id, target, calId, payload) {
     var ev = findCandidate(id);
-    if (ev) { ev.added = true; ev.added_on = target || ''; }
+    if (ev) {
+      ev.added = true;
+      ev.added_on = target || '';
+      ev.added_id = calId || '';
+      ev.added_added = !!calId;
+      ev.added_event = calId && payload ? payload : null;
+    }
     renderDay();
+  }
+
+  /* ---------- remove flow: the "✓ on calendar" chip is a toggle ---------- */
+  function overlayPost(cal, payload) {
+    return fetch(overlayUrlFor(cal), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(function (r) {
+      return r.json().then(function (d) { return { s: r.status, d: d }; }, function () { return { s: r.status, d: null }; });
+    }).catch(function () { return { s: 0, d: null }; });
+  }
+  /* fallback re-add payload built from the candidate row itself */
+  function candAddPayload(ev) {
+    var out = { title: ev.title, venue: ev.venue || '', start: ev.start };
+    if (ev.neighborhood) out.neighborhood = ev.neighborhood;
+    if (ev.price) out.price = ev.price;
+    if (ev.blurb) out.blurb = ev.blurb;
+    if (ev.end) out.end = ev.end;
+    if (ev.url) out.url = ev.url;
+    if (ev.image) out.image = ev.image;
+    return out;
+  }
+  function removeFromCalendar(candId, btn) {
+    var ev = findCandidate(candId);
+    if (!ev || !ev.added || !ev.added_id) return;
+    var calLabel = CAL_LABEL[ev.added_on] || ev.added_on;
+    if (!window.confirm('Remove “' + ev.title + '” from ' + calLabel + '? It disappears for everyone — you can undo right after.')) return;
+    if (btn) btn.disabled = true;
+    /* undo needs the CALENDAR id + (for curator-added entries, which remove
+       deletes outright) the exact payload to re-add */
+    var undo = {
+      cal: ev.added_on,
+      calId: ev.added_id,
+      wasAdded: !!ev.added_added,
+      payload: ev.added_event || (ev.added_added ? candAddPayload(ev) : null),
+      candId: candId,
+      title: ev.title
+    };
+    overlayPost(undo.cal, { action: 'remove', id: undo.calId }).then(function (res) {
+      if (res.s === 200 && res.d && res.d.ok) {
+        var c = findCandidate(candId);
+        if (c) { c.added = false; c.added_on = ''; c.added_id = ''; c.added_added = false; c.added_event = null; }
+        renderDay();
+        showUndoToast(undo);
+      } else {
+        if (btn) btn.disabled = false;
+        window.alert(res.d && res.d.error ? 'Could not remove — ' + res.d.error + '.' : 'Could not remove — try again.');
+      }
+    });
+  }
+  /* transient "Removed — undo" toast (same affordance as the calendar pages) */
+  var undoTimer = null;
+  function hideUndoToast() {
+    var el = document.getElementById('undo-toast');
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+    if (undoTimer) { clearTimeout(undoTimer); undoTimer = null; }
+  }
+  function showUndoToast(undo) {
+    hideUndoToast();
+    var el = document.createElement('div');
+    el.className = 'undo-toast';
+    el.id = 'undo-toast';
+    el.setAttribute('role', 'status');
+    el.innerHTML = '<span class="ut-msg">Removed “' + esc(undo.title) + '”</span><button class="ut-undo" type="button">undo</button>';
+    el.querySelector('.ut-undo').addEventListener('click', function () {
+      var b = this;
+      b.disabled = true;
+      /* base/static events sit on the removed list → unremove; curator-added
+         entries were deleted outright → re-add the same payload + id */
+      var req;
+      if (undo.wasAdded && undo.payload) {
+        var evp = {};
+        for (var k in undo.payload) if (undo.payload.hasOwnProperty(k)) evp[k] = undo.payload[k];
+        evp.id = undo.calId;
+        req = overlayPost(undo.cal, { action: 'add', event: evp });
+      } else {
+        req = overlayPost(undo.cal, { action: 'unremove', id: undo.calId });
+      }
+      req.then(function (res) {
+        if (res.s === 200 && res.d && res.d.ok) {
+          hideUndoToast();
+          var ev = findCandidate(undo.candId);
+          if (ev) {
+            ev.added = true;
+            ev.added_on = undo.cal;
+            ev.added_id = undo.wasAdded ? (res.d.id || undo.calId) : undo.calId;
+            ev.added_added = undo.wasAdded;
+            ev.added_event = undo.wasAdded ? undo.payload : null;
+          }
+          renderDay();
+        } else b.disabled = false;
+      });
+    });
+    document.body.appendChild(el);
+    undoTimer = setTimeout(hideUndoToast, 8000);
   }
 
   document.addEventListener('click', function (e) {
     var t = e.target;
     if (!t) return;
     if (t.getAttribute && t.getAttribute('data-add')) { openAdd(t.getAttribute('data-add')); return; }
+    if (t.getAttribute && t.getAttribute('data-oncal')) { removeFromCalendar(t.getAttribute('data-oncal'), t); return; }
     if (t.getAttribute && t.getAttribute('data-grouptoggle')) {
       var gk = t.getAttribute('data-grouptoggle');
       openGroups[gk] = !openGroups[gk];
@@ -852,7 +965,7 @@ button { font-family: inherit; }
     }).then(function (res) {
       if (res.s === 200 && res.d && res.d.ok) {
         closeAdd();
-        markAdded(id, target);
+        markAdded(id, target, res.d.id || '', ev);
       } else {
         if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Add to calendar'; }
         var err = document.getElementById('add-err');
