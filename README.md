@@ -34,48 +34,71 @@ rebooted as open infrastructure.
 - [when.org](https://when.org) — landing page, manifesto, waitlist, and the
   When.com history
 - [when.org/teds-nyc](https://when.org/teds-nyc) — **Ted's NYC**, the first
-  curated calendar: ~26 real geo-tagged events across the next 7 days in the
+  curated calendar: real geo-tagged events across the next 7 days in the
   "tonight-first" browser — week / day / month views, borough filter chips,
   a personal history view ("I was there"), one-tap sharing, dark/light
   themes, real venue/press photos (never AI-generated imagery)
+- Three more live calendars in the same browser, one tap apart via the
+  city switcher: [Ted's Dublin](https://when.org/teds-dublin),
+  [Ted's Reykjavik](https://when.org/teds-reykjavik), and
+  [NYC Basics](https://when.org/basics-nyc) (the recurring civic staples)
+- Each city has an owner-gated **ideas page**
+  ([/nyc/ideas](https://when.org/nyc/ideas), `/dublin/ideas`,
+  `/reykjavik/ideas`): a candidate pool fed by research sweeps into a D1
+  database, with one-tap "＋ When calendar" adds — and the red
+  **＋ add event** paste-a-URL importer lives here too
 - Every event has its own shareable URL —
   `when.org/teds-nyc/{event-id}` — with per-event OG tags and
   schema.org/Event markup
-- [when.org/teds-nyc.ics](https://when.org/teds-nyc.ics) — its live ICS
-  feed; subscribe once in Apple or Google Calendar and each week's picks
-  arrive automatically
-- [when.org/data/teds-nyc.json](https://when.org/data/teds-nyc.json) — the
-  same calendar as JSON (merged with the curator's live edits)
+- [when.org/teds-nyc.ics](https://when.org/teds-nyc.ics) — a live ICS
+  feed per calendar; subscribe once (webcal) in Apple or Google Calendar
+  and each week's picks arrive automatically
+- Personal Apple Calendar export: every event's detail modal has
+  **📆 Add to Apple Calendar** — a one-event `.ics` download
+  (`when.org/<cal>/{event-id}.ics`) with proper city timezones; the ideas
+  pages get the same 📆 action, with a which-day picker for every-day runs
+- [when.org/data/teds-nyc.json](https://when.org/data/teds-nyc.json) — each
+  calendar as JSON (merged with the curator's live edits)
 - Curator tools (owner-only, no redeploys): hide events, edit-in-place,
-  and a **paste-a-URL importer** — drop any event page link, the server
-  reads its schema.org data (AI fallback for messy pages), you review a
-  card, one tap adds it to the calendar
+  ✕ remove, and the **paste-a-URL importer** — drop any event page link,
+  the server reads its schema.org data (AI fallback for messy pages), you
+  review a card, one tap adds it to the calendar
 
 ## What's in this repo
 
-Phase 0: the landing page, the waitlist, the first curated calendar,
-passwordless auth scaffolding, and the When.com history modal.
+The landing page, the waitlist, four curated calendars across three
+cities, the ideas/candidate pipeline, passwordless auth scaffolding, and
+the When.com history modal.
 
 ```
 public/                          static site (hand-written HTML/CSS, no build step)
 public/index.html                landing page + waitlist + history modal + menu
 public/teds-nyc.html             the event browser (week/day/month, history, tray)
-public/data/teds-nyc.json        base event data (KV overlay merges on top)
+public/teds-dublin.html          same browser, Dublin
+public/teds-reykjavik.html       same browser, Reykjavik
+public/basics-nyc.html           NYC Basics (recurring civic staples)
+public/{nyc,dublin,reykjavik}/ideas.html  owner-gated candidate pools + importer
+public/data/*.json               base event data per calendar (KV overlay merges on top)
 public/history/                  When.com artifacts (1999 homepage, original logo)
 public/fonts/                    Satoshi + Bricolage Grotesque (self-hosted)
-functions/teds-nyc.ics.js        ICS feed (merged, hidden events excluded)
-functions/teds-nyc/[id].js       per-event pages: OG + schema.org injection
-functions/data/teds-nyc.json.js  public JSON (merged view of base + overlay)
-functions/api/calendars/teds-nyc/overlay.js  owner writes: hide/edit/add/reset
-functions/api/calendars/teds-nyc/import.js   paste-a-URL extractor (JSON-LD + AI)
-functions/api/calendars/teds-nyc/admin.js    owner-only full view
+functions/<cal>.ics.js           ICS feed per calendar (merged, hidden events excluded)
+functions/<cal>/[id].js          per-event pages (OG + schema.org) and the
+                                 one-event {id}.ics download (Add to Apple Calendar)
+functions/data/<cal>.json.js     public JSON (merged view of base + overlay)
+functions/api/calendars/<cal>/overlay.js  owner writes: hide/edit/add/reset
+functions/api/calendars/<cal>/import.js   paste-a-URL extractor (JSON-LD + AI)
+functions/api/calendars/<cal>/admin.js    owner-only full view
+functions/api/cities/<city>/ideas.js      candidate pool API (when-events D1)
+functions/api/event.ics.js       query-param .ics formatter for the ideas pages
 functions/api/me/prefs.js        account-synced saves/history/follows
 functions/api/waitlist.js        waitlist storage (Cloudflare KV)
 functions/api/auth/              sign-in: Google OAuth + magic email links
 functions/api/me.js              session check for the signed-in menu
 functions/_lib/session.js        signed-cookie sessions (HMAC, Web Crypto)
 functions/_lib/calendar.js       the merge layer: base JSON + curator overlay
-scripts/                         node test harnesses (import, overlay, prefs)
+functions/_lib/ics.js            shared VEVENT builder (feeds + downloads agree)
+scripts/                         node test harnesses + city research sweeps
+                                 (candidate SQL for the when-events D1 database)
 docs/                            operational notes (DNS snapshots etc.)
 ```
 
@@ -143,9 +166,10 @@ markup on every page, no lock-in, ever.
   with a live ICS feed, passwordless sign-in.
 - **Phase 1 (mostly ✓):** the redesigned tonight-first browser
   (week/day/month), geo filters, sharing, personal history,
-  account-synced saves, curator hide + edit-in-place, and the paste-a-URL
-  AI importer. Still open: automated nightly supply from venue scrapers
-  and ICS ingest.
+  account-synced saves, curator hide + edit-in-place, the paste-a-URL
+  AI importer, multi-city (Dublin, Reykjavik) with per-city ideas pools,
+  and per-event Apple Calendar export. Still open: automated nightly
+  supply from venue scrapers and ICS ingest.
 - **Phase 2:** calendars for everyone — a real publish backend
   ([#8](https://github.com/tedbarnett/When/issues/8)) so anyone (and any
   nightclub, band, or meetup —
