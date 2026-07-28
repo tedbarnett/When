@@ -326,6 +326,81 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
     return null;
   }
 
+  /* dayinstance-core:start — multi-day ("every day") candidates can be
+     added for a SINGLE day: day-picker + instance-chip helpers, extracted +
+     unit-tested by scripts/test-ideas-day-instance.mjs (nyTodayKey, dayDate
+     and ddateLabel are the externals it closes over) */
+  function slugifyId(s) {
+    s = String(s);
+    try { s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch (e) {}
+    return s.toLowerCase()
+      .replace(/['\u2019]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 60);
+  }
+  function plusDaysKey(key, n) {
+    var d = new Date(key + 'T12:00:00Z');
+    d.setUTCDate(d.getUTCDate() + n);
+    return d.toISOString().slice(0, 10);
+  }
+  /* end 2+ days after start — the same "any day" rule the API uses */
+  function isMultiDay(ev) {
+    var s = String(ev.start || '').slice(0, 10);
+    var e = String(ev.end || '').slice(0, 10);
+    return !!e && e >= plusDaysKey(s, 2);
+  }
+  /* day-instance id: base slug + the day, so several instances of the same
+     run coexist and can be removed independently */
+  function dayInstanceId(title, dateKey) {
+    return slugifyId(title) + '-' + dateKey.replace(/-/g, '');
+  }
+  /* picker window: today (CITY clock) through the run's end, capped 3 weeks */
+  function dayPickerDates(ev) {
+    var startKey = String(ev.start || '').slice(0, 10);
+    var endKey = String(ev.end || '').slice(0, 10);
+    var from = nyTodayKey();
+    if (startKey > from) from = startKey;
+    var cap = plusDaysKey(from, 20);
+    var to = endKey < cap ? endKey : cap;
+    var out = [];
+    for (var k = from; k <= to && out.length < 21; k = plusDaysKey(k, 1)) out.push(k);
+    return out;
+  }
+  /* one day of a run as datetime-local values: keep the run's normal start
+     time; keep the end only when it's a same-evening end time */
+  function dayInstanceTimes(ev, dateKey) {
+    var st = String(ev.start || '').slice(11, 16) || '00:00';
+    var et = String(ev.end || '').slice(11, 16);
+    return {
+      start: dateKey + 'T' + st,
+      end: et && et > st ? dateKey + 'T' + et : ''
+    };
+  }
+  function dayOptionLabel(key) {
+    return dayDate(key).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+  /* chip label: day-instances show their day; a whole-run copy stays plain */
+  function oncalChipLabel(ev, anyday) {
+    var inst = ev.added_instances || [];
+    if (!anyday || !inst.length) return '✓ on calendar';
+    var days = [];
+    for (var i = 0; i < inst.length; i++) {
+      if (inst[i].run) return '✓ on calendar';
+      days.push(inst[i].date);
+    }
+    if (days.length === 1) return '✓ on calendar · ' + ddateLabel(days[0]);
+    return '✓ on calendar · ' + days.length + ' days';
+  }
+  /* a run that's only on the calendar as day-instances can take another */
+  function canAddAnotherDay(ev, anyday) {
+    var inst = ev.added_instances || [];
+    if (!anyday || !inst.length) return false;
+    for (var i = 0; i < inst.length; i++) if (inst[i].run) return false;
+    return true;
+  }
+  /* dayinstance-core:end */
+
   /* ---------- rendering ---------- */
   /* Collate repeats: the same program often runs at dozens of locations at the
      same time (e.g. NYC Parks' "Kids In Motion" at 50 playgrounds). Group by
@@ -530,8 +605,11 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
         (link ? '<a class="linkout" href="' + esc(link) + '" target="_blank" rel="noopener" aria-label="Open source page">↗</a>' : '') +
         (ev.added
           ? (ev.added_id
-              ? '<button class="added-chip" type="button" data-oncal="' + esc(ev.id) + '" title="on ' + esc(CAL_LABEL[ev.added_on] || ev.added_on) + ' — tap to remove">✓ on calendar</button>'
-              : '<span class="added-chip"' + (ev.added_on && CAL_LABEL[ev.added_on] ? ' title="on ' + esc(CAL_LABEL[ev.added_on]) + '"' : '') + '>✓ on calendar</span>')
+              ? '<button class="added-chip" type="button" data-oncal="' + esc(ev.id) + '" title="on ' + esc(CAL_LABEL[ev.added_on] || ev.added_on) + ' — tap to remove">' + esc(oncalChipLabel(ev, anyday)) + '</button>'
+              : '<span class="added-chip"' + (ev.added_on && CAL_LABEL[ev.added_on] ? ' title="on ' + esc(CAL_LABEL[ev.added_on]) + '"' : '') + '>✓ on calendar</span>') +
+            (canAddAnotherDay(ev, anyday)
+              ? '<button class="add-btn" type="button" data-add="' + esc(ev.id) + '" title="add another day">＋ day</button>'
+              : '')
           : '<button class="add-btn" type="button" data-add="' + esc(ev.id) + '">＋ add</button>') +
       '</div>' +
     '</div>';
@@ -715,15 +793,55 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
     }
     return html + '</select></label>';
   }
+  /* which-day picker (multi-day candidates only): "every day" keeps the
+     whole-run add; a specific day makes a single-day instance. Days already
+     added as instances are disabled; opening from "＋ day" preselects the
+     first free day and disables "every day" (the run would duplicate the
+     instances). Returns { html, day } — day '' means whole run. */
+  function dayPickerState(ev) {
+    if (!isMultiDay(ev)) return { html: '', day: '' };
+    var dates = dayPickerDates(ev);
+    if (!dates.length) return { html: '', day: '' };
+    var startKey = String(ev.start).slice(0, 10);
+    var endKey = String(ev.end).slice(0, 10);
+    var inst = ev.added_instances || [];
+    var taken = {};
+    for (var i = 0; i < inst.length; i++) if (!inst[i].run) taken[inst[i].date] = 1;
+    var hasInstances = inst.length > 0;
+    var day = '';
+    if (hasInstances) {
+      for (i = 0; i < dates.length; i++) if (!taken[dates[i]]) { day = dates[i]; break; }
+    }
+    var html = '<label>which day? (runs ' + esc(ddateLabel(startKey)) + ' – ' + esc(ddateLabel(endKey)) + ')' +
+      '<select name="whichday" id="add-day">' +
+      '<option value="all"' + (hasInstances ? ' disabled' : ' selected') + '>every day (the whole run)</option>';
+    for (i = 0; i < dates.length; i++) {
+      var k = dates[i];
+      html += '<option value="' + esc(k) + '"' +
+        (taken[k] ? ' disabled' : '') + (k === day ? ' selected' : '') + '>' +
+        esc(dayOptionLabel(k)) + (taken[k] ? ' — already added' : ' only') + '</option>';
+    }
+    html += '</select></label>';
+    return { html: html, day: day };
+  }
   function addFormHtml(ev) {
+    var picker = dayPickerState(ev);
+    var startVal = (ev.start || '').slice(0, 16);
+    var endVal = (ev.end || '').slice(0, 16);
+    if (picker.day) {
+      var times = dayInstanceTimes(ev, picker.day);
+      startVal = times.start;
+      endVal = times.end;
+    }
     return '<form class="edit-form" id="ideas-add-form">' +
       calPickerHtml() +
+      picker.html +
       '<label>title<input name="title" value="' + esc(ev.title) + '" required maxlength="200"></label>' +
       '<label>venue<input name="venue" value="' + esc(ev.venue || '') + '" required maxlength="200"></label>' +
       '<label>neighborhood<input name="neighborhood" value="' + esc(ev.neighborhood || '') + '" maxlength="120"></label>' +
       '<label>price<input name="price" value="' + esc(ev.price || '') + '" maxlength="60"></label>' +
-      '<label>starts<input type="datetime-local" name="start" value="' + esc((ev.start || '').slice(0, 16)) + '" required></label>' +
-      '<label>ends (optional — multi-day runs land in “any day”)<input type="datetime-local" name="end" value="' + esc((ev.end || '').slice(0, 16)) + '"></label>' +
+      '<label>starts<input type="datetime-local" name="start" value="' + esc(startVal) + '" required></label>' +
+      '<label>ends (optional — multi-day runs land in “any day”)<input type="datetime-local" name="end" value="' + esc(endVal) + '"></label>' +
       '<label>blurb<textarea name="blurb" maxlength="600">' + esc(ev.blurb || '') + '</textarea></label>' +
       '<label>url<input type="url" name="url" value="' + esc(ev.url || '') + '" maxlength="600" placeholder="https://…"></label>' +
       '<label>image url<input type="url" name="image" value="' + esc(ev.image || '') + '" maxlength="600" placeholder="https://…"></label>' +
@@ -758,6 +876,16 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
       ev.added_id = calId || '';
       ev.added_added = !!calId;
       ev.added_event = calId && payload ? payload : null;
+      if (calId && payload) {
+        if (!ev.added_instances) ev.added_instances = [];
+        ev.added_instances.push({
+          id: calId,
+          date: String(payload.start || '').slice(0, 10),
+          added: true,
+          run: isMultiDay(payload),
+          event: payload
+        });
+      }
     }
     renderDay();
   }
@@ -783,33 +911,66 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
     if (ev.image) out.image = ev.image;
     return out;
   }
+  /* every matched calendar event for a candidate — a multi-day run can
+     have several coexisting day-instances (falls back to the single legacy
+     added_id shape for older cached payloads) */
+  function instancesOf(ev) {
+    if (ev.added_instances && ev.added_instances.length) return ev.added_instances;
+    if (!ev.added_id) return [];
+    return [{
+      id: ev.added_id,
+      date: String(ev.start || '').slice(0, 10),
+      added: !!ev.added_added,
+      run: isMultiDay(ev),
+      event: ev.added_event
+    }];
+  }
   function removeFromCalendar(candId, btn) {
     var ev = findCandidate(candId);
-    if (!ev || !ev.added || !ev.added_id) return;
+    if (!ev || !ev.added) return;
+    var inst = instancesOf(ev);
+    if (!inst.length) return;
     var calLabel = CAL_LABEL[ev.added_on] || ev.added_on;
-    if (!window.confirm('Remove “' + ev.title + '” from ' + calLabel + '? It disappears for everyone — you can undo right after.')) return;
+    /* day-instances: the confirm lists exactly which days come off */
+    var what = '“' + ev.title + '”';
+    var dayBits = [];
+    for (var i = 0; i < inst.length; i++) if (!inst[i].run) dayBits.push(ddateLabel(inst[i].date));
+    if (dayBits.length && dayBits.length === inst.length) what += ' (' + dayBits.join(', ') + ')';
+    if (!window.confirm('Remove ' + what + ' from ' + calLabel + '? It disappears for everyone — you can undo right after.')) return;
     if (btn) btn.disabled = true;
-    /* undo needs the CALENDAR id + (for curator-added entries, which remove
+    /* undo needs each CALENDAR id + (for curator-added entries, which remove
        deletes outright) the exact payload to re-add */
-    var undo = {
-      cal: ev.added_on,
-      calId: ev.added_id,
-      wasAdded: !!ev.added_added,
-      payload: ev.added_event || (ev.added_added ? candAddPayload(ev) : null),
-      candId: candId,
-      title: ev.title
-    };
-    overlayPost(undo.cal, { action: 'remove', id: undo.calId }).then(function (res) {
-      if (res.s === 200 && res.d && res.d.ok) {
+    var undo = { cal: ev.added_on, candId: candId, title: ev.title, items: [] };
+    for (i = 0; i < inst.length; i++) {
+      undo.items.push({
+        calId: inst[i].id,
+        wasAdded: !!inst[i].added,
+        payload: inst[i].event || (inst[i].added ? candAddPayload(ev) : null),
+        date: inst[i].date,
+        run: !!inst[i].run
+      });
+    }
+    var idx = 0;
+    (function next() {
+      if (idx >= undo.items.length) {
         var c = findCandidate(candId);
-        if (c) { c.added = false; c.added_on = ''; c.added_id = ''; c.added_added = false; c.added_event = null; }
+        if (c) {
+          c.added = false; c.added_on = ''; c.added_id = '';
+          c.added_added = false; c.added_event = null; c.added_instances = [];
+        }
         renderDay();
         showUndoToast(undo);
-      } else {
-        if (btn) btn.disabled = false;
-        window.alert(res.d && res.d.error ? 'Could not remove — ' + res.d.error + '.' : 'Could not remove — try again.');
+        return;
       }
-    });
+      var item = undo.items[idx++];
+      overlayPost(undo.cal, { action: 'remove', id: item.calId }).then(function (res) {
+        if (res.s === 200 && res.d && res.d.ok) next();
+        else {
+          window.alert(res.d && res.d.error ? 'Could not remove — ' + res.d.error + '.' : 'Could not remove — try again.');
+          load(cur.date, false); /* resync after a partial remove */
+        }
+      });
+    })();
   }
   /* transient "Removed — undo" toast (same affordance as the calendar pages) */
   var undoTimer = null;
@@ -829,30 +990,48 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
       var b = this;
       b.disabled = true;
       /* base/static events sit on the removed list → unremove; curator-added
-         entries were deleted outright → re-add the same payload + id */
-      var req;
-      if (undo.wasAdded && undo.payload) {
-        var evp = {};
-        for (var k in undo.payload) if (undo.payload.hasOwnProperty(k)) evp[k] = undo.payload[k];
-        evp.id = undo.calId;
-        req = overlayPost(undo.cal, { action: 'add', event: evp });
-      } else {
-        req = overlayPost(undo.cal, { action: 'unremove', id: undo.calId });
-      }
-      req.then(function (res) {
-        if (res.s === 200 && res.d && res.d.ok) {
+         entries (incl. day-instances) were deleted outright → re-add the
+         same payload + id. Multiple instances restore one by one. */
+      var restored = [];
+      var idx = 0;
+      (function next() {
+        if (idx >= undo.items.length) {
           hideUndoToast();
           var ev = findCandidate(undo.candId);
           if (ev) {
             ev.added = true;
             ev.added_on = undo.cal;
-            ev.added_id = undo.wasAdded ? (res.d.id || undo.calId) : undo.calId;
-            ev.added_added = undo.wasAdded;
-            ev.added_event = undo.wasAdded ? undo.payload : null;
+            ev.added_instances = restored;
+            ev.added_id = restored.length ? restored[0].id : '';
+            ev.added_added = !!(restored.length && restored[0].added);
+            ev.added_event = restored.length ? restored[0].event : null;
           }
           renderDay();
-        } else b.disabled = false;
-      });
+          return;
+        }
+        var item = undo.items[idx++];
+        var req;
+        if (item.wasAdded && item.payload) {
+          var evp = {};
+          for (var k in item.payload) if (item.payload.hasOwnProperty(k)) evp[k] = item.payload[k];
+          evp.id = item.calId;
+          req = overlayPost(undo.cal, { action: 'add', event: evp });
+        } else {
+          req = overlayPost(undo.cal, { action: 'unremove', id: item.calId });
+        }
+        req.then(function (res) {
+          if (res.s === 200 && res.d && res.d.ok) {
+            restored.push({
+              id: item.wasAdded ? (res.d.id || item.calId) : item.calId,
+              date: item.date,
+              added: item.wasAdded,
+              run: item.run,
+              event: item.wasAdded ? item.payload : null
+            });
+            next();
+          } else b.disabled = false;
+        });
+      })();
     });
     document.body.appendChild(el);
     undoTimer = setTimeout(hideUndoToast, 8000);
@@ -925,6 +1104,21 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
   });
   document.addEventListener('change', function (e) {
     var t = e.target;
+    if (t && t.id === 'add-day') {
+      /* which-day picker: rewrite the starts/ends fields for the chosen day */
+      var form = document.getElementById('ideas-add-form');
+      var ev = addingId ? findCandidate(addingId) : null;
+      if (!form || !ev) return;
+      if (t.value && t.value !== 'all') {
+        var times = dayInstanceTimes(ev, t.value);
+        form.elements.start.value = times.start;
+        form.elements.end.value = times.end;
+      } else {
+        form.elements.start.value = (ev.start || '').slice(0, 16);
+        form.elements.end.value = (ev.end || '').slice(0, 16);
+      }
+      return;
+    }
     if (!t || t.id !== 'radius-select') return;
     if (RADII.indexOf(t.value) < 0) return;
     radiusFilter = t.value;
@@ -950,6 +1144,10 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
     if (dt) ev.start = dt.length === 16 ? dt + ':00' + nyOffsetFor(dt) : dt;
     var de = f.end.value;
     if (de) ev.end = de.length === 16 ? de + ':00' + nyOffsetFor(de) : de;
+    /* day-instance adds carry a date-stamped id so several instances of the
+       same run coexist and can be removed independently */
+    var whichDay = f.whichday && f.whichday.value && f.whichday.value !== 'all' ? f.whichday.value : '';
+    if (whichDay && dt) ev.id = dayInstanceId(ev.title, dt.slice(0, 10));
     var targetSel = f.target;
     var target = targetSel && CAL_LABEL[targetSel.value] ? targetSel.value : 'basics-nyc';
     addTarget = target;

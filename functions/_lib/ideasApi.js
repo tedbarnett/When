@@ -23,13 +23,24 @@
  *
  * `added` = already on one of the city's curator calendars (CITIES
  * registry, preferred label first), matched by dedupe-style key
- * slug(venue)-YYYYMMDD-slug(title[:24]) or by exact title+date. `added_on`
- * names the calendar it was found on; `added_id` is the CALENDAR event's
- * id (candidate ids never match calendar ids — overlay writes like
- * action:remove must target added_id). `added_added` marks a match that is
- * a curator-ADDED overlay entry (remove deletes it outright, so undo must
- * re-add); for those, `added_event` carries the add-payload fields needed
- * to re-add the exact same event.
+ * slug(venue)+slug(title[:24]) or by exact title, at the candidate's date.
+ * Multi-day ("any day") candidates match at ANY date inside their run
+ * window, so a single-day instance the curator added for just one night
+ * ("Cobblestone trad — Jul 30 only") still marks the idea as on-calendar.
+ * `added_on` names the calendar it was found on; `added_id` is the
+ * CALENDAR event's id (candidate ids never match calendar ids — overlay
+ * writes like action:remove must target added_id). `added_added` marks a
+ * match that is a curator-ADDED overlay entry (remove deletes it outright,
+ * so undo must re-add); for those, `added_event` carries the add-payload
+ * fields needed to re-add the exact same event.
+ *
+ * `added_instances` lists EVERY matched calendar event (a multi-day
+ * candidate can have several coexisting day-instances), each as
+ * { id, date, added, run, event }: date = the calendar event's own date,
+ * run = the calendar event is itself a 2+ day run (a whole-run copy, not a
+ * day-instance), added/event mirror added_added/added_event per instance.
+ * Whole-run copies sort first, then instances by date, so added_id keeps
+ * its historical meaning for single matches.
  *
  * Storage note: candidates.start/end_at carry the city's local offset, so
  * substr(x, 1, 10) is the city-local date. Never use SQLite date() on
@@ -59,8 +70,20 @@ function todayKeyIn(timeZone) {
   }).format(new Date());
 }
 
-function calendarKey(venue, dateKey, title) {
-  return slugify(venue) + '-' + dateKey.replace(/-/g, '') + '-' + slugify(String(title).slice(0, 24));
+function normTitleKey(t) {
+  return String(t || '').trim().toLowerCase();
+}
+
+/** dateKey + n days (pure string math via UTC noon — no zone drift). */
+function plusDays(dateKey, n) {
+  const d = new Date(dateKey + 'T12:00:00Z');
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+/** end 2+ days after start — the same rule as SHORT_COND in SQL. */
+function isMultiDayRange(startKey, endKey) {
+  return !!endKey && endKey >= plusDays(startKey, 2);
 }
 
 function parseSignals(s) {
@@ -89,15 +112,44 @@ function addPayloadOf(calEv) {
 }
 
 function rowToEvent(row, marks) {
-  const dateKey = String(row.start).slice(0, 10);
-  const key = calendarKey(row.venue, dateKey, row.title);
-  const titleDate = String(row.title).trim().toLowerCase() + '|' + dateKey;
+  const startKey = String(row.start).slice(0, 10);
+  const endKey = String(row.end_at || '').slice(0, 10);
+  const multi = isMultiDayRange(startKey, endKey);
+  const vt = slugify(row.venue) + '|' + slugify(String(row.title).slice(0, 24));
+  const tt = normTitleKey(row.title);
   let addedOn = '';
-  let match = null;
+  let instances = [];
   for (const m of marks) {
-    const hit = m.keys.get(key) || m.titleDates.get(titleDate);
-    if (hit) { addedOn = m.cal; match = hit; break; }
+    // Union of venue+title and exact-title matches; a single-day candidate
+    // matches only at its own date, a multi-day run at any date inside
+    // [startKey, endKey] (day-instances the curator added for one night).
+    const found = new Map(); // calendar event id -> { ev, date }
+    for (const dateMap of [m.byVenueTitle.get(vt), m.byTitle.get(tt)]) {
+      if (!dateMap) continue;
+      for (const [d, ev] of dateMap) {
+        if (multi ? d >= startKey && d <= endKey : d === startKey) {
+          if (!found.has(ev.id)) found.set(ev.id, { ev, date: d });
+        }
+      }
+    }
+    if (found.size) {
+      addedOn = m.cal;
+      instances = [...found.values()]
+        .map(({ ev, date }) => ({
+          id: String(ev.id || ''),
+          date,
+          added: !!ev._added,
+          run: isMultiDayRange(String(ev.start).slice(0, 10), String(ev.end || '').slice(0, 10)),
+          event: ev._added ? addPayloadOf(ev) : null,
+        }))
+        .sort((a, b) =>
+          (b.run ? 1 : 0) - (a.run ? 1 : 0) ||
+          (a.date < b.date ? -1 : a.date > b.date ? 1 : 0) ||
+          (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+      break;
+    }
   }
+  const first = instances.length ? instances[0] : null;
   return {
     id: row.id,
     title: row.title,
@@ -119,9 +171,10 @@ function rowToEvent(row, marks) {
     status: row.status,
     added: !!addedOn,
     added_on: addedOn,
-    added_id: match ? String(match.id || '') : '',
-    added_added: !!(match && match._added),
-    added_event: match && match._added ? addPayloadOf(match) : null,
+    added_id: first ? first.id : '',
+    added_added: !!(first && first.added),
+    added_event: first && first.added ? first.event : null,
+    added_instances: instances,
   };
 }
 
@@ -147,18 +200,24 @@ export function makeIdeasHandler(city) {
     // (preferred label first — base layers before the calendars composing them).
     const marks = [];
     for (const cal of calendars) {
-      // Maps keep the matched CALENDAR event so the client can target overlay
-      // writes (remove/unremove) at the calendar id, not the candidate id.
-      const m = { cal, keys: new Map(), titleDates: new Map() };
+      // Nested maps (identity key -> date -> CALENDAR event) so single-day
+      // candidates look up their exact date and multi-day runs can scan
+      // their whole window; the matched event rides along so the client can
+      // target overlay writes at the calendar id, not the candidate id.
+      const m = { cal, byVenueTitle: new Map(), byTitle: new Map() };
       try {
         const merged = await loadComposed(env, url.origin, cal, { includeHidden: true });
         for (const ev of merged.events || []) {
           if (!ev || !ev.start) continue;
-          const k = String(ev.start).slice(0, 10);
-          const kk = calendarKey(ev.venue || '', k, ev.title || '');
-          const td = String(ev.title || '').trim().toLowerCase() + '|' + k;
-          if (!m.keys.has(kk)) m.keys.set(kk, ev);
-          if (!m.titleDates.has(td)) m.titleDates.set(td, ev);
+          const d = String(ev.start).slice(0, 10);
+          const vt = slugify(ev.venue || '') + '|' + slugify(String(ev.title || '').slice(0, 24));
+          const tt = normTitleKey(ev.title);
+          let bv = m.byVenueTitle.get(vt);
+          if (!bv) { bv = new Map(); m.byVenueTitle.set(vt, bv); }
+          if (!bv.has(d)) bv.set(d, ev);
+          let bt = m.byTitle.get(tt);
+          if (!bt) { bt = new Map(); m.byTitle.set(tt, bt); }
+          if (!bt.has(d)) bt.set(d, ev);
         }
       } catch {
         // Calendar unavailable: ideas still render, just without ✓ detection.
