@@ -12,4 +12,5 @@ export const onRequestGet = makeEventPageHandler('teds-reykjavik', {
   organizer: { '@type': 'Person', name: 'Ted (Ted’s Reykjavik on When.org)' },
   cityName: 'Reykjavik',
   cityAddress: 'Reykjavík, Iceland',
+  tzid: 'Atlantic/Reykjavik',
 }).onRequestGet;

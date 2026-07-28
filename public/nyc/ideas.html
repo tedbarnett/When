@@ -133,6 +133,8 @@ button { font-family: inherit; }
 .idea-actions { flex: none; display: flex; align-items: center; gap: 8px; padding-top: 2px; }
 .linkout { font-family: var(--mono); font-size: 12px; color: var(--muted); text-decoration: none; border: 1px solid var(--line); border-radius: 999px; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; }
 .linkout:hover { color: var(--head); border-color: var(--faint); }
+.ical-btn { font-family: var(--mono); font-size: 13px; color: var(--muted); background: transparent; text-decoration: none; border: 1px solid var(--line); border-radius: 999px; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+.ical-btn:hover { color: var(--head); border-color: var(--faint); }
 .add-btn { border: 1px dashed var(--spark); background: transparent; color: var(--spark); font-family: var(--mono); font-size: 11px; letter-spacing: .05em; border-radius: 999px; padding: 6px 14px; cursor: pointer; white-space: nowrap; transition: background .15s ease; }
 .add-btn:hover { background: rgba(255,84,38,.1); }
 .added-chip { font-family: var(--mono); font-size: 11px; color: #6bc396; border: 1px solid rgba(107,195,150,.4); border-radius: 999px; padding: 6px 14px; white-space: nowrap; }
@@ -257,6 +259,7 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
 
   /* ---------- config / state ---------- */
   var IDEAS_URL = '/api/cities/nyc/ideas';
+  var PCAL_TZ = 'America/New_York'; /* personal .ics downloads */
   /* Add targets (issue #15): NYC Basics is the default — the base layer
      everyone builds on; Ted's NYC inherits it. Last choice is remembered. */
   var CAL_OPTIONS = [
@@ -383,14 +386,14 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
   /* chip label: day-instances show their day; a whole-run copy stays plain */
   function oncalChipLabel(ev, anyday) {
     var inst = ev.added_instances || [];
-    if (!anyday || !inst.length) return '✓ on calendar';
+    if (!anyday || !inst.length) return '✓ on When calendar';
     var days = [];
     for (var i = 0; i < inst.length; i++) {
-      if (inst[i].run) return '✓ on calendar';
+      if (inst[i].run) return '✓ on When calendar';
       days.push(inst[i].date);
     }
-    if (days.length === 1) return '✓ on calendar · ' + ddateLabel(days[0]);
-    return '✓ on calendar · ' + days.length + ' days';
+    if (days.length === 1) return '✓ on When calendar · ' + ddateLabel(days[0]);
+    return '✓ on When calendar · ' + days.length + ' days';
   }
   /* a run that's only on the calendar as day-instances can take another */
   function canAddAnotherDay(ev, anyday) {
@@ -400,6 +403,76 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
     return true;
   }
   /* dayinstance-core:end */
+
+  /* personalcal-core:start — “add to YOUR Apple Calendar” (distinct from the
+     curated When calendar): builds /api/event.ics download URLs + the 📆
+     row affordance + the which-day picker for “every day” runs. Extracted +
+     unit-tested by scripts/test-personal-ics.mjs (PCAL_TZ, esc and the
+     dayinstance-core helpers are the externals it closes over) */
+  function personalIcsUrl(ev, dayKey) {
+    var start = ev.start || '';
+    var end = ev.end || '';
+    var uid = ev.id || '';
+    if (dayKey) {
+      var times = dayInstanceTimes(ev, dayKey);
+      start = times.start;
+      end = times.end;
+      uid = dayInstanceId(ev.title, dayKey);
+    }
+    var parts = [
+      'title=' + encodeURIComponent(ev.title || ''),
+      'start=' + encodeURIComponent(start),
+      'tz=' + encodeURIComponent(PCAL_TZ)
+    ];
+    if (end) parts.push('end=' + encodeURIComponent(end));
+    if (ev.venue) parts.push('venue=' + encodeURIComponent(ev.venue));
+    if (ev.neighborhood) parts.push('neighborhood=' + encodeURIComponent(ev.neighborhood));
+    if (ev.price) parts.push('price=' + encodeURIComponent(ev.price));
+    if (ev.blurb) parts.push('blurb=' + encodeURIComponent(String(ev.blurb).slice(0, 600)));
+    var link = ev.url || ev.source_url || '';
+    if (link) parts.push('url=' + encodeURIComponent(link));
+    if (uid) parts.push('uid=' + encodeURIComponent(uid));
+    return '/api/event.ics?' + parts.join('&');
+  }
+  /* one row's 📆: single-day rows download directly; “every day” runs
+     open the day picker first (pick the day, then download) */
+  function personalCalBtnHtml(ev, anyday) {
+    if (anyday && isMultiDay(ev) && dayPickerDates(ev).length) {
+      return '<button class="ical-btn" type="button" data-personalcal="' + esc(ev.id) + '" title="Add one day to your Apple Calendar">📆</button>';
+    }
+    return '<a class="ical-btn" href="' + esc(personalIcsUrl(ev, '')) + '" title="Add to your Apple Calendar">📆</a>';
+  }
+  /* which-day default: the day already on the When calendar (a
+     day-instance) when there is one, else the first pickable day */
+  function pcalDefaultDay(ev, dates) {
+    var inst = ev.added_instances || [];
+    for (var i = 0; i < inst.length; i++) {
+      if (!inst[i].run && dates.indexOf(inst[i].date) >= 0) return inst[i].date;
+    }
+    return dates[0];
+  }
+  function pcalFormHtml(ev) {
+    var dates = dayPickerDates(ev);
+    var chosen = pcalDefaultDay(ev, dates);
+    var inst = ev.added_instances || [];
+    var onCal = {};
+    for (var i = 0; i < inst.length; i++) if (!inst[i].run) onCal[inst[i].date] = 1;
+    var html = '<form class="edit-form" id="pcal-form">' +
+      '<label>which day? (runs ' + esc(ddateLabel(String(ev.start).slice(0, 10))) + ' – ' + esc(ddateLabel(String(ev.end || ev.start).slice(0, 10))) + ')' +
+      '<select name="pcalday" id="pcal-day">';
+    for (i = 0; i < dates.length; i++) {
+      html += '<option value="' + esc(dates[i]) + '"' + (dates[i] === chosen ? ' selected' : '') + '>' +
+        esc(dayOptionLabel(dates[i])) + (onCal[dates[i]] ? ' — on When calendar' : '') + '</option>';
+    }
+    html += '</select></label>' +
+      '<div class="edit-actions">' +
+        '<button class="save" type="submit">Download for Apple Calendar</button>' +
+        '<button class="cancel" type="button" id="pcal-cancel">Cancel</button>' +
+      '</div>' +
+    '</form>';
+    return html;
+  }
+  /* personalcal-core:end */
 
   /* ---------- rendering ---------- */
   /* Collate repeats: the same program often runs at dozens of locations at the
@@ -570,7 +643,7 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
         '<div class="idea-title">' + esc(dispTitle) + '</div>' +
         '<div class="idea-venue">' + g.items.length + ' locations' + (hoodTxt ? ' · ' + esc(hoodTxt) : '') + '</div>' +
         '<div class="idea-chips">' +
-          (added ? '<span class="chip">✓ ' + added + ' on calendar</span>' : '') +
+          (added ? '<span class="chip">✓ ' + added + ' on When calendar</span>' : '') +
           srcChips(first) +
         '</div>' +
       '</div>' +
@@ -603,14 +676,15 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
       '</div>' +
       '<div class="idea-actions">' +
         (link ? '<a class="linkout" href="' + esc(link) + '" target="_blank" rel="noopener" aria-label="Open source page">↗</a>' : '') +
+        personalCalBtnHtml(ev, anyday) +
         (ev.added
           ? (ev.added_id
               ? '<button class="added-chip" type="button" data-oncal="' + esc(ev.id) + '" title="on ' + esc(CAL_LABEL[ev.added_on] || ev.added_on) + ' — tap to remove">' + esc(oncalChipLabel(ev, anyday)) + '</button>'
-              : '<span class="added-chip"' + (ev.added_on && CAL_LABEL[ev.added_on] ? ' title="on ' + esc(CAL_LABEL[ev.added_on]) + '"' : '') + '>✓ on calendar</span>') +
+              : '<span class="added-chip"' + (ev.added_on && CAL_LABEL[ev.added_on] ? ' title="on ' + esc(CAL_LABEL[ev.added_on]) + '"' : '') + '>✓ on When calendar</span>') +
             (canAddAnotherDay(ev, anyday)
-              ? '<button class="add-btn" type="button" data-add="' + esc(ev.id) + '" title="add another day">＋ day</button>'
+              ? '<button class="add-btn" type="button" data-add="' + esc(ev.id) + '" title="add another day to the When calendar">＋ day</button>'
               : '')
-          : '<button class="add-btn" type="button" data-add="' + esc(ev.id) + '">＋ add</button>') +
+          : '<button class="add-btn" type="button" data-add="' + esc(ev.id) + '">＋ When calendar</button>') +
       '</div>' +
     '</div>';
   }
@@ -786,7 +860,7 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
 
   /* ---------- add flow (mirrors teds-nyc.html import-add-form) ---------- */
   function calPickerHtml() {
-    var html = '<label>add to calendar<select name="target" id="add-target">';
+    var html = '<label>add to When calendar<select name="target" id="add-target">';
     for (var i = 0; i < CAL_OPTIONS.length; i++) {
       var o = CAL_OPTIONS[i];
       html += '<option value="' + esc(o.id) + '"' + (o.id === addTarget ? ' selected' : '') + '>' + esc(o.label) + (o.id === 'basics-nyc' ? ' (base layer)' : '') + '</option>';
@@ -846,7 +920,7 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
       '<label>url<input type="url" name="url" value="' + esc(ev.url || '') + '" maxlength="600" placeholder="https://…"></label>' +
       '<label>image url<input type="url" name="image" value="' + esc(ev.image || '') + '" maxlength="600" placeholder="https://…"></label>' +
       '<div class="edit-actions">' +
-        '<button class="save" type="submit">Add to calendar</button>' +
+        '<button class="save" type="submit">Add to When calendar</button>' +
         '<button class="cancel" type="button" id="add-cancel">Cancel</button>' +
       '</div>' +
       '<div class="edit-err" id="add-err"></div>' +
@@ -867,6 +941,17 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
     addingId = null;
     document.getElementById('add-backdrop').hidden = true;
     document.getElementById('add-content').innerHTML = '';
+  }
+
+  /* “add to YOUR Apple Calendar” sheet — every-day runs pick the day first */
+  function openPersonalCal(id) {
+    var ev = findCandidate(id);
+    if (!ev) return;
+    addingId = id;
+    document.getElementById('add-src').textContent =
+      'for YOUR Apple Calendar — downloads a one-event .ics (the When calendar is not changed)';
+    document.getElementById('add-content').innerHTML = pcalFormHtml(ev);
+    document.getElementById('add-backdrop').hidden = false;
   }
   function markAdded(id, target, calId, payload) {
     var ev = findCandidate(id);
@@ -890,7 +975,7 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
     renderDay();
   }
 
-  /* ---------- remove flow: the "✓ on calendar" chip is a toggle ---------- */
+  /* ---------- remove flow: the "✓ on When calendar" chip is a toggle ---------- */
   function overlayPost(cal, payload) {
     return fetch(overlayUrlFor(cal), {
       method: 'POST',
@@ -1042,6 +1127,7 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
     if (!t) return;
     if (t.getAttribute && t.getAttribute('data-add')) { openAdd(t.getAttribute('data-add')); return; }
     if (t.getAttribute && t.getAttribute('data-oncal')) { removeFromCalendar(t.getAttribute('data-oncal'), t); return; }
+    if (t.getAttribute && t.getAttribute('data-personalcal')) { openPersonalCal(t.getAttribute('data-personalcal')); return; }
     if (t.getAttribute && t.getAttribute('data-grouptoggle')) {
       var gk = t.getAttribute('data-grouptoggle');
       openGroups[gk] = !openGroups[gk];
@@ -1072,7 +1158,7 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
       renderDay();
       return;
     }
-    if (t.id === 'add-close' || t.id === 'add-cancel') { closeAdd(); return; }
+    if (t.id === 'add-close' || t.id === 'add-cancel' || t.id === 'pcal-cancel') { closeAdd(); return; }
     if (t.id === 'add-backdrop') { closeAdd(); return; }
   });
   document.addEventListener('keydown', function (e) {
@@ -1127,6 +1213,17 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
   });
 
   document.addEventListener('submit', function (e) {
+    if (e.target && e.target.id === 'pcal-form') {
+      e.preventDefault();
+      var pev = addingId ? findCandidate(addingId) : null;
+      var psel = e.target.elements.pcalday;
+      if (pev && psel && psel.value) {
+        var purl = personalIcsUrl(pev, psel.value);
+        closeAdd();
+        window.location.href = purl;
+      }
+      return;
+    }
     if (!e.target || e.target.id !== 'ideas-add-form') return;
     e.preventDefault();
     var id = addingId;
@@ -1165,12 +1262,12 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
         closeAdd();
         markAdded(id, target, res.d.id || '', ev);
       } else {
-        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Add to calendar'; }
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Add to When calendar'; }
         var err = document.getElementById('add-err');
         if (err) err.textContent = (res.d && res.d.error) ? 'Could not add — ' + res.d.error + '.' : 'Could not add — try again.';
       }
     }).catch(function () {
-      if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Add to calendar'; }
+      if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Add to When calendar'; }
       var err = document.getElementById('add-err');
       if (err) err.textContent = 'Network error — try again.';
     });

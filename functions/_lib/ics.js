@@ -11,7 +11,8 @@ import { loadComposed } from './calendar.js';
 // Per-zone VTIMEZONE blocks + the city name appended to LOCATION lines.
 // Events are authored as local wall time with the zone's offset baked into
 // the ISO string, so the feed only needs the zone's standing DST rules.
-var TZINFO = {
+// Exported: the personal-calendar endpoints share the same zone table.
+export var TZINFO = {
   "America/New_York": {
     cityLabel: "New York",
     vtimezone: [
@@ -107,24 +108,7 @@ export function makeIcsHandler(calId, opts) {
     ].concat(tzinfo.vtimezone, ["END:VTIMEZONE"]);
 
     for (var i = 0; i < data.events.length; i++) {
-      var ev = data.events[i];
-      var start = localStamp(ev.start);
-      var end = ev.end ? localStamp(ev.end) : localStamp(addHours(ev.start, 2));
-      var descParts = [];
-      if (ev.blurb) descParts.push(ev.blurb);
-      if (ev.price) descParts.push("Price: " + ev.price);
-      if (ev.url) descParts.push(ev.url);
-
-      lines.push("BEGIN:VEVENT");
-      lines.push("UID:" + ev.id + "@when.org");
-      lines.push("DTSTAMP:" + now);
-      lines.push("DTSTART;TZID=" + TZID + ":" + start);
-      lines.push("DTEND;TZID=" + TZID + ":" + end);
-      lines.push("SUMMARY:" + escapeText(ev.title));
-      lines.push("DESCRIPTION:" + escapeText(descParts.join("\n")));
-      lines.push("LOCATION:" + escapeText([ev.venue, ev.neighborhood, tzinfo.cityLabel].filter(Boolean).join(", ")));
-      if (ev.url) lines.push("URL:" + ev.url);
-      lines.push("END:VEVENT");
+      lines = lines.concat(veventLines(data.events[i], TZID, tzinfo, now));
     }
 
     lines.push("END:VCALENDAR");
@@ -141,6 +125,94 @@ export function makeIcsHandler(calId, opts) {
   }
 
   return { onRequest };
+}
+
+// One event as VEVENT lines — shared by the feed and the per-event
+// personal-calendar downloads so the two can never disagree.
+// Timed events use DTSTART;TZID=<zone> wall time (never UTC-shifted);
+// date-only starts (YYYY-MM-DD) become all-day events (VALUE=DATE, with
+// the RFC 5545 exclusive DTEND one day past the last day).
+export function veventLines(ev, TZID, tzinfo, now) {
+  var lines = [];
+  var descParts = [];
+  if (ev.blurb) descParts.push(ev.blurb);
+  if (ev.price) descParts.push("Price: " + ev.price);
+  if (ev.url) descParts.push(ev.url);
+
+  lines.push("BEGIN:VEVENT");
+  lines.push("UID:" + ev.id + "@when.org");
+  lines.push("DTSTAMP:" + now);
+  if (isDateOnly(ev.start)) {
+    var lastDay = isDateOnly(ev.end) ? ev.end : ev.start;
+    lines.push("DTSTART;VALUE=DATE:" + dateStamp(ev.start));
+    lines.push("DTEND;VALUE=DATE:" + dateStamp(plusDays(lastDay, 1)));
+  } else {
+    var start = localStamp(ev.start);
+    var end = ev.end ? localStamp(ev.end) : localStamp(addHours(ev.start, 2));
+    lines.push("DTSTART;TZID=" + TZID + ":" + start);
+    lines.push("DTEND;TZID=" + TZID + ":" + end);
+  }
+  lines.push("SUMMARY:" + escapeText(ev.title));
+  lines.push("DESCRIPTION:" + escapeText(descParts.join("\n")));
+  lines.push("LOCATION:" + escapeText([ev.venue, ev.neighborhood, tzinfo.cityLabel].filter(Boolean).join(", ")));
+  if (ev.url) lines.push("URL:" + ev.url);
+  lines.push("END:VEVENT");
+  return lines;
+}
+
+/**
+ * A complete one-event .ics download (the "add THIS event to your own
+ * Apple Calendar" affordance). Served with Content-Disposition: attachment
+ * so iOS Safari hands it straight to Apple Calendar. opts:
+ * { tzid, prodId?, calName?, filename? }.
+ */
+export function singleEventIcsResponse(ev, opts) {
+  var TZID = (opts && opts.tzid && TZINFO[opts.tzid]) ? opts.tzid : "America/New_York";
+  var tzinfo = TZINFO[TZID];
+  var prodId = (opts && opts.prodId) || "When Event";
+  var filename = (opts && opts.filename) || icsSlug(ev.id || ev.title) + ".ics";
+  var lines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//When.org//" + prodId + "//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+    "BEGIN:VTIMEZONE",
+    "TZID:" + TZID
+  ].concat(tzinfo.vtimezone, ["END:VTIMEZONE"],
+    veventLines(ev, TZID, tzinfo, utcStamp(new Date())),
+    ["END:VCALENDAR"]);
+  var body = lines.map(foldLine).join("\r\n") + "\r\n";
+  return new Response(body, {
+    headers: {
+      "Content-Type": "text/calendar; charset=utf-8",
+      "Content-Disposition": 'attachment; filename="' + filename + '"',
+      "Cache-Control": (opts && opts.cacheControl) || "public, max-age=300",
+      "Access-Control-Allow-Origin": "*"
+    }
+  });
+}
+
+/** Safe .ics filename slug from an event id or title. */
+export function icsSlug(s) {
+  s = String(s || "event");
+  try { s = s.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); } catch (e) {}
+  s = s.toLowerCase().replace(/['\u2019]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
+  return s || "event";
+}
+
+function isDateOnly(v) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(String(v || ""));
+}
+
+function dateStamp(key) {
+  return String(key).replace(/-/g, "");
+}
+
+function plusDays(key, n) {
+  var d = new Date(key + "T12:00:00Z");
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
 }
 
 // "2026-07-24T20:00:00-04:00" -> "20260724T200000" (already NY-local by authoring convention)

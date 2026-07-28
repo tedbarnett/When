@@ -268,6 +268,7 @@ button.mchip:hover { border-color: var(--faint); color: var(--ink); }
 .sub-actions { display: grid; gap: 8px; margin-top: 16px; }
 .sub-actions .primary { display: block; background: var(--accent); color: #fff; font-weight: 700; font-size: 14.5px; text-align: center; padding: 12px 18px; border-radius: 999px; text-decoration: none; border: none; cursor: pointer; }
 .sub-actions .ghost { display: block; border: 1px solid var(--line); background: transparent; color: var(--ink); font-weight: 700; font-size: 14.5px; text-align: center; padding: 11px 18px; border-radius: 999px; text-decoration: none; cursor: pointer; }
+.sub-note { font-size: 11.5px; color: var(--faint); text-align: center; line-height: 1.5; }
 .sub-foot { font-family: var(--mono); font-size: 10.5px; color: var(--faint); text-align: center; margin-top: 12px; }
 
 /* tray */
@@ -473,7 +474,8 @@ body.modal-open { overflow: hidden; }
     </div>
     <div class="sub-copy">Once, in the calendar app you already use. Every week&rsquo;s picks arrive automatically. Free forever.</div>
     <div class="sub-actions">
-      <a class="primary" href="webcal://when.org/basics-nyc.ics">Apple Calendar / iCal</a>
+      <a class="primary" href="webcal://when.org/basics-nyc.ics">Subscribe in Apple Calendar</a>
+      <div class="sub-note">Mirrors this When calendar into Apple Calendar &mdash; read-only, updates automatically.</div>
       <a class="ghost" href="https://calendar.google.com/calendar/r?cid=https%3A%2F%2Fwhen.org%2Fbasics-nyc.ics" target="_blank" rel="noopener">Google Calendar</a>
       <button class="ghost" id="copy-feed" type="button">Copy feed URL</button>
     </div>
@@ -1167,6 +1169,7 @@ body.modal-open { overflow: hidden; }
         '<div class="share-row"><span class="surl">when.org/basics-nyc/' + esc(ev.id) + '</span><button class="share-main" id="share-link" type="button">Share</button><button id="copy-link" type="button">Copy link</button></div>' +
         '<div class="detail-actions">' +
           '<button class="primary" type="button" data-save="' + esc(ev.id) + '" data-savelabel="1">' + (saved[ev.id] ? '✓ On my calendar' : '＋ Add to my calendar') + '</button>' +
+          '<a class="ghost" href="/basics-nyc/' + encodeURIComponent(ev.id) + '.ics">📆 Add to Apple Calendar</a>' +
           (ev.url ? '<a class="ghost" href="' + esc(ev.url) + '" target="_blank" rel="noopener">Venue site ↗</a>' : '') +
         '</div>' +
       '</div>';

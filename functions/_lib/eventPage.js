@@ -9,6 +9,7 @@
  * This directory is underscore-prefixed so Pages Functions never routes it.
  */
 import { loadComposed } from './calendar.js';
+import { singleEventIcsResponse, icsSlug } from './ics.js';
 import { readSession, OWNER_EMAIL } from './session.js';
 
 /**
@@ -17,7 +18,13 @@ import { readSession, OWNER_EMAIL } from './session.js';
  *   fallbackDesc: 'A pick from Ted’s NYC on When.org.',
  *   organizer: { '@type': 'Person', name: 'Ted (Ted’s NYC on When.org)' },
  *   cityName: 'New York', cityAddress: 'New York, NY',   // schema.org Place
+ *   tzid: 'America/New_York',   // per-event .ics downloads
  * }) -> { onRequestGet }
+ *
+ * Also serves when.org/<cal>/{id}.ics — a one-event .ics download of the
+ * same public event, so anyone can drop a single pick into their own
+ * (Apple) calendar. Same data, same visibility rules: hidden events 404
+ * for everyone but the signed-in owner.
  */
 export function makeEventPageHandler(calId, opts) {
   const calLabel = (opts && opts.calLabel) || calId;
@@ -25,15 +32,20 @@ export function makeEventPageHandler(calId, opts) {
   const organizerBase = (opts && opts.organizer) || { '@type': 'Organization', name: calLabel };
   const cityName = (opts && opts.cityName) || 'New York';
   const cityAddress = (opts && opts.cityAddress) || 'New York, NY';
+  const tzid = (opts && opts.tzid) || 'America/New_York';
   const pagePath = '/' + calId;
 
   async function onRequestGet(context) {
     const { params, env, request } = context;
-    const id = decodeURIComponent(params.id || '');
+    let id = decodeURIComponent(params.id || '');
     const origin = new URL(request.url).origin;
 
-    // Never intercept the feed or data paths (defensive; routing shouldn't send them here)
-    if (id.endsWith('.ics') || id.endsWith('.json')) {
+    // when.org/<cal>/{id}.ics — one-event download for personal calendars
+    const wantIcs = id.endsWith('.ics');
+    if (wantIcs) id = id.slice(0, -4);
+
+    // Never intercept data paths (defensive; routing shouldn't send them here)
+    if (id.endsWith('.json')) {
       return env.ASSETS.fetch(request);
     }
 
@@ -45,8 +57,18 @@ export function makeEventPageHandler(calId, opts) {
     if (!pageRes.ok) return Response.redirect(origin + pagePath, 302);
 
     const ev = merged ? (merged.data.events || []).find((e) => e.id === id) || null : null;
-    if (!ev) return Response.redirect(origin + pagePath, 302);
     const isOwner = !!(session && session.email === OWNER_EMAIL);
+    if (wantIcs) {
+      // Download, not a page: unknown/hidden ids are a plain 404 (no redirect)
+      if (!ev || (ev._hidden && !isOwner)) return new Response('Event not found', { status: 404 });
+      return singleEventIcsResponse(ev, {
+        tzid,
+        prodId: calLabel,
+        filename: icsSlug(ev.id) + '.ics',
+        cacheControl: ev._hidden || ev._edited || ev._added ? 'no-store' : 'public, max-age=300'
+      });
+    }
+    if (!ev) return Response.redirect(origin + pagePath, 302);
     if (ev._hidden && !isOwner) return Response.redirect(origin + pagePath, 302);
 
     let html = await pageRes.text();

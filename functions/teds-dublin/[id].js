@@ -12,4 +12,5 @@ export const onRequestGet = makeEventPageHandler('teds-dublin', {
   organizer: { '@type': 'Person', name: 'Ted (Ted’s Dublin on When.org)' },
   cityName: 'Dublin',
   cityAddress: 'Dublin, Ireland',
+  tzid: 'Europe/Dublin',
 }).onRequestGet;

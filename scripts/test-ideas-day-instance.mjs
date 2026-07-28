@@ -273,10 +273,10 @@ check('end time before start time is dropped', core.dayInstanceTimes({ start: '2
 const oneInst = { added_instances: [{ id: 'x-20260730', date: '2026-07-30', added: true, run: false }] };
 const twoInst = { added_instances: [{ date: '2026-07-30', run: false }, { date: '2026-08-02', run: false }] };
 const runInst = { added_instances: [{ date: '2026-07-25', run: true }] };
-check('chip shows the day for one instance', core.oncalChipLabel(oneInst, true), '✓ on calendar · JUL 30');
-check('chip counts several instances', core.oncalChipLabel(twoInst, true), '✓ on calendar · 2 days');
-check('chip stays plain for a whole-run copy', core.oncalChipLabel(runInst, true), '✓ on calendar');
-check('chip stays plain on single-day rows', core.oncalChipLabel(oneInst, false), '✓ on calendar');
+check('chip shows the day for one instance', core.oncalChipLabel(oneInst, true), '✓ on When calendar · JUL 30');
+check('chip counts several instances', core.oncalChipLabel(twoInst, true), '✓ on When calendar · 2 days');
+check('chip stays plain for a whole-run copy', core.oncalChipLabel(runInst, true), '✓ on When calendar');
+check('chip stays plain on single-day rows', core.oncalChipLabel(oneInst, false), '✓ on When calendar');
 check('day-instance rows offer ＋ day', core.canAddAnotherDay(oneInst, true), true);
 check('whole-run rows do not offer ＋ day', core.canAddAnotherDay(runInst, true), false);
 check('un-added rows do not offer ＋ day', core.canAddAnotherDay({ added_instances: [] }, true), false);
