@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>When.org · An open calendar of everything happening</title>
-<meta name="description" content="When.org is the open, subscribable feed layer for local events. Every calendar is a web page, an ICS feed, and an API. Open source. Starting in New York.">
+<meta name="description" content="When.org is the open, subscribable feed layer for local events. Every calendar is a web page, an ICS feed, and an API. Open source. Live in New York, Dublin, and Reykjavik.">
 <link rel="canonical" href="https://when.org/">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
@@ -12,10 +12,10 @@
 <meta property="og:url" content="https://when.org/">
 <meta property="og:site_name" content="When.org">
 <meta property="og:title" content="When.org · An open calendar of everything happening">
-<meta property="og:description" content="Open-source event feeds for your city. Subscribe in any calendar app. The curators and hosts behind them get paid. Starting in New York.">
+<meta property="og:description" content="Open-source event feeds for your city. Subscribe in any calendar app. The curators and hosts behind them get paid. Live in New York, Dublin, and Reykjavik.">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="When.org · An open calendar of everything happening">
-<meta name="twitter:description" content="Open-source event feeds for your city. Subscribe in any calendar app. Starting in New York, New Orleans next.">
+<meta name="twitter:description" content="Open-source event feeds for your city. Subscribe in any calendar app. Live in New York, Dublin, and Reykjavik.">
 
 <script type="application/ld+json">
 {
@@ -301,6 +301,24 @@ h1 {
 .cal-note a { color: var(--peri); font-weight: 700; text-decoration: none; }
 .cal-note a:hover { color: var(--head); }
 
+/* ---------- live calendars grid ---------- */
+.live-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 30px; }
+@media (max-width: 880px) { .live-grid { grid-template-columns: 1fr; } }
+.live-card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 20px;
+  padding: 18px 18px 15px; display: flex; flex-direction: column;
+}
+.live-card .cal-title { margin-top: 3px; }
+.live-desc { font-size: 13.5px; color: var(--muted); margin: 6px 0 14px; flex: 1; line-height: 1.5; }
+.live-links {
+  display: flex; align-items: center; justify-content: space-between;
+  border-top: 1px solid var(--line); padding-top: 12px;
+}
+.live-links a { font-weight: 700; font-size: 13px; text-decoration: none; }
+.live-links .browse { color: var(--head); }
+.live-links .subscribe { color: var(--peri); }
+.live-links a:hover { color: var(--spark); }
+
 /* ---------- cities strip ---------- */
 .cities { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-top: clamp(48px, 6vw, 80px); }
 .cities-inner { padding: 48px 0; }
@@ -530,7 +548,7 @@ footer { border-top: 1px solid var(--line); }
       <a class="mi city-opt" data-city="nyc" href="/teds-nyc">New York <span class="hint">ted&rsquo;s calendar</span></a>
       <a class="mi city-opt" data-city="dublin" href="/teds-dublin">Dublin <span class="hint">ted&rsquo;s calendar</span></a>
       <span class="mi soon" aria-disabled="true">New Orleans <span class="hint">coming soon</span></span>
-      <span class="mi soon" aria-disabled="true">Reykjavik <span class="hint">coming soon</span></span>
+      <a class="mi city-opt" data-city="reykjavik" href="/teds-reykjavik">Reykjavik <span class="hint">ted&rsquo;s calendar</span></a>
       <div class="menu-div" role="separator"></div>
       <a class="mi" href="/#manifesto">Manifesto</a>
       <a class="mi" href="https://github.com/tedbarnett/When" rel="noopener">GitHub</a>
@@ -544,7 +562,7 @@ footer { border-top: 1px solid var(--line); }
   <section class="hero">
     <div class="wrap hero-grid">
       <div class="hero-left">
-        <p class="kicker rise">OPEN-SOURCE &middot; NEW YORK FIRST</p>
+        <p class="kicker rise">OPEN-SOURCE &middot; NYC &middot; DUBLIN &middot; REYKJAVIK</p>
         <h1 class="rise">An open calendar of everything happening<span class="period">.</span></h1>
         <p class="hero-sub rise d1">Event feeds for your city, curated by people who actually go out. Subscribe in any calendar app. The curators and hosts behind them get paid.</p>
         <div class="hero-ctas rise d2">
@@ -583,15 +601,44 @@ footer { border-top: 1px solid var(--line); }
             <a class="cal-sub" href="/teds-nyc">Subscribe</a>
           </div>
         </div>
-        <p class="cal-note">Every calendar is a page, a feed, and an API. The first one is live: <a href="/teds-nyc">Ted&rsquo;s NYC &rarr;</a></p>
+        <p class="cal-note">Every calendar is a page, a feed, and an API. Three are live: <a href="/teds-nyc">NYC</a> &middot; <a href="/teds-dublin">Dublin</a> &middot; <a href="/teds-reykjavik">Reykjavik</a></p>
       </div>
     </div>
   </section>
 
   <section class="cities" id="cities">
     <div class="wrap cities-inner">
-      <h2>Starting in New York<span class="period">.</span> <span class="next">New Orleans next.</span></h2>
-      <p>A handful of genuinely great, hand-curated NYC calendars with live feeds, before anything else. New Orleans follows. Anywhere else &mdash; the code is open, run when.org for your own town.</p>
+      <h2>Live in three cities<span class="period">.</span> <span class="next">New Orleans next.</span></h2>
+      <p>Genuinely great, hand-curated calendars with live feeds &mdash; New York, Dublin, and Reykjavik so far. New Orleans follows. Anywhere else &mdash; the code is open, run when.org for your own town.</p>
+      <div class="live-grid">
+        <div class="live-card">
+          <div class="cal-url">when.org/teds-nyc</div>
+          <div class="cal-title">Ted&rsquo;s NYC</div>
+          <p class="live-desc">Real New York this week &mdash; jazz basements, free lawns, old movies, new food.</p>
+          <div class="live-links">
+            <a class="browse" href="/teds-nyc">Browse &rarr;</a>
+            <a class="subscribe" href="webcal://when.org/teds-nyc.ics">Subscribe</a>
+          </div>
+        </div>
+        <div class="live-card">
+          <div class="cal-url">when.org/teds-dublin</div>
+          <div class="cal-title">Ted&rsquo;s Dublin</div>
+          <p class="live-desc">Real Dublin this week &mdash; gigs, Georgian theatres, castle tours, seaside markets.</p>
+          <div class="live-links">
+            <a class="browse" href="/teds-dublin">Browse &rarr;</a>
+            <a class="subscribe" href="webcal://when.org/teds-dublin.ics">Subscribe</a>
+          </div>
+        </div>
+        <div class="live-card">
+          <div class="cal-url">when.org/teds-reykjavik</div>
+          <div class="cal-title">Ted&rsquo;s Reykjavik</div>
+          <p class="live-desc">Real Reykjavik this week &mdash; Harpa concerts, harbour whales, geothermal lagoons, midnight-sun tours.</p>
+          <div class="live-links">
+            <a class="browse" href="/teds-reykjavik">Browse &rarr;</a>
+            <a class="subscribe" href="webcal://when.org/teds-reykjavik.ics">Subscribe</a>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 

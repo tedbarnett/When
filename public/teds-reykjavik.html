@@ -3,23 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ted&rsquo;s Dublin · When.org</title>
-<meta name="description" content="Real Dublin this week: gigs, Georgian theatres, castle tours, seaside markets. Hand-picked, no filler. A When.org calendar: a web page, an ICS feed, and an API.">
-<link rel="canonical" href="https://when.org/teds-dublin">
+<title>Ted&rsquo;s Reykjavik · When.org</title>
+<meta name="description" content="Real Reykjavik this week: Harpa concerts, harbour whales, geothermal lagoons, midnight-sun tours. Hand-picked, no filler. A When.org calendar: a web page, an ICS feed, and an API.">
+<link rel="canonical" href="https://when.org/teds-reykjavik">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://when.org/teds-dublin">
+<meta property="og:url" content="https://when.org/teds-reykjavik">
 <meta property="og:site_name" content="When.org">
-<meta property="og:title" content="Ted&rsquo;s Dublin · When.org">
-<meta property="og:description" content="Real Dublin this week, hand-picked. Subscribe once in Apple or Google Calendar and every week&rsquo;s picks arrive automatically.">
+<meta property="og:title" content="Ted&rsquo;s Reykjavik · When.org">
+<meta property="og:description" content="Real Reykjavik this week, hand-picked. Subscribe once in Apple or Google Calendar and every week&rsquo;s picks arrive automatically.">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Ted&rsquo;s Dublin · When.org">
-<meta name="twitter:description" content="Real Dublin this week, hand-picked. Subscribe in any calendar app.">
+<meta name="twitter:title" content="Ted&rsquo;s Reykjavik · When.org">
+<meta name="twitter:description" content="Real Reykjavik this week, hand-picked. Subscribe in any calendar app.">
 
 <style>
 /* ------------------------------------------------------------------
-   when.org — Ted's Dublin event browser
+   when.org — Ted's Reykjavik event browser
    Hand-written CSS. No framework, no build step.
    Dark by default; body[data-theme="light"] flips the tokens.
    Display voice: Bricolage Grotesque 800 lowercase + vermilion period.
@@ -429,9 +429,9 @@ body.modal-open { overflow: hidden; }
         <div class="menu-panel" id="menu-panel" hidden>
           <div class="menu-label" id="menu-city-label">Current city</div>
           <a class="mi city-opt" data-city="nyc" href="/teds-nyc">New York</a>
-          <a class="mi city-opt on" data-city="dublin" href="/teds-dublin" aria-current="true">Dublin<span class="tick">✓</span></a>
+          <a class="mi city-opt" data-city="dublin" href="/teds-dublin">Dublin</a>
           <span class="mi soon" aria-disabled="true">New Orleans<span class="hint">coming soon</span></span>
-          <a class="mi city-opt" data-city="reykjavik" href="/teds-reykjavik">Reykjavik</a>
+          <a class="mi city-opt on" data-city="reykjavik" href="/teds-reykjavik" aria-current="true">Reykjavik<span class="tick">✓</span></a>
           <div class="menu-div" role="separator"></div>
           <a class="mi" href="/">Home</a>
           <a class="mi" href="/#manifesto">About</a>
@@ -446,7 +446,7 @@ body.modal-open { overflow: hidden; }
 
 <main>
   <div class="wrap calhead">
-    <div class="kicker" id="kicker">WHEN.ORG/TEDS-DUBLIN</div>
+    <div class="kicker" id="kicker">WHEN.ORG/TEDS-REYKJAVIK</div>
     <h1 class="view-title" id="view-title">tonight<span class="dot">.</span></h1>
     <div class="meta-row">
       <span class="byline">Curated by Ted · things I&rsquo;d actually go to</span>
@@ -465,7 +465,7 @@ body.modal-open { overflow: hidden; }
       </div>
       <button class="history-link" id="history-open" type="button">history<span class="dot">.</span></button>
       <button class="add-pill" id="add-event-open" type="button" hidden aria-haspopup="dialog">＋ add event</button>
-      <a class="add-pill" id="ideas-link" href="/dublin/ideas" hidden style="text-decoration:none">✦ event ideas</a>
+      <a class="add-pill" id="ideas-link" href="/reykjavik/ideas" hidden style="text-decoration:none">✦ event ideas</a>
     </div>
   </div>
 
@@ -478,8 +478,8 @@ body.modal-open { overflow: hidden; }
 
   <div class="foot">
     <div class="foot-inner">
-      <span class="left">Ted&rsquo;s Dublin is a <a href="/">when.org</a> calendar: a web page, an <a href="/teds-dublin.ics">ICS feed</a>, and a <a href="/data/teds-dublin.json">JSON API</a> from one list of events. Every event has its own link — share the good ones. Also by Ted: <a href="/teds-nyc">Ted&rsquo;s NYC</a>.</span>
-      <span class="right">DUBLIN · THIS WEEK</span>
+      <span class="left">Ted&rsquo;s Reykjavik is a <a href="/">when.org</a> calendar: a web page, an <a href="/teds-reykjavik.ics">ICS feed</a>, and a <a href="/data/teds-reykjavik.json">JSON API</a> from one list of events. Every event has its own link — share the good ones. Also by Ted: <a href="/teds-nyc">Ted&rsquo;s NYC</a> · <a href="/teds-dublin">Ted&rsquo;s Dublin</a>.</span>
+      <span class="right">REYKJAVIK · THIS WEEK</span>
     </div>
   </div>
 </main>
@@ -495,11 +495,11 @@ body.modal-open { overflow: hidden; }
     </div>
     <div class="sub-copy">Once, in the calendar app you already use. Every week&rsquo;s picks arrive automatically. Free forever.</div>
     <div class="sub-actions">
-      <a class="primary" href="webcal://when.org/teds-dublin.ics">Apple Calendar / iCal</a>
-      <a class="ghost" href="https://calendar.google.com/calendar/r?cid=https%3A%2F%2Fwhen.org%2Fteds-dublin.ics" target="_blank" rel="noopener">Google Calendar</a>
+      <a class="primary" href="webcal://when.org/teds-reykjavik.ics">Apple Calendar / iCal</a>
+      <a class="ghost" href="https://calendar.google.com/calendar/r?cid=https%3A%2F%2Fwhen.org%2Fteds-reykjavik.ics" target="_blank" rel="noopener">Google Calendar</a>
       <button class="ghost" id="copy-feed" type="button">Copy feed URL</button>
     </div>
-    <div class="sub-foot">when.org/teds-dublin.ics · JSON at /data/teds-dublin.json</div>
+    <div class="sub-foot">when.org/teds-reykjavik.ics · JSON at /data/teds-reykjavik.json</div>
   </div>
 </div>
 
@@ -536,12 +536,12 @@ body.modal-open { overflow: hidden; }
   'use strict';
 
   /* ---------- state ---------- */
-  var DATA_URL = '/data/teds-dublin.json';
-  var ADMIN_URL = '/api/calendars/teds-dublin/admin';
-  var OVERLAY_URL = '/api/calendars/teds-dublin/overlay';
-  var FEED_URL = 'https://when.org/teds-dublin.ics';
+  var DATA_URL = '/data/teds-reykjavik.json';
+  var ADMIN_URL = '/api/calendars/teds-reykjavik/admin';
+  var OVERLAY_URL = '/api/calendars/teds-reykjavik/overlay';
+  var FEED_URL = 'https://when.org/teds-reykjavik.ics';
   var days = [];            // [{key, events:[...]}] today + upcoming, sorted asc
-  var pastDays = [];        // [{key, events:[...]}] before today (Dublin), sorted desc
+  var pastDays = [];        // [{key, events:[...]}] before today (Reykjavik), sorted desc
   var anyday = [];          // multi-day runs (start–end range) overlapping this week
   var hiddenEvents = [];    // owner view: hidden events, kept OFF the calendar in an owner-only shelf
   var allEvents = [];
@@ -558,7 +558,7 @@ body.modal-open { overflow: hidden; }
   var isOwner = false;      // set from /api/me; unlocks curator controls
   var overlay = { hidden: {}, edits: {} };
   var editing = false;      // detail modal is in edit mode
-  var geoFilter = 'everywhere'; // when:dublin:geo — single-choice area filter (issue #5)
+  var geoFilter = 'everywhere'; // when:reykjavik:geo — single-choice area filter (issue #5)
   try {
     saved = JSON.parse(localStorage.getItem('when:saved') || '{}') || {};
     attended = JSON.parse(localStorage.getItem('when:attended') || '{}') || {};
@@ -566,25 +566,32 @@ body.modal-open { overflow: hidden; }
     followed = localStorage.getItem('when:followed') === '1';
     published = localStorage.getItem('when:published') === '1';
     handle = localStorage.getItem('when:handle') || 'tedbarnett';
-    geoFilter = localStorage.getItem('when:dublin:geo') || 'everywhere';
+    geoFilter = localStorage.getItem('when:reykjavik:geo') || 'everywhere';
   } catch (e) {}
 
   /* Geo (issue #5): neighborhood -> area for the filter chips.
-     Dublin edition — areas are city centre / northside / southside /
-     dublin bay (the coastal villages). Single choice for now. */
+     Reykjavik edition — areas are downtown (101) / harbour & grandi /
+     laugardalur / outside the centre. Single choice for now. */
   var BOROUGH_OF = {
-    'city centre': 'city centre', 'temple bar': 'city centre', 'docklands': 'city centre',
-    'grand canal dock': 'city centre', 'smithfield': 'city centre', 'portobello': 'city centre',
-    'st stephens green': 'city centre', "st stephen's green": 'city centre',
-    'drumcondra': 'northside', 'phibsborough': 'northside', 'phoenix park': 'northside',
-    'glasnevin': 'northside', 'marino': 'northside',
-    'ballsbridge': 'southside', 'ranelagh': 'southside', 'rathmines': 'southside',
-    'kilmainham': 'southside', 'tallaght': 'southside', 'rathfarnham': 'southside',
-    'donnybrook': 'southside', 'stillorgan': 'southside', 'leopardstown': 'southside',
-    'howth': 'dublin bay', 'dun laoghaire': 'dublin bay', 'dún laoghaire': 'dublin bay',
-    'malahide': 'dublin bay', 'sandycove': 'dublin bay', 'clontarf': 'dublin bay'
+    'downtown': 'downtown', '101': 'downtown', 'city centre': 'downtown',
+    'hallgrimskirkja area': 'downtown', 'hallgrímskirkja area': 'downtown',
+    'laugavegur': 'downtown', 'hlemmur': 'downtown', 'vesturbær': 'downtown',
+    'vesturbaer': 'downtown', 'tjörnin': 'downtown', 'tjornin': 'downtown',
+    'old harbour': 'harbour & grandi', 'old harbor': 'harbour & grandi',
+    'grandi': 'harbour & grandi', 'harbour': 'harbour & grandi',
+    'viðey': 'harbour & grandi', 'videy': 'harbour & grandi',
+    'laugardalur': 'laugardalur',
+    'klambratun': 'downtown', 'klambratún': 'downtown', 'hlidar': 'downtown', 'hlíðar': 'downtown',
+    'perlan': 'outside the centre', 'öskjuhlíð': 'outside the centre',
+    'oskjuhlid': 'outside the centre', 'perlan/öskjuhlíð': 'outside the centre',
+    'árbær': 'outside the centre', 'arbaer': 'outside the centre',
+    'elliðaárdalur': 'outside the centre', 'kópavogur': 'outside the centre',
+    'kopavogur': 'outside the centre', 'hafnarfjörður': 'outside the centre',
+    'hafnarfjordur': 'outside the centre', 'grindavík': 'outside the centre',
+    'grindavik': 'outside the centre', 'outside the city': 'outside the centre',
+    'outside the centre': 'outside the centre'
   };
-  var GEO_ORDER = ['city centre', 'northside', 'southside', 'dublin bay'];
+  var GEO_ORDER = ['downtown', 'harbour & grandi', 'laugardalur', 'outside the centre'];
   function boroughOf(ev) { return BOROUGH_OF[(ev.neighborhood || '').toLowerCase()] || ''; }
   function passesGeo(ev) { return geoFilter === 'everywhere' || boroughOf(ev) === geoFilter; }
   function geoAreas() {
@@ -637,11 +644,11 @@ body.modal-open { overflow: hidden; }
     var hh = hr % 12; if (hh === 0) hh = 12;
     return hh + ':' + mn + ap;
   }
-  function dayDate(key) { return new Date(key + 'T12:00:00+01:00'); }
+  function dayDate(key) { return new Date(key + 'T12:00:00+00:00'); }
   function nyTodayKey() {
-    /* YYYY-MM-DD for "today" in Europe/Dublin — past/future must not follow the viewer's clock */
+    /* YYYY-MM-DD for "today" in Atlantic/Reykjavik — past/future must not follow the viewer's clock */
     try {
-      return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Dublin', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+      return new Intl.DateTimeFormat('en-CA', { timeZone: 'Atlantic/Reykjavik', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
     } catch (e) {
       return new Date().toISOString().slice(0, 10);
     }
@@ -682,15 +689,15 @@ body.modal-open { overflow: hidden; }
     return ev.price;
   }
   function showImg(ev) { return !!ev.image && !badImg[ev.id]; }
-  /* Dublin UTC offset (±HH:MM) for a datetime-local value — keeps edited starts DST-correct */
+  /* Reykjavik UTC offset (±HH:MM) for a datetime-local value — keeps edited starts DST-correct */
   function nyOffsetFor(dtLocal) {
     try {
       var d = new Date(dtLocal + ':00Z');
-      var s = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Dublin', timeZoneName: 'longOffset' }).format(d);
+      var s = new Intl.DateTimeFormat('en-US', { timeZone: 'Atlantic/Reykjavik', timeZoneName: 'longOffset' }).format(d);
       var m = s.match(/GMT([+-]\d{2}):?(\d{2})?/);
       if (m) return m[1] + ':' + (m[2] || '00');
     } catch (e) {}
-    return '+01:00';
+    return '+00:00';
   }
   function persist() {
     try {
@@ -1048,7 +1055,7 @@ body.modal-open { overflow: hidden; }
     if (view === 'month') t = monthName();
     if (view === 'history') t = 'history';
     titleEl.innerHTML = esc(t) + '<span class="dot">.</span>';
-    var kick = 'WHEN.ORG/TEDS-DUBLIN';
+    var kick = 'WHEN.ORG/TEDS-REYKJAVIK';
     if (days.length) kick += ' · ' + dayDate(days[0].key).toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase() + ' ' + ddateLabel(days[0].key);
     document.getElementById('kicker').textContent = kick;
     var geoN = geoFilteredCount();
@@ -1192,7 +1199,7 @@ body.modal-open { overflow: hidden; }
         ownerBits +
         (f.length ? '<div class="detail-fchip">' + avatarStack(f) + '<span class="flabel">' + esc(friendsLabel(f)) + '</span></div>' : '') +
         (ev.blurb ? '<div class="detail-blurb">' + esc(ev.blurb) + '</div>' : '') +
-        '<div class="share-row"><span class="surl">when.org/teds-dublin/' + esc(ev.id) + '</span><button class="share-main" id="share-link" type="button">Share</button><button id="copy-link" type="button">Copy link</button></div>' +
+        '<div class="share-row"><span class="surl">when.org/teds-reykjavik/' + esc(ev.id) + '</span><button class="share-main" id="share-link" type="button">Share</button><button id="copy-link" type="button">Copy link</button></div>' +
         '<div class="detail-actions">' +
           '<button class="primary" type="button" data-save="' + esc(ev.id) + '" data-savelabel="1">' + (saved[ev.id] ? '✓ On my calendar' : '＋ Add to my calendar') + '</button>' +
           (ev.url ? '<a class="ghost" href="' + esc(ev.url) + '" target="_blank" rel="noopener">Venue site ↗</a>' : '') +
@@ -1229,7 +1236,7 @@ body.modal-open { overflow: hidden; }
     renderDetail();
     openOverlay('detail');
     if (push !== false) {
-      try { history.pushState({ whenDetail: id }, '', '/teds-dublin/' + encodeURIComponent(id)); } catch (e) {}
+      try { history.pushState({ whenDetail: id }, '', '/teds-reykjavik/' + encodeURIComponent(id)); } catch (e) {}
     }
   }
   function closeDetail(viaHistory) {
@@ -1239,12 +1246,12 @@ body.modal-open { overflow: hidden; }
     if (!viaHistory) {
       try {
         if (history.state && history.state.whenDetail) history.back();
-        else history.replaceState({}, '', '/teds-dublin');
+        else history.replaceState({}, '', '/teds-reykjavik');
       } catch (e) {}
     }
   }
   window.addEventListener('popstate', function (e) {
-    var m = location.pathname.match(/^\/teds-dublin\/([^\/]+)$/);
+    var m = location.pathname.match(/^\/teds-reykjavik\/([^\/]+)$/);
     if (m) { openDetail(decodeURIComponent(m[1]), false); }
     else if (detailId) { closeDetail(true); }
   });
@@ -1284,7 +1291,7 @@ body.modal-open { overflow: hidden; }
     if (shEl) {
       e.stopPropagation(); e.preventDefault();
       var sev = findEvent(shEl.getAttribute('data-sharehist'));
-      if (sev) shareOrCopy({ title: sev.title, text: 'I was there — ' + sev.title + ' at ' + sev.venue, url: 'https://when.org/teds-dublin/' + sev.id }, shEl);
+      if (sev) shareOrCopy({ title: sev.title, text: 'I was there — ' + sev.title + ' at ' + sev.venue, url: 'https://when.org/teds-reykjavik/' + sev.id }, shEl);
       return;
     }
     var hdEl = t.closest ? t.closest('[data-hide]') : null;
@@ -1336,7 +1343,7 @@ body.modal-open { overflow: hidden; }
     var geoEl = t.closest ? t.closest('[data-geo]') : null;
     if (geoEl) {
       geoFilter = geoEl.getAttribute('data-geo') || 'everywhere';
-      try { localStorage.setItem('when:dublin:geo', geoFilter); } catch (err) {}
+      try { localStorage.setItem('when:reykjavik:geo', geoFilter); } catch (err) {}
       dayIndex = 0;
       regroup();
       renderAll();
@@ -1364,21 +1371,21 @@ body.modal-open { overflow: hidden; }
     if (t.id === 'import-done-close') { closeOverlay('import'); return; }
 
     if (t.id === 'copy-feed') { copyText(FEED_URL, t); return; }
-    if (t.id === 'copy-link' && detailId) { copyText('https://when.org/teds-dublin/' + detailId, t); return; }
+    if (t.id === 'copy-link' && detailId) { copyText('https://when.org/teds-reykjavik/' + detailId, t); return; }
     if (t.id === 'share-link' && detailId) {
       var dev = findEvent(detailId);
       shareOrCopy({
         title: dev ? dev.title : 'When.org',
         text: dev ? (dev.blurb || dev.venue || '') : '',
-        url: 'https://when.org/teds-dublin/' + detailId
+        url: 'https://when.org/teds-reykjavik/' + detailId
       }, t);
       return;
     }
     if (t.id === 'share-cal') {
       shareOrCopy({
-        title: 'Ted\u2019s Dublin · When.org',
-        text: 'Real Dublin this week, hand-picked — gigs, Georgian theatres, castle tours, seaside markets.',
-        url: 'https://when.org/teds-dublin'
+        title: 'Ted\u2019s Reykjavik · When.org',
+        text: 'Real Reykjavik this week, hand-picked — Harpa concerts, harbour whales, geothermal lagoons, midnight-sun tours.',
+        url: 'https://when.org/teds-reykjavik'
       }, t);
       return;
     }
@@ -1388,7 +1395,7 @@ body.modal-open { overflow: hidden; }
   });
 
   /* ---------- owner: paste-a-URL importer (issue #6) ---------- */
-  var IMPORT_URL = '/api/calendars/teds-dublin/import';
+  var IMPORT_URL = '/api/calendars/teds-reykjavik/import';
   var importState = 'input';  // input | loading | review | saving | done
   var importEv = null;        // extracted event under review
   var importSrc = '';         // 'jsonld' | 'ai'
@@ -1448,9 +1455,9 @@ body.modal-open { overflow: hidden; }
     if (importState === 'done') {
       box.innerHTML = '<div class="import-done">' +
         '<div class="live">✓ added to the calendar</div>' +
-        '<div class="durl">when.org/teds-dublin/' + esc(importedId) + '</div>' +
+        '<div class="durl">when.org/teds-reykjavik/' + esc(importedId) + '</div>' +
         '<div class="import-done-actions">' +
-          '<a class="primary" href="/teds-dublin/' + encodeURIComponent(importedId) + '">View event page</a>' +
+          '<a class="primary" href="/teds-reykjavik/' + encodeURIComponent(importedId) + '">View event page</a>' +
           '<button class="ghost" id="import-done-close" type="button">Done</button>' +
         '</div>' +
       '</div>';
@@ -1719,7 +1726,7 @@ body.modal-open { overflow: hidden; }
         try { localStorage.setItem('when:city', this.getAttribute('data-city')); } catch (e) {}
       });
     }
-    try { localStorage.setItem('when:city', 'dublin'); } catch (e) {}
+    try { localStorage.setItem('when:city', 'reykjavik'); } catch (e) {}
   })();
   function authLoggedOut() {
     return '<a class="btn-google mi" href="/api/auth/google">Sign in with Google</a>' +
@@ -1810,14 +1817,14 @@ body.modal-open { overflow: hidden; }
 
     /* schema.org ItemList of Events */
     try {
-      var ld = { '@context': 'https://schema.org', '@type': 'ItemList', name: "Ted's Dublin", url: 'https://when.org/teds-dublin', itemListElement: [] };
+      var ld = { '@context': 'https://schema.org', '@type': 'ItemList', name: "Ted's Reykjavik", url: 'https://when.org/teds-reykjavik', itemListElement: [] };
       allEvents.forEach(function (ev, i) {
         ld.itemListElement.push({
           '@type': 'ListItem', position: i + 1,
           item: {
             '@type': 'Event', name: ev.title, startDate: ev.start,
-            url: 'https://when.org/teds-dublin/' + ev.id,
-            location: { '@type': 'Place', name: ev.venue, address: (ev.neighborhood ? ev.neighborhood + ', ' : '') + 'Dublin, Ireland' },
+            url: 'https://when.org/teds-reykjavik/' + ev.id,
+            location: { '@type': 'Place', name: ev.venue, address: (ev.neighborhood ? ev.neighborhood + ', ' : '') + 'Reykjavík, Iceland' },
             image: ev.image || undefined, description: ev.blurb || undefined
           }
         });
@@ -1828,14 +1835,14 @@ body.modal-open { overflow: hidden; }
       document.head.appendChild(s);
     } catch (e) {}
 
-    /* deep link: server injects __WHEN_DETAIL_ID for /teds-dublin/{id}; also parse path */
+    /* deep link: server injects __WHEN_DETAIL_ID for /teds-reykjavik/{id}; also parse path */
     var deep = window.__WHEN_DETAIL_ID;
     if (!deep) {
-      var m = location.pathname.match(/^\/teds-dublin\/([^\/]+)$/);
+      var m = location.pathname.match(/^\/teds-reykjavik\/([^\/]+)$/);
       if (m) deep = decodeURIComponent(m[1]);
     }
     if (deep && findEvent(deep)) {
-      try { history.replaceState({ whenDetail: deep }, '', '/teds-dublin/' + encodeURIComponent(deep)); } catch (e) {}
+      try { history.replaceState({ whenDetail: deep }, '', '/teds-reykjavik/' + encodeURIComponent(deep)); } catch (e) {}
       openDetail(deep, false);
     }
   }).catch(function () {});

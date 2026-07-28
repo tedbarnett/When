@@ -20,8 +20,10 @@ Calendars can be free or, if high-quality enough, paid. Reading,
 publishing, and subscribing never cost anything. That's the .org promise.
 
 Launching local-first: **New York City first** — with
-[Ted's Dublin](https://when.org/teds-dublin) as the first second-city
-calendar (a city switcher on each calendar page jumps between them).
+[Ted's Dublin](https://when.org/teds-dublin) and
+[Ted's Reykjavik](https://when.org/teds-reykjavik) as the first
+follow-on cities (a city switcher on each calendar page jumps between
+them).
 
 From the founder of When.com (1998, acquired by AOL in 1999) — click
 "When.com" in the footer of [when.org](https://when.org) for that story —

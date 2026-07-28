@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Event Ideas · Dublin · When.org</title>
-<meta name="description" content="Curator tool: candidate events for Dublin, compiled from venue listings and primary event pages. Review by day, add the good ones to the calendar.">
+<title>Event Ideas · Reykjavik · When.org</title>
+<meta name="description" content="Curator tool: candidate events for Reykjavik, compiled from venue listings and primary event pages. Review by day, add the good ones to the calendar.">
 <meta name="robots" content="noindex">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 
 <style>
 /* ------------------------------------------------------------------
    when.org — Event Ideas (curator supply tool, issue #13)
-   Same hand-written token set as teds-dublin.html. No framework, no build.
+   Same hand-written token set as teds-reykjavik.html. No framework, no build.
 ------------------------------------------------------------------- */
 @font-face { font-family:'Satoshi'; src:url('/fonts/satoshi-500.woff2') format('woff2'); font-weight:500; font-style:normal; font-display:swap; }
 @font-face { font-family:'Satoshi'; src:url('/fonts/satoshi-700.woff2') format('woff2'); font-weight:700; font-style:normal; font-display:swap; }
@@ -157,7 +157,7 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
 .foot { border-top: 1px solid var(--line); margin-top: 40px; }
 .foot-inner { display: flex; justify-content: space-between; gap: 14px; padding: 18px 20px 40px; max-width: 860px; margin: 0 auto; font-size: 12px; color: var(--faint); }
 
-/* add sheet (mirrors teds-dublin.html sheet/edit-form patterns) */
+/* add sheet (mirrors teds-reykjavik.html sheet/edit-form patterns) */
 .backdrop { position: fixed; inset: 0; z-index: 50; background: rgba(4,5,9,.66); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); display: flex; align-items: flex-end; justify-content: center; }
 .backdrop[hidden] { display: none; }
 .sheet { background: var(--surface); border: 1px solid var(--line); border-radius: 22px 22px 0 0; width: 100%; max-width: 620px; max-height: 88vh; overflow-y: auto; padding: 20px 22px 30px; }
@@ -188,17 +188,17 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
   <div class="wrap nav-inner">
     <a class="brand" href="/"><span class="wordmark">when<span class="tld">.org</span></span></a>
     <div style="display:flex;gap:8px;align-items:center">
-      <a class="back-link" href="/teds-dublin">← ted&rsquo;s dublin</a>
+      <a class="back-link" href="/teds-reykjavik">← ted&rsquo;s reykjavik</a>
       <div class="menu-wrap">
         <button class="menu-btn" id="menu-btn" type="button" aria-label="Menu" aria-expanded="false" aria-controls="menu-panel" aria-haspopup="true"><span class="bar"></span><span class="bar"></span></button>
         <div class="menu-panel" id="menu-panel" hidden>
           <div class="menu-label">Current city</div>
           <a class="mi city-opt" data-city="nyc" href="/nyc/ideas">New York</a>
-          <a class="mi city-opt on" data-city="dublin" href="/dublin/ideas" aria-current="true">Dublin<span class="tick">✓</span></a>
+          <a class="mi city-opt" data-city="dublin" href="/dublin/ideas">Dublin</a>
           <span class="mi soon" aria-disabled="true">New Orleans<span class="hint">coming soon</span></span>
-          <a class="mi city-opt" data-city="reykjavik" href="/reykjavik/ideas">Reykjavik</a>
+          <a class="mi city-opt on" data-city="reykjavik" href="/reykjavik/ideas" aria-current="true">Reykjavik<span class="tick">✓</span></a>
           <div class="menu-div" role="separator"></div>
-          <a class="mi" href="/teds-dublin">Ted&rsquo;s Dublin <span class="hint">calendar</span></a>
+          <a class="mi" href="/teds-reykjavik">Ted&rsquo;s Reykjavik <span class="hint">calendar</span></a>
           <a class="mi" href="/">Home</a>
           <div class="menu-div" role="separator"></div>
           <div class="menu-auth" id="menu-auth"><a class="mi" href="/api/auth/google">Log in</a></div>
@@ -210,7 +210,7 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
 
 <main class="wrap">
   <div class="calhead">
-    <div class="kicker">Curator tool · Dublin</div>
+    <div class="kicker">Curator tool · Reykjavik</div>
     <h1 class="view-title">event ideas<span class="dot">.</span></h1>
     <p class="byline">Candidate events compiled from licensed APIs and open data — facts only, every row links out to its primary page. Nothing is published until you add it.</p>
   </div>
@@ -254,23 +254,23 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
   'use strict';
 
   /* ---------- config / state ---------- */
-  var IDEAS_URL = '/api/cities/dublin/ideas';
-  /* Add targets: Ted's Dublin is the only Dublin calendar so far. */
+  var IDEAS_URL = '/api/cities/reykjavik/ideas';
+  /* Add targets: Ted's Reykjavik is the only Reykjavik calendar so far. */
   var CAL_OPTIONS = [
-    { id: 'teds-dublin', label: 'Ted\u2019s Dublin' }
+    { id: 'teds-reykjavik', label: 'Ted\u2019s Reykjavik' }
   ];
-  var CAL_LABEL = { 'teds-dublin': 'Ted\u2019s Dublin' };
+  var CAL_LABEL = { 'teds-reykjavik': 'Ted\u2019s Reykjavik' };
   function overlayUrlFor(cal) { return '/api/calendars/' + cal + '/overlay'; }
-  var addTarget = 'teds-dublin';
+  var addTarget = 'teds-reykjavik';
   try {
-    var savedTarget = localStorage.getItem('when:ideas-dub:target');
+    var savedTarget = localStorage.getItem('when:ideas-rvk:target');
     if (savedTarget && CAL_LABEL[savedTarget]) addTarget = savedTarget;
   } catch (e) {}
   var SOURCE_LABEL = { 'ticketmaster': 'Ticketmaster', 'curated': 'Curated (web research)' };
   var cur = null;        // last API payload {date, prev, next, events, anyday}
   var addingId = null;   // candidate id open in the add sheet
 
-  /* ---------- helpers (mirrors teds-dublin.html) ---------- */
+  /* ---------- helpers (mirrors teds-reykjavik.html) ---------- */
   function esc(s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -278,12 +278,12 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
   }
   function nyTodayKey() {
     try {
-      return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Dublin', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+      return new Intl.DateTimeFormat('en-CA', { timeZone: 'Atlantic/Reykjavik', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
     } catch (e) {
       return new Date().toISOString().slice(0, 10);
     }
   }
-  function dayDate(key) { return new Date(key + 'T12:00:00+01:00'); }
+  function dayDate(key) { return new Date(key + 'T12:00:00+00:00'); }
   function timeLabel(ev) {
     var hr = parseInt(ev.start.slice(11, 13), 10);
     var mn = ev.start.slice(14, 16);
@@ -299,11 +299,11 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
   function nyOffsetFor(dtLocal) {
     try {
       var d = new Date(dtLocal + ':00Z');
-      var s = new Intl.DateTimeFormat('en-US', { timeZone: 'Europe/Dublin', timeZoneName: 'longOffset' }).format(d);
+      var s = new Intl.DateTimeFormat('en-US', { timeZone: 'Atlantic/Reykjavik', timeZoneName: 'longOffset' }).format(d);
       var m = s.match(/GMT([+-]\d{2}):?(\d{2})?/);
       if (m) return m[1] + ':' + (m[2] || '00');
     } catch (e) {}
-    return '+01:00';
+    return '+00:00';
   }
   function srcChips(ev) {
     var out = '';
@@ -330,13 +330,13 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
   var openGroups = {};
   /* source filter (e.g. only NYC Parks); persisted per device */
   var srcFilter = 'all';
-  try { srcFilter = localStorage.getItem('when:ideas-dub:src') || 'all'; } catch (e) {}
+  try { srcFilter = localStorage.getItem('when:ideas-rvk:src') || 'all'; } catch (e) {}
 
   /* category filter (rule-based, set at ingest — migration 0006); persisted */
   var CATS = ['theater', 'live-music', 'comedy', 'sports', 'outdoor', 'tours', 'film', 'museums', 'other'];
   var CAT_LABEL = { 'theater': 'theater', 'live-music': 'live music', 'comedy': 'comedy', 'sports': 'sports', 'outdoor': 'outdoor', 'tours': 'tours', 'film': 'film', 'museums': 'museums', 'other': 'other' };
   var catFilter = 'all';
-  try { catFilter = localStorage.getItem('when:ideas-dub:cat') || 'all'; } catch (e) {}
+  try { catFilter = localStorage.getItem('when:ideas-rvk:cat') || 'all'; } catch (e) {}
   if (catFilter !== 'all' && CATS.indexOf(catFilter) < 0) catFilter = 'all';
   function evCategory(ev) {
     var c = ev && ev.category ? String(ev.category) : '';
@@ -346,21 +346,27 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
     return catFilter === 'all' || evCategory(ev) === catFilter;
   }
 
-  /* geo-core:start — Dublin edition: area chips instead of boroughs.
-     Neighborhood strings map to city centre / northside / southside /
-     dublin bay; unknown neighborhoods count as unknown — we never guess */
-  var BOROUGH_CHIPS = ['City Centre', 'Northside', 'Southside', 'Dublin Bay'];
+  /* geo-core:start — Reykjavik edition: area chips instead of boroughs.
+     Neighborhood strings map to downtown / harbour & grandi / laugardalur /
+     outside the centre; unknown neighborhoods count as unknown — we never guess */
+  var BOROUGH_CHIPS = ['Downtown', 'Harbour & Grandi', 'Laugardalur', 'Outside the Centre'];
   var AREA_OF = {
-    'city centre': 'City Centre', 'temple bar': 'City Centre', 'docklands': 'City Centre',
-    'grand canal dock': 'City Centre', 'smithfield': 'City Centre', 'portobello': 'City Centre',
-    "st stephen's green": 'City Centre',
-    'drumcondra': 'Northside', 'phibsborough': 'Northside', 'phoenix park': 'Northside',
-    'glasnevin': 'Northside', 'marino': 'Northside',
-    'ballsbridge': 'Southside', 'ranelagh': 'Southside', 'rathmines': 'Southside',
-    'kilmainham': 'Southside', 'tallaght': 'Southside', 'rathfarnham': 'Southside',
-    'donnybrook': 'Southside', 'stillorgan': 'Southside', 'leopardstown': 'Southside',
-    'howth': 'Dublin Bay', 'dun laoghaire': 'Dublin Bay', 'dún laoghaire': 'Dublin Bay',
-    'malahide': 'Dublin Bay', 'sandycove': 'Dublin Bay', 'clontarf': 'Dublin Bay'
+    'downtown': 'Downtown', '101': 'Downtown', 'city centre': 'Downtown',
+    'hallgrimskirkja area': 'Downtown', 'hallgrímskirkja area': 'Downtown',
+    'laugavegur': 'Downtown', 'hlemmur': 'Downtown', 'vesturbær': 'Downtown',
+    'vesturbaer': 'Downtown', 'tjörnin': 'Downtown', 'tjornin': 'Downtown',
+    'old harbour': 'Harbour & Grandi', 'old harbor': 'Harbour & Grandi',
+    'grandi': 'Harbour & Grandi', 'harbour': 'Harbour & Grandi',
+    'viðey': 'Harbour & Grandi', 'videy': 'Harbour & Grandi',
+    'laugardalur': 'Laugardalur',
+    'klambratun': 'Downtown', 'klambratún': 'Downtown', 'hlidar': 'Downtown', 'hlíðar': 'Downtown',
+    'perlan': 'Outside the Centre', 'öskjuhlíð': 'Outside the Centre',
+    'oskjuhlid': 'Outside the Centre', 'perlan/öskjuhlíð': 'Outside the Centre',
+    'árbær': 'Outside the Centre', 'arbaer': 'Outside the Centre',
+    'kópavogur': 'Outside the Centre', 'kopavogur': 'Outside the Centre',
+    'hafnarfjörður': 'Outside the Centre', 'hafnarfjordur': 'Outside the Centre',
+    'grindavík': 'Outside the Centre', 'grindavik': 'Outside the Centre',
+    'outside the city': 'Outside the Centre', 'outside the centre': 'Outside the Centre'
   };
   function boroughOf(ev) {
     var n = ev && ev.neighborhood ? String(ev.neighborhood).toLowerCase() : '';
@@ -404,9 +410,9 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
   var zipFilter = '';
   var radiusFilter = '1';
   try {
-    boroughFilter = localStorage.getItem('when:ideas-dub:borough') || 'all';
-    zipFilter = localStorage.getItem('when:ideas-dub:zip') || '';
-    radiusFilter = localStorage.getItem('when:ideas-dub:radius') || '1';
+    boroughFilter = localStorage.getItem('when:ideas-rvk:borough') || 'all';
+    zipFilter = localStorage.getItem('when:ideas-rvk:zip') || '';
+    radiusFilter = localStorage.getItem('when:ideas-rvk:radius') || '1';
   } catch (e) {}
   if (BOROUGH_CHIPS.indexOf(boroughFilter) < 0) boroughFilter = 'all';
   if (!/^\d{1,5}$/.test(zipFilter)) zipFilter = '';
@@ -605,7 +611,7 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
     }
     sideHtml += '</div>';
 
-    /* area chips (zip-distance filter is NYC-only — no Dublin zip table) */
+    /* area chips (zip-distance filter is NYC-only — no Reykjavik zip table) */
     var center = null;
     var distOn = false;
     html += '<div class="filter-row">' + boroughChipHtml('all', 'all areas', distOn);
@@ -679,7 +685,7 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
         }
         cur = res.d;
         if (push) {
-          try { history.pushState({ ideasDate: cur.date }, '', '/dublin/ideas?date=' + cur.date); } catch (e) {}
+          try { history.pushState({ ideasDate: cur.date }, '', '/reykjavik/ideas?date=' + cur.date); } catch (e) {}
         }
         renderDay();
       })
@@ -698,7 +704,7 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
       ' Use the ☰ menu in the top right to sign in, then reload this page.</p></div>';
   }
 
-  /* ---------- add flow (mirrors teds-dublin.html import-add-form) ---------- */
+  /* ---------- add flow (mirrors teds-reykjavik.html import-add-form) ---------- */
   function calPickerHtml() {
     var html = '<label>add to calendar<select name="target" id="add-target">';
     for (var i = 0; i < CAL_OPTIONS.length; i++) {
@@ -863,25 +869,25 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
     }
     if (t.getAttribute && t.getAttribute('data-srcfilter')) {
       srcFilter = t.getAttribute('data-srcfilter');
-      try { localStorage.setItem('when:ideas-dub:src', srcFilter); } catch (err) {}
+      try { localStorage.setItem('when:ideas-rvk:src', srcFilter); } catch (err) {}
       renderDay();
       return;
     }
     if (t.getAttribute && t.getAttribute('data-catfilter')) {
       catFilter = t.getAttribute('data-catfilter');
-      try { localStorage.setItem('when:ideas-dub:cat', catFilter); } catch (err) {}
+      try { localStorage.setItem('when:ideas-rvk:cat', catFilter); } catch (err) {}
       renderDay();
       return;
     }
     if (t.getAttribute && t.getAttribute('data-boroughfilter')) {
       boroughFilter = t.getAttribute('data-boroughfilter');
-      try { localStorage.setItem('when:ideas-dub:borough', boroughFilter); } catch (err) {}
+      try { localStorage.setItem('when:ideas-rvk:borough', boroughFilter); } catch (err) {}
       renderDay();
       return;
     }
     if (t.id === 'zip-clear') {
       zipFilter = '';
-      try { localStorage.setItem('when:ideas-dub:zip', ''); } catch (err) {}
+      try { localStorage.setItem('when:ideas-rvk:zip', ''); } catch (err) {}
       renderDay();
       return;
     }
@@ -911,7 +917,7 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
     if (v !== t.value) t.value = v;
     if (v === zipFilter) return;
     zipFilter = v;
-    try { localStorage.setItem('when:ideas-dub:zip', v); } catch (err) {}
+    try { localStorage.setItem('when:ideas-rvk:zip', v); } catch (err) {}
     if (zipValid()) ensureZips();
     rerenderKeepZipFocus();
   });
@@ -920,7 +926,7 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
     if (!t || t.id !== 'radius-select') return;
     if (RADII.indexOf(t.value) < 0) return;
     radiusFilter = t.value;
-    try { localStorage.setItem('when:ideas-dub:radius', radiusFilter); } catch (err) {}
+    try { localStorage.setItem('when:ideas-rvk:radius', radiusFilter); } catch (err) {}
     renderDay();
   });
 
@@ -943,9 +949,9 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
     var de = f.end.value;
     if (de) ev.end = de.length === 16 ? de + ':00' + nyOffsetFor(de) : de;
     var targetSel = f.target;
-    var target = targetSel && CAL_LABEL[targetSel.value] ? targetSel.value : 'teds-dublin';
+    var target = targetSel && CAL_LABEL[targetSel.value] ? targetSel.value : 'teds-reykjavik';
     addTarget = target;
-    try { localStorage.setItem('when:ideas-dub:target', target); } catch (err) {}
+    try { localStorage.setItem('when:ideas-rvk:target', target); } catch (err) {}
     var saveBtn = e.target.querySelector('.save');
     if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Adding…'; }
     fetch(overlayUrlFor(target), {

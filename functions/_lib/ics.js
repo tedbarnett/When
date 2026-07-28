@@ -49,6 +49,18 @@ var TZINFO = {
       "RRULE:FREQ=YEARLY;BYMONTH=10;BYDAY=-1SU",
       "END:STANDARD"
     ]
+  },
+  "Atlantic/Reykjavik": {
+    cityLabel: "Reykjavik",
+    vtimezone: [
+      // Iceland is UTC+0 year-round — no DST since 1968.
+      "BEGIN:STANDARD",
+      "TZOFFSETFROM:+0000",
+      "TZOFFSETTO:+0000",
+      "TZNAME:GMT",
+      "DTSTART:19700101T000000",
+      "END:STANDARD"
+    ]
   }
 };
 

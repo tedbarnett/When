@@ -44,6 +44,7 @@ export const CALENDARS = {
   'teds-nyc': { title: "Ted's NYC", extends: 'basics-nyc' },
   'basics-nyc': { title: 'NYC Basics', extends: null },
   'teds-dublin': { title: "Ted's Dublin", extends: null },
+  'teds-reykjavik': { title: "Ted's Reykjavik", extends: null },
 };
 
 /**
@@ -67,6 +68,12 @@ export const CITIES = {
     timeZone: 'Europe/Dublin',
     calendars: ['teds-dublin'],
     page: '/teds-dublin',
+  },
+  reykjavik: {
+    label: 'Reykjavik',
+    timeZone: 'Atlantic/Reykjavik',
+    calendars: ['teds-reykjavik'],
+    page: '/teds-reykjavik',
   },
 };
 
