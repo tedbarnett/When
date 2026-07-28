@@ -182,6 +182,33 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
 .edit-actions .cancel { background: transparent; border: 1px solid var(--line); color: var(--muted); font-weight: 700; font-size: 13.5px; border-radius: 999px; padding: 9px 16px; cursor: pointer; }
 .edit-err { color: var(--spark); font-size: 12.5px; min-height: 16px; margin-top: 8px; }
 .sheet-src { font-family: var(--mono); font-size: 10.5px; color: var(--faint); }
+
+/* paste-a-URL importer (issue #6 — moved here from the calendar pages) */
+#import-backdrop { z-index: 55; }
+.calhead .add-btn { margin-top: 14px; }
+.import-sheet { width: min(440px, 100%); border-radius: 26px; padding: 22px 22px 24px; }
+.import-sheet .sheet-title { font-size: 24px; }
+.import-copy { font-size: 13.5px; color: var(--muted); margin-top: 4px; }
+.import-url-row { display: flex; gap: 8px; margin-top: 14px; }
+.import-url-row input { flex: 1; min-width: 0; background: var(--paper); border: 1px solid var(--line); border-radius: 999px; color: var(--ink); font-family: var(--mono); font-size: 12.5px; padding: 10px 15px; outline: none; }
+.import-url-row input:focus { border-color: var(--faint); }
+.import-url-row .read { flex: none; background: var(--accent); border: none; color: #fff; font-weight: 700; font-size: 13.5px; border-radius: 999px; padding: 10px 17px; cursor: pointer; }
+.import-url-row .read:disabled { opacity: .6; cursor: default; }
+.import-status { font-family: var(--mono); font-size: 11.5px; color: var(--faint); margin-top: 12px; min-height: 1.2em; }
+.import-status.err { color: var(--spark); }
+.src-badge { display: inline-block; font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; border-radius: 999px; padding: 2px 9px; border: 1px solid var(--peri); color: var(--peri); background: rgba(77,99,255,.12); margin-top: 12px; }
+.import-preview { margin-top: 10px; background: var(--paper); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
+.import-preview .prev-img { display: block; width: 100%; max-height: 200px; object-fit: cover; }
+.import-preview .prev-body { padding: 14px 16px 16px; }
+.import-preview .idea-title { font-size: 18px; margin-top: 4px; }
+.import-preview .prev-blurb { font-size: 13px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+.import-form-label { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); margin-top: 16px; }
+.import-done { margin-top: 16px; border: 1px solid var(--line); border-radius: 18px; padding: 18px; background: var(--paper); }
+.import-done .live { font-weight: 900; font-size: 15px; color: #6bc396; }
+.import-done .durl { font-family: var(--mono); font-size: 11px; color: var(--faint); margin-top: 5px; word-break: break-all; }
+.import-done-actions { display: grid; gap: 8px; margin-top: 14px; }
+.import-done-actions .primary { display: block; background: var(--accent); border: none; color: #fff; font-weight: 700; font-size: 13.5px; text-align: center; padding: 10px 16px; border-radius: 999px; text-decoration: none; cursor: pointer; }
+.import-done-actions .ghost { display: block; border: 1px solid var(--line); background: transparent; color: var(--ink); font-weight: 700; font-size: 13.5px; text-align: center; padding: 9px 16px; border-radius: 999px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -215,6 +242,7 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
     <div class="kicker">Curator tool · Dublin</div>
     <h1 class="view-title">event ideas<span class="dot">.</span></h1>
     <p class="byline">Candidate events compiled from licensed APIs and open data — facts only, every row links out to its primary page. Nothing is published until you add it.</p>
+    <button class="add-btn" id="add-event-open" type="button" hidden aria-haspopup="dialog">＋ add event</button>
   </div>
 
   <div id="app">
@@ -248,6 +276,17 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
     </div>
     <div class="sheet-src" id="add-src"></div>
     <div id="add-content"></div>
+  </div>
+</div>
+
+<!-- Owner: paste-a-URL event importer (issue #6 — moved here from the calendar pages) -->
+<div class="backdrop" id="import-backdrop" hidden>
+  <div class="sheet import-sheet" role="dialog" aria-modal="true" aria-labelledby="import-title">
+    <div class="head-row">
+      <span class="sheet-title" id="import-title">add event<span class="dot">.</span></span>
+      <button class="x-btn" type="button" id="import-close">×</button>
+    </div>
+    <div id="import-content"></div>
   </div>
 </div>
 
@@ -1152,9 +1191,13 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
     }
     if (t.id === 'add-close' || t.id === 'add-cancel' || t.id === 'pcal-cancel') { closeAdd(); return; }
     if (t.id === 'add-backdrop') { closeAdd(); return; }
+    if (t.id === 'add-event-open') { openImport(); return; }
+    if (t.id === 'import-close' || t.id === 'import-done-close' || t.id === 'import-backdrop') { closeImport(); return; }
+    if (t.id === 'import-back') { importState = 'input'; importErr = ''; renderImport(); return; }
   });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && addingId) closeAdd();
+    if (e.key === 'Escape' && !document.getElementById('import-backdrop').hidden) closeImport();
   });
 
   /* zip input (re-render keeps focus + caret) and radius select */
@@ -1280,10 +1323,181 @@ button.added-chip:disabled { opacity: .5; cursor: default; }
     return m ? m[1] : nyTodayKey();
   }
 
+  /* importer-core:start — owner paste-a-URL importer (issue #6), moved here
+     from the calendar pages so adding events lives with the rest of the
+     supply tools and the calendar pages stay uncluttered. Extracts via
+     /api/calendars/{cal}/import (JSON-LD + AI fallback); saving goes through
+     the same overlay action:"add" as the add sheet, into the When calendar
+     picked in the form (addTarget). Keep this block byte-identical across
+     all 3 ideas pages — scripts/test-ideas-importer.mjs checks. */
+  function importUrlFor(cal) { return '/api/calendars/' + cal + '/import'; }
+  var importState = 'input';  // input | loading | review | done
+  var importEv = null;        // extracted event under review
+  var importSrc = '';         // 'jsonld' | 'ai'
+  var importErr = '';
+  var importUrlVal = '';
+  var importedId = '';
+  var importedCal = '';
+
+  function importPreviewHtml(ev) {
+    return '<div class="import-preview">' +
+      (ev.image ? '<img class="prev-img" src="' + esc(ev.image) + '" alt="" loading="lazy">' : '') +
+      '<div class="prev-body">' +
+        '<div class="idea-time" style="width:auto">' + esc(ddateLabel(String(ev.start || '').slice(0, 10))) + ' · ' + esc(timeLabel(ev)) + (ev.price ? ' · ' + esc(ev.price) : '') + '</div>' +
+        '<div class="idea-title">' + esc(ev.title) + '</div>' +
+        '<div class="idea-venue">' + esc(ev.venue || '') + (ev.neighborhood ? ' · ' + esc(ev.neighborhood) : '') + '</div>' +
+        (ev.blurb ? '<div class="prev-blurb">' + esc(ev.blurb) + '</div>' : '') +
+      '</div>' +
+    '</div>';
+  }
+  function importFormHtml(ev) {
+    return '<form class="edit-form" id="import-add-form" style="margin-top:10px">' +
+      calPickerHtml() +
+      '<label>title<input name="title" value="' + esc(ev.title) + '" required maxlength="200"></label>' +
+      '<label>venue<input name="venue" value="' + esc(ev.venue || '') + '" required maxlength="200"></label>' +
+      '<label>neighborhood<input name="neighborhood" value="' + esc(ev.neighborhood || '') + '" maxlength="120"></label>' +
+      '<label>price<input name="price" value="' + esc(ev.price || '') + '" maxlength="60"></label>' +
+      '<label>starts<input type="datetime-local" name="start" value="' + esc((ev.start || '').slice(0, 16)) + '" required></label>' +
+      '<label>ends (optional — multi-day runs land in “any day”)<input type="datetime-local" name="end" value="' + esc((ev.end || '').slice(0, 16)) + '"></label>' +
+      '<label>blurb<textarea name="blurb" maxlength="600">' + esc(ev.blurb || '') + '</textarea></label>' +
+      '<label>url<input type="url" name="url" value="' + esc(ev.url || '') + '" maxlength="600" placeholder="https://…"></label>' +
+      '<label>image url<input type="url" name="image" value="' + esc(ev.image || '') + '" maxlength="600" placeholder="https://…"></label>' +
+    '</form>';
+  }
+  function renderImport() {
+    var box = document.getElementById('import-content');
+    if (importState === 'loading') {
+      box.innerHTML = '<div class="import-status">reading the page…</div>';
+      return;
+    }
+    if (importState === 'review' && importEv) {
+      box.innerHTML =
+        '<span class="src-badge">' + (importSrc === 'ai' ? 'AI-read — check everything' : 'from page data') + '</span>' +
+        '<div class="edit-actions" style="margin:10px 0 4px">' +
+          '<button class="save" type="submit" form="import-add-form">Add to When calendar</button>' +
+          '<button class="cancel" type="button" id="import-back">Back</button>' +
+        '</div>' +
+        '<div class="edit-err" id="import-add-err"></div>' +
+        importPreviewHtml(importEv) +
+        '<div class="import-form-label">looks wrong? fix it before adding</div>' +
+        importFormHtml(importEv);
+      return;
+    }
+    if (importState === 'done') {
+      box.innerHTML = '<div class="import-done">' +
+        '<div class="live">✓ added to ' + esc(CAL_LABEL[importedCal] || importedCal) + '</div>' +
+        '<div class="durl">when.org/' + esc(importedCal) + '/' + esc(importedId) + '</div>' +
+        '<div class="import-done-actions">' +
+          '<a class="primary" href="/' + encodeURIComponent(importedCal) + '/' + encodeURIComponent(importedId) + '">View event page</a>' +
+          '<button class="ghost" id="import-done-close" type="button">Done</button>' +
+        '</div>' +
+      '</div>';
+      return;
+    }
+    /* input state */
+    box.innerHTML = '<div class="import-copy">Paste any event page URL — I’ll read it and draft the event for review. Nothing is published until you add it.</div>' +
+      '<form class="import-url-row" id="import-url-form">' +
+        '<input id="import-url" type="url" value="' + esc(importUrlVal) + '" placeholder="https://…" required spellcheck="false" autocapitalize="off" autocomplete="off">' +
+        '<button class="read" type="submit">Read page</button>' +
+      '</form>' +
+      '<div class="import-status' + (importErr ? ' err' : '') + '">' + esc(importErr || '') + '</div>';
+  }
+  function openImport() {
+    closeAdd();
+    importState = 'input'; importErr = ''; importEv = null; importSrc = ''; importUrlVal = '';
+    renderImport();
+    document.getElementById('import-backdrop').hidden = false;
+    var inp = document.getElementById('import-url');
+    if (inp) { try { inp.focus(); } catch (e) {} }
+  }
+  function closeImport() {
+    document.getElementById('import-backdrop').hidden = true;
+    document.getElementById('import-content').innerHTML = '';
+  }
+  function importErrorFor(status, d) {
+    if (status === 401) return 'Not signed in — sign in as the calendar owner first.';
+    if (status === 403) return 'Only the calendar owner can add events.';
+    if (status === 422 || (d && d.error === 'no_event')) return 'No event found on that page — try the event’s own page, not a listing.';
+    if (status === 415) return 'That link isn’t a web page.';
+    if (d && d.error === 'site_blocked') return 'That site blocks automated readers — try the venue’s own event page instead.';
+    if (d && d.error) return 'Could not read the page — ' + d.error + '.';
+    return 'Could not read that page — check the link and try again.';
+  }
+  document.addEventListener('submit', function (e) {
+    if (!e.target) return;
+    if (e.target.id === 'import-url-form') {
+      e.preventDefault();
+      var url = (document.getElementById('import-url').value || '').trim();
+      importUrlVal = url;
+      if (!/^https?:\/\//i.test(url)) { importErr = 'Enter a full http(s) link.'; renderImport(); return; }
+      importState = 'loading'; importErr = '';
+      renderImport();
+      fetch(importUrlFor(addTarget), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url })
+      }).then(function (r) {
+        return r.json().then(function (d) { return { s: r.status, d: d }; }, function () { return { s: r.status, d: null }; });
+      }).then(function (res) {
+        if (res.s === 200 && res.d && res.d.ok && res.d.event) {
+          importEv = res.d.event; importSrc = res.d.source || ''; importState = 'review';
+        } else {
+          importState = 'input';
+          importErr = importErrorFor(res.s, res.d);
+        }
+        renderImport();
+      }).catch(function () {
+        importState = 'input';
+        importErr = 'Network error — could not reach the importer.';
+        renderImport();
+      });
+      return;
+    }
+    if (e.target.id === 'import-add-form') {
+      e.preventDefault();
+      var f = e.target.elements;
+      var target = f.target && CAL_LABEL[f.target.value] ? f.target.value : addTarget;
+      addTarget = target;
+      var ev = {
+        id: importEv && importEv.id,
+        title: f.title.value.trim(),
+        venue: f.venue.value.trim(),
+        neighborhood: f.neighborhood.value.trim(),
+        price: f.price.value.trim(),
+        blurb: f.blurb.value.trim(),
+        url: f.url.value.trim(),
+        image: f.image.value.trim()
+      };
+      var dt = f.start.value;
+      if (dt) ev.start = dt.length === 16 ? dt + ':00' + nyOffsetFor(dt) : dt;
+      var de = f.end.value;
+      if (de) ev.end = de.length === 16 ? de + ':00' + nyOffsetFor(de) : de;
+      else if (importEv && importEv.end) ev.end = importEv.end;
+      var saveBtn = document.querySelector('#import-content .save');
+      if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Adding…'; }
+      overlayPost(target, { action: 'add', event: ev }).then(function (res) {
+        if (res.s === 200 && res.d && res.d.ok) {
+          importedId = res.d.id || '';
+          importedCal = target;
+          importState = 'done';
+          renderImport();
+          if (cur) load(cur.date, false); /* on-calendar chips may change */
+        } else {
+          if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Add to When calendar'; }
+          var err = document.getElementById('import-add-err');
+          if (err) err.textContent = (res.d && res.d.error) ? 'Could not add — ' + res.d.error + '.' : 'Could not add — try again.';
+        }
+      });
+      return;
+    }
+  });
+  /* importer-core:end */
+
   /* ---------- boot: owner gate, then load ---------- */
   fetch('/api/me').then(function (r) { return r.ok ? r.json() : null; }).then(function (me) {
     if (!me || !me.isOwner) { renderGate(me && me.email ? 403 : 401); return; }
     document.getElementById('app').innerHTML = '';
+    document.getElementById('add-event-open').hidden = false; /* owner paste-a-URL importer */
     load(dateFromUrl(), false);
   }).catch(function () { renderGate(401); });
 })();

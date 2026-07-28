@@ -352,33 +352,10 @@ button.mchip:hover { border-color: var(--faint); color: var(--ink); }
 .edit-actions .save:disabled { opacity: .6; cursor: default; }
 .edit-actions .cancel { border: 1px solid var(--line); background: transparent; color: var(--ink); font-weight: 700; font-size: 14px; border-radius: 999px; padding: 11px 18px; cursor: pointer; }
 
-/* ---------- owner: paste-a-URL importer (issue #6) ---------- */
+/* ---------- owner: event-ideas link pill ---------- */
 .add-pill { display: inline-flex; align-items: center; gap: 6px; border: 1px dashed var(--spark); background: transparent; color: var(--spark); font-family: var(--mono); font-size: 11px; letter-spacing: .05em; border-radius: 999px; padding: 6px 14px; cursor: pointer; white-space: nowrap; transition: background .15s ease; }
 .add-pill:hover { background: rgba(255,84,38,.1); }
 .add-pill[hidden] { display: none; }
-#import-backdrop { z-index: 55; }
-.import-sheet { width: min(440px, 100%); max-height: 86vh; overflow-y: auto; border-radius: 26px; padding: 22px 22px 24px; }
-.import-sheet .head-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
-.import-sheet .sheet-title { font-size: 24px; }
-.import-copy { font-size: 13.5px; color: var(--muted); margin-top: 4px; }
-.import-url-row { display: flex; gap: 8px; margin-top: 14px; }
-.import-url-row input { flex: 1; min-width: 0; background: var(--paper); border: 1px solid var(--line); border-radius: 999px; color: var(--ink); font-family: var(--mono); font-size: 12.5px; padding: 10px 15px; outline: none; }
-.import-url-row input:focus { border-color: var(--faint); }
-.import-url-row .read { flex: none; background: var(--accent); border: none; color: #fff; font-weight: 700; font-size: 13.5px; border-radius: 999px; padding: 10px 17px; cursor: pointer; }
-.import-url-row .read:disabled { opacity: .6; cursor: default; }
-.import-status { font-family: var(--mono); font-size: 11.5px; color: var(--faint); margin-top: 12px; min-height: 1.2em; }
-.import-status.err { color: var(--spark); }
-.src-badge { display: inline-block; font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; border-radius: 999px; padding: 2px 9px; border: 1px solid var(--peri); color: var(--peri); background: rgba(77,99,255,.12); margin-top: 12px; }
-.import-preview { margin-top: 10px; background: var(--paper); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
-.import-preview .daycard-body { padding: 14px 16px 16px; }
-.import-preview .daycard-title { font-size: 20px; }
-.import-form-label { font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); margin-top: 16px; }
-.import-done { margin-top: 16px; border: 1px solid var(--line); border-radius: 18px; padding: 18px; background: var(--paper); }
-.import-done .live { font-weight: 900; font-size: 15px; color: var(--cb1-ink); }
-.import-done .durl { font-family: var(--mono); font-size: 11px; color: var(--faint); margin-top: 5px; word-break: break-all; }
-.import-done-actions { display: grid; gap: 8px; margin-top: 14px; }
-.import-done-actions .primary { display: block; background: var(--accent); border: none; color: #fff; font-weight: 700; font-size: 13.5px; text-align: center; padding: 10px 16px; border-radius: 999px; text-decoration: none; cursor: pointer; }
-.import-done-actions .ghost { display: block; border: 1px solid var(--line); background: transparent; color: var(--ink); font-weight: 700; font-size: 13.5px; text-align: center; padding: 9px 16px; border-radius: 999px; cursor: pointer; }
 
 .avatar { width: 21px; height: 21px; border-radius: 999px; background: var(--av); display: inline-flex; align-items: center; justify-content: center; margin-right: -6px; border: 1.5px solid rgba(14,15,20,.4); flex: none; }
 .avstack { display: inline-flex; align-items: center; }
@@ -443,7 +420,6 @@ body.modal-open { overflow: hidden; }
         <button type="button" id="seg-month" role="tab" aria-selected="false">Month</button>
       </div>
       <button class="history-link" id="history-open" type="button">history<span class="dot">.</span></button>
-      <button class="add-pill" id="add-event-open" type="button" hidden aria-haspopup="dialog">＋ add event</button>
       <a class="add-pill" id="ideas-link" href="/nyc/ideas" hidden style="text-decoration:none">✦ event ideas</a>
     </div>
   </div>
@@ -498,17 +474,6 @@ body.modal-open { overflow: hidden; }
 <!-- Event detail -->
 <div class="backdrop" id="detail-backdrop" hidden>
   <div class="sheet detail" role="dialog" aria-modal="true" aria-labelledby="detail-title-el" id="detail-card"></div>
-</div>
-
-<!-- Owner: paste-a-URL event importer (issue #6) -->
-<div class="backdrop" id="import-backdrop" hidden>
-  <div class="sheet import-sheet" role="dialog" aria-modal="true" aria-labelledby="import-title">
-    <div class="head-row">
-      <span class="sheet-title" id="import-title">add event<span class="dot">.</span></span>
-      <button class="x-btn" type="button" data-close="import">×</button>
-    </div>
-    <div id="import-content"></div>
-  </div>
 </div>
 
 <script>
@@ -1180,8 +1145,7 @@ body.modal-open { overflow: hidden; }
   function anyOverlayOpen() {
     return !document.getElementById('detail-backdrop').hidden ||
            !document.getElementById('tray-backdrop').hidden ||
-           !document.getElementById('sub-backdrop').hidden ||
-           !document.getElementById('import-backdrop').hidden;
+           !document.getElementById('sub-backdrop').hidden;
   }
   function setScrollLock() { document.body.classList.toggle('modal-open', anyOverlayOpen()); }
   function openOverlay(which) {
@@ -1317,9 +1281,6 @@ body.modal-open { overflow: hidden; }
     if (t.id === 'detail-backdrop') { closeDetail(); return; }
     if (t.id === 'tray-backdrop') { closeOverlay('tray'); return; }
     if (t.id === 'sub-backdrop') { closeOverlay('sub'); return; }
-    if (t.id === 'import-backdrop') { closeOverlay('import'); return; }
-    if (t.id === 'import-back') { importState = 'input'; importErr = ''; renderImport(); return; }
-    if (t.id === 'import-done-close') { closeOverlay('import'); return; }
 
     if (t.id === 'copy-feed') { copyText(FEED_URL, t); return; }
     if (t.id === 'copy-link' && detailId) { copyText('https://when.org/basics-nyc/' + detailId, t); return; }
@@ -1344,176 +1305,6 @@ body.modal-open { overflow: hidden; }
     if (t.id === 'copy-invite') { copyText('https://when.org/' + handle + '/invite/x7q3', t); return; }
     if (t.id === 'publish-btn') { published = true; persist(); renderTray(); return; }
   });
-
-  /* ---------- owner: paste-a-URL importer (issue #6) ---------- */
-  var IMPORT_URL = '/api/calendars/basics-nyc/import';
-  var importState = 'input';  // input | loading | review | saving | done
-  var importEv = null;        // extracted event under review
-  var importSrc = '';         // 'jsonld' | 'ai'
-  var importErr = '';
-  var importUrlVal = '';
-  var importedId = '';
-
-  function importPreviewHtml(ev) {
-    var cb = cbIndex(ev.id || ev.title || 'x');
-    return '<div class="import-preview">' +
-      '<span class="daycard-media" style="display:block;' + (ev.image ? '' : 'background:var(--cb' + cb + '-bg)') + '">' +
-        (ev.image ? '<img class="card-img" src="' + esc(ev.image) + '" alt="" loading="lazy">' :
-          '<span class="letter-block" style="color:var(--cb' + cb + '-ink)">' + esc((ev.title || '?').charAt(0).toUpperCase()) + '</span>') +
-        '<span class="scrim"></span>' +
-        '<span class="price-chip" style="opacity:1;top:12px;left:12px;font-size:10.5px;padding:3px 11px">' + esc(ev.price || '—') + '</span>' +
-      '</span>' +
-      '<span class="daycard-body" style="display:grid">' +
-        '<span class="daycard-time">' + esc(dateLabel(ev)) + ' · ' + esc(timeLabel(ev)) + '</span>' +
-        '<span class="daycard-title">' + esc(ev.title) + '</span>' +
-        '<span class="daycard-venue">' + esc(ev.venue || '') + (ev.neighborhood ? ' · ' + esc(ev.neighborhood) : '') + '</span>' +
-        (ev.blurb ? '<span class="daycard-blurb">' + esc(ev.blurb) + '</span>' : '') +
-      '</span>' +
-    '</div>';
-  }
-  function importFormHtml(ev) {
-    return '<form class="edit-form" id="import-add-form" style="margin-top:10px">' +
-      '<label>title<input name="title" value="' + esc(ev.title) + '" required maxlength="200"></label>' +
-      '<label>venue<input name="venue" value="' + esc(ev.venue || '') + '" required maxlength="200"></label>' +
-      '<label>neighborhood<input name="neighborhood" value="' + esc(ev.neighborhood || '') + '" maxlength="120"></label>' +
-      '<label>price<input name="price" value="' + esc(ev.price || '') + '" maxlength="60"></label>' +
-      '<label>starts<input type="datetime-local" name="start" value="' + esc((ev.start || '').slice(0, 16)) + '" required></label>' +
-      '<label>ends (optional — multi-day runs land in “any day”)<input type="datetime-local" name="end" value="' + esc((ev.end || '').slice(0, 16)) + '"></label>' +
-      '<label>blurb<textarea name="blurb" maxlength="600">' + esc(ev.blurb || '') + '</textarea></label>' +
-      '<label>url<input type="url" name="url" value="' + esc(ev.url || '') + '" maxlength="600" placeholder="https://…"></label>' +
-      '<label>image url<input type="url" name="image" value="' + esc(ev.image || '') + '" maxlength="600" placeholder="https://…"></label>' +
-    '</form>';
-  }
-  function renderImport() {
-    var box = document.getElementById('import-content');
-    if (importState === 'loading') {
-      box.innerHTML = '<div class="import-status">reading the page…</div>';
-      return;
-    }
-    if (importState === 'review' && importEv) {
-      box.innerHTML =
-        '<span class="src-badge">' + (importSrc === 'ai' ? 'AI-read — check everything' : 'from page data') + '</span>' +
-        '<div class="edit-actions" style="margin:10px 0 4px">' +
-          '<button class="save" type="submit" form="import-add-form">Add to calendar</button>' +
-          '<button class="cancel" type="button" id="import-back">Back</button>' +
-        '</div>' +
-        '<div class="edit-err" id="import-add-err"></div>' +
-        importPreviewHtml(importEv) +
-        '<div class="import-form-label">looks wrong? fix it before adding</div>' +
-        importFormHtml(importEv);
-      return;
-    }
-    if (importState === 'done') {
-      box.innerHTML = '<div class="import-done">' +
-        '<div class="live">✓ added to the calendar</div>' +
-        '<div class="durl">when.org/basics-nyc/' + esc(importedId) + '</div>' +
-        '<div class="import-done-actions">' +
-          '<a class="primary" href="/basics-nyc/' + encodeURIComponent(importedId) + '">View event page</a>' +
-          '<button class="ghost" id="import-done-close" type="button">Done</button>' +
-        '</div>' +
-      '</div>';
-      return;
-    }
-    /* input state */
-    box.innerHTML = '<div class="import-copy">Paste any event page URL — I’ll read it and draft the event for review. Nothing is published until you add it.</div>' +
-      '<form class="import-url-row" id="import-url-form">' +
-        '<input id="import-url" type="url" value="' + esc(importUrlVal) + '" placeholder="https://…" required spellcheck="false" autocapitalize="off" autocomplete="off">' +
-        '<button class="read" type="submit">Read page</button>' +
-      '</form>' +
-      '<div class="import-status' + (importErr ? ' err' : '') + '">' + esc(importErr || '') + '</div>';
-  }
-  function openImport() {
-    importState = 'input'; importErr = ''; importEv = null; importSrc = ''; importUrlVal = '';
-    renderImport();
-    openOverlay('import');
-    var inp = document.getElementById('import-url');
-    if (inp) { try { inp.focus(); } catch (e) {} }
-  }
-  function importErrorFor(status, d) {
-    if (status === 401) return 'Not signed in — sign in as the calendar owner first.';
-    if (status === 403) return 'Only the calendar owner can add events.';
-    if (status === 422 || (d && d.error === 'no_event')) return 'No event found on that page — try the event’s own page, not a listing.';
-    if (status === 415) return 'That link isn’t a web page.';
-    if (d && d.error === 'site_blocked') return 'That site blocks automated readers — try the venue’s own event page instead.';
-    if (d && d.error) return 'Could not read the page — ' + d.error + '.';
-    return 'Could not read that page — check the link and try again.';
-  }
-  document.addEventListener('submit', function (e) {
-    if (!e.target) return;
-    if (e.target.id === 'import-url-form') {
-      e.preventDefault();
-      var url = (document.getElementById('import-url').value || '').trim();
-      importUrlVal = url;
-      if (!/^https?:\/\//i.test(url)) { importErr = 'Enter a full http(s) link.'; renderImport(); return; }
-      importState = 'loading'; importErr = '';
-      renderImport();
-      fetch(IMPORT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: url })
-      }).then(function (r) {
-        return r.json().then(function (d) { return { s: r.status, d: d }; }, function () { return { s: r.status, d: null }; });
-      }).then(function (res) {
-        if (res.s === 200 && res.d && res.d.ok && res.d.event) {
-          importEv = res.d.event; importSrc = res.d.source || ''; importState = 'review';
-        } else {
-          importState = 'input';
-          importErr = importErrorFor(res.s, res.d);
-        }
-        renderImport();
-      }).catch(function () {
-        importState = 'input';
-        importErr = 'Network error — could not reach the importer.';
-        renderImport();
-      });
-      return;
-    }
-    if (e.target.id === 'import-add-form') {
-      e.preventDefault();
-      var f = e.target.elements;
-      var ev = {
-        id: importEv && importEv.id,
-        title: f.title.value.trim(),
-        venue: f.venue.value.trim(),
-        neighborhood: f.neighborhood.value.trim(),
-        price: f.price.value.trim(),
-        blurb: f.blurb.value.trim(),
-        url: f.url.value.trim(),
-        image: f.image.value.trim()
-      };
-      var dt = f.start.value;
-      if (dt) ev.start = dt.length === 16 ? dt + ':00' + nyOffsetFor(dt) : dt;
-      var de = f.end.value;
-      if (de) ev.end = de.length === 16 ? de + ':00' + nyOffsetFor(de) : de;
-      else if (importEv && importEv.end) ev.end = importEv.end;
-      var saveBtn = document.querySelector('#import-content .save');
-      if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Adding…'; }
-      fetch(OVERLAY_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'add', event: ev })
-      }).then(function (r) {
-        return r.json().then(function (d) { return { s: r.status, d: d }; }, function () { return { s: r.status, d: null }; });
-      }).then(function (res) {
-        if (res.s === 200 && res.d && res.d.ok) {
-          importedId = res.d.id;
-          importState = 'done';
-          renderImport();
-          loadAdminData(); /* re-render with the new event */
-        } else {
-          if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Add to calendar'; }
-          var err = document.getElementById('import-add-err');
-          if (err) err.textContent = (res.d && res.d.error) ? 'Could not add — ' + res.d.error + '.' : 'Could not add — try again.';
-        }
-      }).catch(function () {
-        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Add to calendar'; }
-        var err = document.getElementById('import-add-err');
-        if (err) err.textContent = 'Network error — try again.';
-      });
-      return;
-    }
-  });
-  document.getElementById('add-event-open').addEventListener('click', openImport);
 
   /* ---------- owner: overlay writes + admin data ---------- */
   function postOverlay(payload) {
@@ -1601,7 +1392,6 @@ body.modal-open { overflow: hidden; }
 
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
-    if (!document.getElementById('import-backdrop').hidden) { closeOverlay('import'); return; }
     if (!document.getElementById('detail-backdrop').hidden) { closeDetail(); return; }
     if (!document.getElementById('tray-backdrop').hidden) { closeOverlay('tray'); return; }
     if (!document.getElementById('sub-backdrop').hidden) { closeOverlay('sub'); return; }
@@ -1682,7 +1472,6 @@ body.modal-open { overflow: hidden; }
     if (me && me.email) startPrefsSync(); /* saved/attended/followed follow the account */
     if (me && me.isOwner) {
       isOwner = true;
-      document.getElementById('add-event-open').hidden = false; /* URL importer (issue #6) */
       document.getElementById('ideas-link').hidden = false; /* Event Ideas supply tool (issue #13) */
       loadAdminData(); /* owner sees hidden + edit chrome; re-renders when it lands */
     }
