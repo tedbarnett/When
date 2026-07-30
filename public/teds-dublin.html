@@ -168,6 +168,13 @@ button.mchip:hover { border-color: var(--faint); color: var(--ink); }
 .dayhead .dname .dot { color: var(--spark); }
 .dayhead .ddate { font-family: var(--mono); font-size: 11.5px; color: var(--faint); }
 .dayhead .dcount { font-family: var(--mono); font-size: 11px; color: var(--peri); margin-left: auto; }
+.dayhead.dh-toggle { cursor: pointer; user-select: none; -webkit-user-select: none; }
+.dayhead .chev { font-family: var(--mono); font-size: 14px; color: var(--faint); flex: none; transition: color .15s ease; }
+.dayhead.dh-toggle:hover .chev { color: var(--ink); }
+.past-toggle-row { max-width: 1140px; margin: 0 auto; padding: 26px 20px 0; }
+.past-toggle { display: inline-flex; align-items: center; gap: 9px; border: 1px solid var(--line); background: transparent; color: var(--muted); font-family: var(--mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; border-radius: 999px; padding: 8px 17px; cursor: pointer; transition: border-color .15s ease, color .15s ease; }
+.past-toggle:hover { border-color: var(--faint); color: var(--ink); }
+.past-toggle .chev { font-size: 13px; color: var(--faint); }
 .tile { position: relative; flex: none; border-radius: 18px; overflow: hidden; cursor: pointer; border: none; text-align: left; padding: 0; transition: transform .18s ease; }
 .tile.t-tonight { width: 178px; height: 224px; }
 .tile.t-day { width: 216px; height: 266px; border-radius: 20px; }
@@ -526,6 +533,8 @@ body.modal-open { overflow: hidden; }
   var overlay = { hidden: {}, edits: {} };
   var editing = false;      // detail modal is in edit mode
   var geoFilter = 'everywhere'; // when:dublin:geo — single-choice area filter (issue #5)
+  var pastOpen = false;     // "N past days" group in week view — collapsed on every load
+  var collapsedDays = {};   // per-day manual collapse (key -> true); future days start open
   try {
     saved = JSON.parse(localStorage.getItem('when:saved') || '{}') || {};
     attended = JSON.parse(localStorage.getItem('when:attended') || '{}') || {};
@@ -823,10 +832,39 @@ body.modal-open { overflow: hidden; }
     return html + '</div>';
   }
 
+  /* ---------- collapsible day sections (trip calendar: passed days fold away) ---------- */
+  function daySectionHtml(day) {
+    var closed = !!collapsedDays[day.key];
+    var dname = dayDate(day.key).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+    var html = '<div class="dayhead dh-toggle" role="button" tabindex="0" aria-expanded="' + (!closed) + '" data-toggleday="' + esc(day.key) + '">' +
+      '<span class="chev">' + (closed ? '▸' : '▾') + '</span>' +
+      '<span class="dname">' + esc(dname) + '<span class="dot">.</span></span>' +
+      '<span class="ddate">' + esc(ddateLabel(day.key)) + '</span>' +
+      '<span class="dcount">' + day.events.length + (day.events.length === 1 ? ' PICK' : ' PICKS') + '</span>' +
+    '</div>';
+    if (closed) return html;
+    html += '<div class="shelf" style="max-width:1140px;margin:0 auto">';
+    for (var i = 0; i < day.events.length; i++) html += tileHtml(day.events[i], 't-day');
+    return html + '</div>';
+  }
+
+  /* Days already behind us (Europe/Dublin) fold under one toggle at the top —
+     collapsed on every load so the page still opens on tonight. */
+  function pastSectionHtml() {
+    if (!pastDays.length) return '';
+    var n = pastDays.length;
+    var html = '<div class="past-toggle-row"><button class="past-toggle" type="button" data-togglepast aria-expanded="' + pastOpen + '">' +
+      '<span class="chev">' + (pastOpen ? '▾' : '▸') + '</span>' + n + ' past ' + (n === 1 ? 'day' : 'days') + '</button></div>';
+    if (!pastOpen) return html;
+    /* pastDays is sorted newest-first; show oldest-first so it reads like the trip so far */
+    for (var d = pastDays.length - 1; d >= 0; d--) html += daySectionHtml(pastDays[d]);
+    return html;
+  }
+
   /* ---------- week view ---------- */
   function renderWeek() {
     var root = document.getElementById('view-week-root');
-    if (!days.length) { root.innerHTML = (anyday.length ? anydaySectionHtml() : emptyGeoHtml()) + hiddenSectionHtml(); return; }
+    if (!days.length) { root.innerHTML = pastSectionHtml() + (anyday.length ? anydaySectionHtml() : emptyGeoHtml()) + hiddenSectionHtml(); return; }
     var day0 = days[0];
     /* hero pick: never feature a hidden event (owner view keeps them out of
        days[] entirely now, but guard here too so the headline slot can
@@ -842,7 +880,7 @@ body.modal-open { overflow: hidden; }
 
     var cbH = cbIndex(hero.id);
     var hf = friendsFor(hero.id);
-    var html = '<div class="wrap">' +
+    var html = pastSectionHtml() + '<div class="wrap">' +
       '<div class="hero' + hiddenCls(hero) + '" role="button" tabindex="0" data-open="' + esc(hero.id) + '" style="background:var(--cb' + cbH + '-bg)">' +
         mediaHtml(hero) +
         '<span class="price-chip">' + esc(priceLabel(hero)) + '</span>' +
@@ -865,18 +903,7 @@ body.modal-open { overflow: hidden; }
     }
     html += '</div>';
 
-    for (var d = 1; d < days.length; d++) {
-      var day = days[d];
-      var dname = dayDate(day.key).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-      html += '<div class="dayhead">' +
-        '<span class="dname">' + esc(dname) + '<span class="dot">.</span></span>' +
-        '<span class="ddate">' + esc(ddateLabel(day.key)) + '</span>' +
-        '<span class="dcount">' + day.events.length + (day.events.length === 1 ? ' PICK' : ' PICKS') + '</span>' +
-      '</div>';
-      html += '<div class="shelf" style="max-width:1140px;margin:0 auto">';
-      for (i = 0; i < day.events.length; i++) html += tileHtml(day.events[i], 't-day');
-      html += '</div>';
-    }
+    for (var d = 1; d < days.length; d++) html += daySectionHtml(days[d]);
     root.innerHTML = html + anydaySectionHtml() + hiddenSectionHtml();
   }
 
@@ -1300,6 +1327,15 @@ body.modal-open { overflow: hidden; }
       });
       return;
     }
+    var tpEl = t.closest ? t.closest('[data-togglepast]') : null;
+    if (tpEl) { pastOpen = !pastOpen; renderWeek(); return; }
+    var tdEl = t.closest ? t.closest('[data-toggleday]') : null;
+    if (tdEl) {
+      var tdk = tdEl.getAttribute('data-toggleday');
+      collapsedDays[tdk] = !collapsedDays[tdk];
+      renderWeek();
+      return;
+    }
     var geoEl = t.closest ? t.closest('[data-geo]') : null;
     if (geoEl) {
       geoFilter = geoEl.getAttribute('data-geo') || 'everywhere';
@@ -1454,7 +1490,8 @@ body.modal-open { overflow: hidden; }
   /* keyboard activation for div[role=button] cards (cards can't be <button> — they contain buttons) */
   document.addEventListener('keydown', function (e) {
     if ((e.key === 'Enter' || e.key === ' ') && e.target && e.target.getAttribute &&
-        e.target.getAttribute('role') === 'button' && e.target.hasAttribute('data-open')) {
+        e.target.getAttribute('role') === 'button' &&
+        (e.target.hasAttribute('data-open') || e.target.hasAttribute('data-toggleday'))) {
       e.preventDefault();
       e.target.click();
     }
